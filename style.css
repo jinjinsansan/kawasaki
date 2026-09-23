@@ -58,6 +58,7 @@ a:hover{color:#fff;}
 .marker{background:var(--marker-red);}
 .sub{margin:0;color:var(--text-sub);text-wrap:pretty;}
 .en{font-family:var(--f-en);}
+.nw{display:inline-block;}
 
 .btn-gold{
   display:inline-flex;align-items:center;gap:14px;
@@ -288,6 +289,11 @@ a:hover{color:#fff;}
 
 /* ---------- mobile ---------- */
 @media (max-width:599px){
+  /* 狭い画面では pretty/balance による早すぎる折り返しを止め、行末まで詰める */
+  p,h1,h2,h3,.sub,.method-body p{text-wrap:wrap !important;}
+  /* 禁則処理で生じる行末の隙間を両端揃えで吸収 */
+  .sub,.method-body p,.caution{text-align:justify;}
+  .sec-head .sub{text-align:center;}
   .section{padding:64px var(--gutter);}
   .fv{padding:84px var(--gutter) 40px;}
   .fv-grid{gap:28px;}
