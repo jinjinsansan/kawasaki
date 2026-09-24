@@ -33,4 +33,4 @@ GitHub リポジトリを Vercel に Import → Framework Preset「Other」、Bu
 - [x] **申込URL**：`main.js` の `CTA_URL`（index.html の `data-cta` リンクにも直接記載）
 - [x] **特商法表記**：`tokushoho.html`（販売事業者：合同会社KK企画）
 - [x] **プライバシーポリシー**：`privacy.html`（運営責任者・連絡先は過去サイト「AI競馬研究所」に準拠）
-- [x] **OGP画像の絶対URL**：`https://www.clubkawasaki.net/assets/og-v2.jpg`（ドメイン変更時は `og:image` / `og:url` / `canonical` を更新）
+- [x] **OGP画像の絶対URL**：`https://www.clubkawasaki.net/assets/og-v3.jpg`（ドメイン変更時は `og:image` / `og:url` / `canonical` を更新）
