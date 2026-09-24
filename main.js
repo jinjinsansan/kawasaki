@@ -1,7 +1,7 @@
 /* カワサキクラブ LP */
 
-// 申込URL（全CTA共通）。空のままなら募集要項（#entry）へスクロールする。
-const CTA_URL = '';
+// 申込URL（全CTA共通）。変更時はここと index.html の data-cta リンクを更新する。
+const CTA_URL = 'https://takashiskeiba.com/fm/32465/ypEMXIRW';
 
 (() => {
   // ---- CTA ----
