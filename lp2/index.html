@@ -6,8 +6,8 @@
 <title>タカシプレゼンツ 究極2ウィーク｜秋のG1大収穫祭</title>
 <meta name="description" content="川崎タカシの「究極2ウィーク」。菊花賞・天皇賞ウィークの2週間、渾身の予想で的中をお届けします。直近の無料・有料配信の的中実績と会員様の声を公開中。">
 <meta name="theme-color" content="#0c0a09">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 
 <!-- TODO: サブドメイン確定後に canonical / og:url / og:image を追加 -->
 <meta property="og:type" content="website">
@@ -19,9 +19,12 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/style.css">
-<script src="/main.js" defer></script>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&amp;family=Zen+Kaku+Gothic+New:wght@400;500;700;900&amp;family=Oswald:wght@500;700&amp;display=swap" rel="stylesheet">
+<!-- 署名用（使用する5文字だけをサブセット読み込み） -->
+<link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&amp;text=%E5%B7%9D%E5%B4%8E%E3%82%BF%E3%82%AB%E3%82%B7&amp;display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="assets/takashi.webp" type="image/webp">
+<link rel="stylesheet" href="style.css">
+<script src="main.js" defer></script>
 </head>
 <body class="swipe">
 
@@ -42,26 +45,40 @@
 <main class="deck" id="deck" tabindex="-1">
 
 <!-- 01 ヒーロー -->
-<section class="page page--hero" aria-label="ヒーロー">
+<section class="page page--hero is-active is-seen" aria-label="ヒーロー">
+  <div class="hero-fx" aria-hidden="true"><span></span><span></span></div>
   <div class="page-inner">
     <p class="kicker">タカシプレゼンツ</p>
     <h1 class="hero-title">
-      <span class="hero-title-sub">究極</span><span class="gold-text hero-title-main">2ウィーク</span>
+      <span class="hero-title-sub">究極</span><span class="gold-text hero-title-main"><span class="hero-2">2</span>ウィーク</span>
     </h1>
     <p class="hero-catch">秋のG1<span class="nw">大収穫祭！</span></p>
     <p class="hero-tagline">渾身！的中！大喝采を<span class="nw">お届けします</span></p>
-    <picture class="hero-photo">
-      <source srcset="/assets/takashi.webp" type="image/webp">
-      <img src="/assets/takashi.jpg" alt="川崎タカシ" width="399" height="399" fetchpriority="high">
-    </picture>
-    <div class="countdown-box">
-      <p class="countdown-label" data-open-only>募集締切まで</p>
-      <p class="countdown-label countdown-label--closed" data-closed-only>募集は締め切りました</p>
-      <p class="countdown-value" data-countdown>--:--:--</p>
-      <p class="countdown-deadline">締切：10月22日（木）24:00</p>
+    <div class="hero-entry">
+      <picture class="hero-photo">
+        <source srcset="assets/takashi.webp" type="image/webp">
+        <img src="assets/takashi.jpg" alt="川崎タカシ" width="399" height="399" fetchpriority="high">
+      </picture>
+      <div class="countdown-box">
+        <div class="cd-head">
+          <p class="countdown-label" data-open-only>募集締切まで</p>
+          <span class="cd-tonight" data-open-only>今夜24:00 終了</span>
+          <p class="countdown-label countdown-label--closed" data-closed-only>募集は締め切りました</p>
+        </div>
+        <div class="cd" data-open-only role="timer" aria-label="募集締切までの残り時間">
+          <span class="cd-unit cd-unit--d"><b class="cd-num" data-cd-d>-</b><span class="cd-lbl">日</span></span>
+          <span class="cd-unit"><b class="cd-num" data-cd-h>--</b><span class="cd-lbl">時間</span></span>
+          <span class="cd-sep" aria-hidden="true">:</span>
+          <span class="cd-unit"><b class="cd-num" data-cd-m>--</b><span class="cd-lbl">分</span></span>
+          <span class="cd-sep" aria-hidden="true">:</span>
+          <span class="cd-unit"><b class="cd-num cd-num--s" data-cd-s>--</b><span class="cd-lbl">秒</span></span>
+        </div>
+        <p class="cd-closed" data-closed-only>募集終了</p>
+        <p class="countdown-deadline">締切：10月22日（木）24:00</p>
+      </div>
     </div>
     <a class="btn-gold pulse" href="#" data-cta>究極2ウィークに参加する<span class="en">→</span></a>
-    <p class="swipe-hint" aria-hidden="true">スワイプしてページをめくる <span>›</span></p>
+    <p class="swipe-hint" aria-hidden="true">スワイプしてページをめくる<span class="chev"><i>›</i><i>›</i><i>›</i></span></p>
   </div>
 </section>
 
@@ -88,15 +105,21 @@
 <section class="page" aria-label="無料配信の的中実績1">
   <div class="page-inner">
     <p class="eyebrow">FREE PICKS 1/3</p>
-    <h2 class="h2">圧倒的！<br>直近の<em>無料配信</em>・的中実績</h2>
-    <article class="hit hit--featured">
+    <h2 class="h2">圧倒的！<br>直近の<em>無料配信</em>・<span class="nw">的中実績</span></h2>
+    <article class="hit hit--free hit--featured">
       <p class="hit-flag">Xインプレッション50万超え</p>
-      <h3 class="hit-race">富士ステークス</h3>
+      <header class="hit-head"><span class="hit-badge">無料配信</span><h3 class="hit-race">富士ステークス</h3></header>
       <p class="hit-pick">◎シュガークン　○アンバドゥ</p>
-      <p class="hit-pay"><span class="hit-type">馬単</span><span class="hit-amount">25,120</span><span class="hit-yen">円 的中！</span></p>
-      <blockquote class="twitter-tweet" data-theme="dark" data-lang="ja" data-dnt="true" data-conversation="none">
-        <a href="https://x.com/VVkeibaVV/status/2111024327676264579">富士ステークス 馬単 25,120円 的中の投稿を見る</a>
-      </blockquote>
+      <div class="hit-board">
+        <p class="hit-pay"><span class="hit-type"><span class="hit-kind">馬単</span></span><span class="hit-money"><span class="hit-amount">25,120</span><span class="hit-yen">円 的中！</span></span></p>
+      </div>
+      <div class="x-frame">
+        <p class="x-frame-head"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>実際の投稿<span>タップで開く ↗</span></p>
+        <blockquote class="twitter-tweet" data-theme="dark" data-lang="ja" data-dnt="true" data-conversation="none">
+          <a href="https://x.com/VVkeibaVV/status/2111024327676264579">富士ステークス 馬単 25,120円 的中の投稿を見る</a>
+        </blockquote>
+        <a class="x-open" href="https://x.com/VVkeibaVV/status/2111024327676264579" target="_blank" rel="noopener" aria-label="富士ステークスの投稿をXで開く"></a>
+      </div>
     </article>
   </div>
 </section>
@@ -105,21 +128,33 @@
 <section class="page" aria-label="無料配信の的中実績2">
   <div class="page-inner">
     <p class="eyebrow">FREE PICKS 2/3</p>
-    <article class="hit">
-      <h3 class="hit-race">アイルランドトロフィー</h3>
+    <article class="hit hit--free">
+      <header class="hit-head"><span class="hit-badge">無料配信</span><h3 class="hit-race">アイルランドトロフィー</h3></header>
       <p class="hit-pick">◎カムニャック</p>
-      <p class="hit-pay"><span class="hit-type">3連単</span><span class="hit-amount">7,740</span><span class="hit-yen">円 的中！</span></p>
-      <blockquote class="twitter-tweet" data-theme="dark" data-lang="ja" data-dnt="true" data-conversation="none">
-        <a href="https://x.com/VVkeibaVV/status/2108875533933285508">アイルランドトロフィー 3連単 7,740円 的中の投稿を見る</a>
-      </blockquote>
+      <div class="hit-board">
+        <p class="hit-pay"><span class="hit-type"><span class="hit-kind">3連単</span></span><span class="hit-money"><span class="hit-amount">7,740</span><span class="hit-yen">円 的中！</span></span></p>
+      </div>
+      <div class="x-frame">
+        <p class="x-frame-head"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>実際の投稿<span>タップで開く ↗</span></p>
+        <blockquote class="twitter-tweet" data-theme="dark" data-lang="ja" data-dnt="true" data-conversation="none">
+          <a href="https://x.com/VVkeibaVV/status/2108875533933285508">アイルランドトロフィー 3連単 7,740円 的中の投稿を見る</a>
+        </blockquote>
+        <a class="x-open" href="https://x.com/VVkeibaVV/status/2108875533933285508" target="_blank" rel="noopener" aria-label="アイルランドトロフィーの投稿をXで開く"></a>
+      </div>
     </article>
-    <article class="hit">
-      <h3 class="hit-race">スワンステークス</h3>
+    <article class="hit hit--free">
+      <header class="hit-head"><span class="hit-badge">無料配信</span><h3 class="hit-race">スワンステークス</h3></header>
       <p class="hit-pick">◎ダイヤモンドノット</p>
-      <p class="hit-pay"><span class="hit-type">馬単</span><span class="hit-amount">13,850</span><span class="hit-yen">円 的中！</span></p>
-      <blockquote class="twitter-tweet" data-theme="dark" data-lang="ja" data-dnt="true" data-conversation="none">
-        <a href="https://x.com/VVkeibaVV/status/2109251029443526895">スワンステークス 馬単 13,850円 的中の投稿を見る</a>
-      </blockquote>
+      <div class="hit-board">
+        <p class="hit-pay"><span class="hit-type"><span class="hit-kind">馬単</span></span><span class="hit-money"><span class="hit-amount">13,850</span><span class="hit-yen">円 的中！</span></span></p>
+      </div>
+      <div class="x-frame">
+        <p class="x-frame-head"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>実際の投稿<span>タップで開く ↗</span></p>
+        <blockquote class="twitter-tweet" data-theme="dark" data-lang="ja" data-dnt="true" data-conversation="none">
+          <a href="https://x.com/VVkeibaVV/status/2109251029443526895">スワンステークス 馬単 13,850円 的中の投稿を見る</a>
+        </blockquote>
+        <a class="x-open" href="https://x.com/VVkeibaVV/status/2109251029443526895" target="_blank" rel="noopener" aria-label="スワンステークスの投稿をXで開く"></a>
+      </div>
     </article>
   </div>
 </section>
@@ -128,45 +163,69 @@
 <section class="page" aria-label="無料配信の的中実績3">
   <div class="page-inner">
     <p class="eyebrow">FREE PICKS 3/3</p>
-    <article class="hit">
-      <h3 class="hit-race">オクトーバーS</h3>
+    <article class="hit hit--free">
+      <header class="hit-head"><span class="hit-badge">無料配信</span><h3 class="hit-race">オクトーバーS</h3></header>
       <p class="hit-pick">◎アクスセクシーモア</p>
-      <p class="hit-pay"><span class="hit-type">3連単</span><span class="hit-amount">37,190</span><span class="hit-yen">円 的中！</span></p>
-      <blockquote class="twitter-tweet" data-theme="dark" data-lang="ja" data-dnt="true" data-conversation="none">
-        <a href="https://x.com/VVkeibaVV/status/2109509973365694478">オクトーバーS 3連単 37,190円 的中の投稿を見る</a>
-      </blockquote>
+      <div class="hit-board">
+        <p class="hit-pay"><span class="hit-type"><span class="hit-kind">3連単</span></span><span class="hit-money"><span class="hit-amount">37,190</span><span class="hit-yen">円 的中！</span></span></p>
+      </div>
+      <div class="x-frame">
+        <p class="x-frame-head"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>実際の投稿<span>タップで開く ↗</span></p>
+        <blockquote class="twitter-tweet" data-theme="dark" data-lang="ja" data-dnt="true" data-conversation="none">
+          <a href="https://x.com/VVkeibaVV/status/2109509973365694478">オクトーバーS 3連単 37,190円 的中の投稿を見る</a>
+        </blockquote>
+        <a class="x-open" href="https://x.com/VVkeibaVV/status/2109509973365694478" target="_blank" rel="noopener" aria-label="オクトーバーSの投稿をXで開く"></a>
+      </div>
     </article>
-    <article class="hit">
-      <h3 class="hit-race">10/17 東京12レース</h3>
-      <p class="hit-pay"><span class="hit-type">3連単</span><span class="hit-amount">5,910</span><span class="hit-yen">円 的中！</span></p>
-      <blockquote class="twitter-tweet" data-theme="dark" data-lang="ja" data-dnt="true" data-conversation="none">
-        <a href="https://x.com/VVkeibaVV/status/2111359917106037049">10/17 東京12レース 3連単 5,910円 的中の投稿を見る</a>
-      </blockquote>
+    <article class="hit hit--free">
+      <header class="hit-head"><span class="hit-badge">無料配信</span><h3 class="hit-race">10/17 東京12レース</h3></header>
+      <div class="hit-board">
+        <p class="hit-pay"><span class="hit-type"><span class="hit-kind">3連単</span></span><span class="hit-money"><span class="hit-amount">5,910</span><span class="hit-yen">円 的中！</span></span></p>
+      </div>
+      <div class="x-frame">
+        <p class="x-frame-head"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>実際の投稿<span>タップで開く ↗</span></p>
+        <blockquote class="twitter-tweet" data-theme="dark" data-lang="ja" data-dnt="true" data-conversation="none">
+          <a href="https://x.com/VVkeibaVV/status/2111359917106037049">10/17 東京12レース 3連単 5,910円 的中の投稿を見る</a>
+        </blockquote>
+        <a class="x-open" href="https://x.com/VVkeibaVV/status/2111359917106037049" target="_blank" rel="noopener" aria-label="10/17 東京12レースの投稿をXで開く"></a>
+      </div>
     </article>
   </div>
 </section>
 
 <!-- 06 的中実績：有料 -->
-<section class="page" aria-label="有料予想の的中実績">
+<section class="page page--premium" aria-label="有料予想の的中実績">
   <div class="page-inner">
-    <p class="eyebrow">PREMIUM PICKS</p>
-    <h2 class="h2">爆益連発！<br><em>有料予想</em>・的中実績</h2>
+    <p class="eyebrow eyebrow--red">PREMIUM PICKS</p>
+    <h2 class="h2">爆益連発！<br><em>有料予想</em>・<span class="nw">的中実績</span></h2>
     <p>続いて【有料配信】の実績です。<br>的中しすぎているので、<br>ごく一部のみ抜粋してお届けします。</p>
     <article class="hit hit--premium">
-      <h3 class="hit-race">10/18 新潟牝馬S</h3>
-      <p class="hit-pay"><span class="hit-type">馬単<small>わずか6点</small></span><span class="hit-amount">2,130</span><span class="hit-yen">円 的中！</span></p>
-      <p class="hit-pay"><span class="hit-type">3連単<small>わずか36点</small></span><span class="hit-amount">8,090</span><span class="hit-yen">円 的中！</span></p>
-      <blockquote class="twitter-tweet" data-theme="dark" data-lang="ja" data-dnt="true" data-conversation="none">
-        <a href="https://x.com/VVkeibaVV/status/2111683724907844031">10/18 新潟牝馬S 的中の投稿を見る</a>
-      </blockquote>
+      <header class="hit-head"><span class="hit-badge">有料配信</span><h3 class="hit-race">10/18 新潟牝馬S</h3></header>
+      <div class="hit-board">
+        <p class="hit-pay"><span class="hit-type"><span class="hit-kind">馬単</span><small>わずか6点</small></span><span class="hit-money"><span class="hit-amount">2,130</span><span class="hit-yen">円 的中！</span></span></p>
+        <p class="hit-pay"><span class="hit-type"><span class="hit-kind">3連単</span><small>わずか36点</small></span><span class="hit-money"><span class="hit-amount">8,090</span><span class="hit-yen">円 的中！</span></span></p>
+      </div>
+      <div class="x-frame">
+        <p class="x-frame-head"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>実際の投稿<span>タップで開く ↗</span></p>
+        <blockquote class="twitter-tweet" data-theme="dark" data-lang="ja" data-dnt="true" data-conversation="none">
+          <a href="https://x.com/VVkeibaVV/status/2111683724907844031">10/18 新潟牝馬S 的中の投稿を見る</a>
+        </blockquote>
+        <a class="x-open" href="https://x.com/VVkeibaVV/status/2111683724907844031" target="_blank" rel="noopener" aria-label="10/18 新潟牝馬Sの投稿をXで開く"></a>
+      </div>
     </article>
     <article class="hit hit--premium">
-      <h3 class="hit-race">10/17 京都1レース</h3>
-      <p class="hit-pay"><span class="hit-type">3連複<small>わずか12点</small></span><span class="hit-amount">9,100</span><span class="hit-yen">円 的中！</span></p>
-      <p class="hit-pay"><span class="hit-type">3連単<small>わずか36点</small></span><span class="hit-amount">61,650</span><span class="hit-yen">円 的中！</span></p>
-      <blockquote class="twitter-tweet" data-theme="dark" data-lang="ja" data-dnt="true" data-conversation="none">
-        <a href="https://x.com/VVkeibaVV/status/2111065536700502348">10/17 京都1レース 的中の投稿を見る</a>
-      </blockquote>
+      <header class="hit-head"><span class="hit-badge">有料配信</span><h3 class="hit-race">10/17 京都1レース</h3></header>
+      <div class="hit-board">
+        <p class="hit-pay"><span class="hit-type"><span class="hit-kind">3連複</span><small>わずか12点</small></span><span class="hit-money"><span class="hit-amount">9,100</span><span class="hit-yen">円 的中！</span></span></p>
+        <p class="hit-pay"><span class="hit-type"><span class="hit-kind">3連単</span><small>わずか36点</small></span><span class="hit-money"><span class="hit-amount">61,650</span><span class="hit-yen">円 的中！</span></span></p>
+      </div>
+      <div class="x-frame">
+        <p class="x-frame-head"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>実際の投稿<span>タップで開く ↗</span></p>
+        <blockquote class="twitter-tweet" data-theme="dark" data-lang="ja" data-dnt="true" data-conversation="none">
+          <a href="https://x.com/VVkeibaVV/status/2111065536700502348">10/17 京都1レース 的中の投稿を見る</a>
+        </blockquote>
+        <a class="x-open" href="https://x.com/VVkeibaVV/status/2111065536700502348" target="_blank" rel="noopener" aria-label="10/17 京都1レースの投稿をXで開く"></a>
+      </div>
     </article>
   </div>
 </section>
@@ -178,12 +237,14 @@
     <h2 class="h2">タカシの予想に乗った<br>「<em>お客様の声</em>」</h2>
     <p>私の予想を信じて付いてきてくれた方々からは、毎日震えるような感謝の声が届いています。</p>
     <figure class="voice">
-      <figcaption><span class="voice-title">「大げさじゃなく、人生変わりました」</span><span class="voice-who">30代会社員</span></figcaption>
-      <blockquote>今まで競馬で負け続けて借金までありましたが、タカシさんの予想に出会ってから一変。先週の万馬券的中で一気にプラス域に！大げさじゃなく本当に人生が変わりました。もう他の予想は買えません！</blockquote>
+      <p class="voice-title">「大げさじゃなく、人生変わりました」</p>
+      <blockquote class="voice-body">今まで競馬で負け続けて借金までありましたが、タカシさんの予想に出会ってから一変。先週の万馬券的中で一気にプラス域に！<span class="hl">大げさじゃなく本当に人生が変わりました。</span>もう他の予想は買えません！</blockquote>
+      <figcaption class="voice-meta"><span class="voice-avatar" aria-hidden="true"><b>30</b>代</span><span class="voice-who">30代会社員</span></figcaption>
     </figure>
     <figure class="voice">
-      <figcaption><span class="voice-title">「点数が絞られているから回収率がエグい」</span><span class="voice-who">40代自営業</span></figcaption>
-      <blockquote>無料配信の富士Sで馬単2万馬券を取らせてもらい、即有料に参加。新潟牝馬Sも少点数でバッチリ的中でした。無駄な買い目が極限まで絞られているので、当たった時の回収率がエグすぎます！</blockquote>
+      <p class="voice-title">「点数が絞られているから回収率がエグい」</p>
+      <blockquote class="voice-body">無料配信の富士Sで馬単2万馬券を取らせてもらい、即有料に参加。新潟牝馬Sも少点数でバッチリ的中でした。無駄な買い目が極限まで絞られているので、<span class="hl">当たった時の回収率がエグすぎます！</span></blockquote>
+      <figcaption class="voice-meta"><span class="voice-avatar" aria-hidden="true"><b>40</b>代</span><span class="voice-who">40代自営業</span></figcaption>
     </figure>
   </div>
 </section>
@@ -193,12 +254,14 @@
   <div class="page-inner">
     <p class="eyebrow">VOICE 2/2</p>
     <figure class="voice">
-      <figcaption><span class="voice-title">「自信に満ちた予想で迷わず買えた」</span><span class="voice-who">50代男性</span></figcaption>
-      <blockquote>これまでG1はトリガミばかりでしたが、タカシさんのオッズ期待値をロジカルに分析する手法に感銘を受けました。信じて厚く張った京都1レースの6万馬券、手が震えました…！最高の秋になりそうです。</blockquote>
+      <p class="voice-title">「自信に満ちた予想で迷わず買えた」</p>
+      <blockquote class="voice-body">これまでG1はトリガミばかりでしたが、タカシさんのオッズ期待値をロジカルに分析する手法に感銘を受けました。<span class="hl">信じて厚く張った京都1レースの6万馬券、手が震えました…！</span>最高の秋になりそうです。</blockquote>
+      <figcaption class="voice-meta"><span class="voice-avatar" aria-hidden="true"><b>50</b>代</span><span class="voice-who">50代男性</span></figcaption>
     </figure>
     <figure class="voice">
-      <figcaption><span class="voice-title">「毎週末がボーナス日に」</span><span class="voice-who">20代男性</span></figcaption>
-      <blockquote>タカシさんの配信を見るようになってから、毎週末がボーナス日みたいになっています（笑）。単なる勘やオカルトじゃなくて、しっかりした統計と根拠があるから安心して乗れます。この究極の2週間も全乗っかりします！</blockquote>
+      <p class="voice-title">「毎週末がボーナス日に」</p>
+      <blockquote class="voice-body">タカシさんの配信を見るようになってから、<span class="hl">毎週末がボーナス日みたいになっています（笑）。</span>単なる勘やオカルトじゃなくて、しっかりした統計と根拠があるから安心して乗れます。この究極の2週間も全乗っかりします！</blockquote>
+      <figcaption class="voice-meta"><span class="voice-avatar" aria-hidden="true"><b>20</b>代</span><span class="voice-who">20代男性</span></figcaption>
     </figure>
     <a class="btn-gold" href="#" data-cta>究極2ウィークに参加する<span class="en">→</span></a>
   </div>
@@ -216,7 +279,7 @@
       <div><dt>配信方法</dt><dd>会員専用メルマガ</dd></div>
       <div><dt>参加費</dt><dd class="spec-price">◯◯,◯◯◯円<small>（税込）</small></dd></div>
     </dl>
-    <p>一か八かの万馬券を無理に狙うのではなく、手堅い的中ラッシュで確実に利益を積み上げていく。<br>そして最後の『天皇賞』で勝負する。<br>この2週間のための予想です。</p>
+    <p class="spec-note">一か八かの万馬券を無理に狙うのではなく、手堅い的中ラッシュで確実に利益を積み上げていく。<br>そして<strong class="gold">最後の『天皇賞』で勝負する。</strong><br>この2週間のための予想です。</p>
   </div>
 </section>
 
@@ -241,7 +304,7 @@
 </section>
 
 <!-- 11 あとがき① -->
-<section class="page" aria-label="最後に">
+<section class="page page--read" aria-label="最後に">
   <div class="page-inner">
     <p class="eyebrow">AFTERWORD 1/2</p>
     <h2 class="h2">最後に：<br>「なぜ当たる予想を<span class="nw">売るのか？」</span></h2>
@@ -252,7 +315,8 @@
     <p>今週、この売り上げをすべて馬券にぶち込んで、私自身の資金を倍増させます。</p>
     <p>競馬はオッズが変動するギャンブルですが、たとえ私の予想に乗る人が増えてオッズが「0.1」下がったとしても、私自身の軍資金が「100万円」増えた状態で勝負した方が、<strong class="gold">最終的な利益の絶対額は圧倒的に増える</strong>のです。</p>
 
-    <h2 class="h2 h2--sub">外せば「廃業」の覚悟。<br>頑張るのではなく「結果」を出す</h2>
+    <div class="orn" aria-hidden="true"></div>
+    <h2 class="h2 h2--sub">外せば「廃業」の覚悟。<br>頑張るのではなく<span class="nw">「結果」を出す</span></h2>
     <p>今回のような確信度の高いチャンスは、滅多にあるものではありません。</p>
     <p>私は予想家として生きている以上、「信頼」が全てです。<br>これだけ大口を叩いて言い切った上で外すということは、<strong class="gold">私自身が予想家を「廃業」する覚悟を持たなければならない</strong>ということです。</p>
     <p>そのくらい、自分の人生を懸けて今回の2週間に臨んでいます。<br>あなたと共に的中を掴み取るため、プロとして「必然の行動」をとります。</p>
@@ -261,16 +325,16 @@
 </section>
 
 <!-- 12 あとがき② -->
-<section class="page page--last" aria-label="資金10倍へのロードマップ">
+<section class="page page--read page--last" aria-label="資金10倍へのロードマップ">
   <div class="page-inner">
     <p class="eyebrow">AFTERWORD 2/2</p>
-    <h2 class="h2">資金10倍への<span class="nw">ロードマップ</span><br><small>天皇賞での「究極の勝負」に向けて</small></h2>
+    <h2 class="h2"><span class="nw">資金10倍への</span><span class="nw">ロードマップ</span><br><small>天皇賞での「究極の勝負」に向けて</small></h2>
     <p>私の頭の中にあるイメージをお伝えします。</p>
     <p>この菊花賞と天皇賞のウィークで、<strong class="gold">皆さんの資金を「10倍」にしてもらいます。</strong><br>これは単なる目標ではなく、私の中での「絶対のノルマ」だと感じています。</p>
     <p>一か八かの万馬券を無理に狙うのではなく、手堅い的中ラッシュで確実に利益を積み上げていく。<br>そして、<strong class="gold">最後の『天皇賞』で、そこまで積み上げた利益をすべて「単」にぶち込む。</strong></p>
     <p>これが私の描く、究極のシナリオです。</p>
     <p>つまり、勝負の天皇賞を迎えるまでに<strong class="gold">「どれだけお金を稼いでおけるか？」</strong>が最も重要なのです。<br>だからこそ、この2週間は一切の妥協なく、徹底的にやり抜きます。</p>
-    <p class="lead">ついてきてください。<br>最高の景色を見せます。</p>
+    <p class="lead lead--close">ついてきてください。<br>最高の景色を見せます。</p>
     <p class="signature">川崎タカシ</p>
 
     <div class="entry-box">
@@ -289,12 +353,15 @@
 </main>
 
 <nav class="dock" aria-label="ページ送り">
-  <button class="dock-btn" type="button" id="prev" aria-label="前のページ">‹</button>
-  <div class="dock-center">
-    <span class="dock-count" aria-live="polite"><b id="page-now">1</b> / <span id="page-total">12</span></span>
-    <a class="dock-cta" href="#" data-cta>参加する</a>
+  <div class="dots" id="dots" aria-hidden="true"></div>
+  <div class="dock-row">
+    <button class="dock-btn" type="button" id="prev" aria-label="前のページ"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="dock-center">
+      <span class="dock-count" aria-live="polite"><b id="page-now">1</b><span class="dock-slash">/</span><span id="page-total">12</span></span>
+      <a class="dock-cta" href="#" data-cta>参加する</a>
+    </div>
+    <button class="dock-btn" type="button" id="next" aria-label="次のページ"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
-  <button class="dock-btn" type="button" id="next" aria-label="次のページ">›</button>
 </nav>
 
 </div>
