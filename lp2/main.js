@@ -71,6 +71,21 @@ root.classList.add('js');
   document.getElementById('page-total').textContent = pad(total);
   const dots = Array.from(pages, () => dotsWrap.appendChild(document.createElement('i')));
 
+  // お客様の声：タイトルを1文字ずつ出すために文字を span に分ける（読み上げは元の文のまま）
+  document.querySelectorAll('.page--voice .voice-title').forEach((t) => {
+    const text = t.textContent;
+    t.setAttribute('aria-label', text);
+    t.textContent = '';
+    Array.from(text).forEach((c, i) => {
+      const s = document.createElement('span');
+      s.className = 'ch';
+      s.style.setProperty('--i', i);
+      s.setAttribute('aria-hidden', 'true');
+      s.textContent = c;
+      t.appendChild(s);
+    });
+  });
+
   // 的中実績：初めて表示したときだけ払戻額を 0 から数え上げる
   const countUp = (page) => {
     if (reduce) return;

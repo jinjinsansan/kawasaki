@@ -502,10 +502,10 @@ strong.gold{font-weight:700;background:linear-gradient(transparent 70%,rgba(226,
   padding:8px 12px 10px;padding-bottom:max(10px,env(safe-area-inset-bottom));
   background:rgba(12,10,9,.96);border-top:1px solid var(--line);
 }
-.dots{display:flex;justify-content:center;align-items:center;gap:5px;height:8px;margin-bottom:8px;}
-.dots i{width:6px;height:6px;border-radius:3px;background:#33261a;transition:width .35s var(--ease),background-color .35s;}
+.dots{display:flex;justify-content:center;align-items:center;gap:4px;height:8px;margin-bottom:8px;}
+.dots i{width:5px;height:5px;border-radius:3px;background:#33261a;transition:width .35s var(--ease),background-color .35s;}
 .dots i.seen{background:var(--line-strong);}
-.dots i.on{width:22px;background:var(--gold);}
+.dots i.on{width:18px;background:var(--gold);}
 .dock-row{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:10px;}
 .dock-btn{
   display:grid;place-items:center;width:44px;height:44px;padding:0;border-radius:50%;border:1px solid var(--line-strong);
@@ -563,6 +563,90 @@ strong.gold{font-weight:700;background:linear-gradient(transparent 70%,rgba(226,
   .page--front .lead--gold{margin-top:14px !important;font-size:32px !important;}
   .page--front .statement{margin-top:16px !important;}
   .page--front .swipe-hint{padding-top:12px;}
+}
+
+/* ==========================================================
+   1画面完結ページ（声・商品・申込・あとがき）：中身を上下中央に置く
+   ========================================================== */
+.page--fit .page-inner{display:flex;flex-direction:column;min-height:100%;padding-top:20px;padding-bottom:14px;}
+.page--fit .page-inner > :first-child{margin-top:auto;}
+.page--fit .page-inner > :last-child{margin-bottom:auto;}
+.page--fit .page-inner > .swipe-hint:last-child{margin-bottom:0;padding-top:20px;}
+
+/* お客様の声：1人1ページ。タイトルを主役に */
+.voice-intro{font-size:14px !important;line-height:1.8;color:var(--text-muted) !important;}
+.page--voice .voice{margin-top:22px;}
+.page--voice .voice-title{font-size:clamp(22px,6.4vw,26px) !important;line-height:1.5;margin-bottom:14px !important;}
+.page--voice .voice-body{font-size:16px;line-height:1.95;padding:18px 18px 18px 20px;}
+.page--voice .btn-gold{margin-top:26px;}
+.voice-title .ch{display:inline;}
+@media (prefers-reduced-motion:no-preference){
+  .js .page--voice:not(.is-seen) .voice-title .ch{opacity:0;}
+  .js .page--voice.is-seen .voice-title .ch{opacity:0;animation:type .01s steps(1) forwards;animation-delay:calc(.35s + var(--i) * 55ms);}
+}
+@keyframes type{to{opacity:1;}}
+
+/* あとがき：1ページ1メッセージ */
+.page--fit.page--read .page-inner p + p{margin-top:16px;}
+.page--fit.page--read .statement--sm{margin:18px 0 !important;font-size:clamp(19px,5.6vw,22px) !important;}
+.keyline{
+  margin-top:20px !important;padding:4px 0 4px 16px;border-left:3px solid var(--gold);
+  font-family:var(--f-mincho);font-weight:800;font-size:clamp(20px,5.8vw,23px) !important;line-height:1.7 !important;color:var(--gold-light) !important;
+}
+.page--fit.page--last .lead--close{margin-top:0 !important;font-size:26px !important;}
+.page--fit.page--last .entry-box{margin-top:18px !important;}
+.page--fit.page--last .page-footer{margin-top:18px !important;padding-top:8px;}
+.page--fit.page--last .page-footer nav a{min-height:36px;}
+
+/* 赤マーカー：めくると左から引かれる */
+.marker{background-repeat:no-repeat;background-size:100% 100%;}
+@media (prefers-reduced-motion:no-preference){
+  .js .page:not(.is-seen) .marker{background-size:0 100%;}
+  .js .page.is-seen .marker{transition:background-size 1.1s var(--ease) .45s;}
+}
+
+/* 申込 */
+.page--steps .steps li{padding-bottom:16px;}
+.page--entry .entry-box{margin-top:22px !important;}
+
+/* 低い画面：1画面に収めるため余白と文字を少し詰める */
+@media (max-height:700px){
+  .page--fit .page-inner{padding-top:12px;padding-bottom:8px;}
+  .page--fit .page-inner > * + *{margin-top:10px;}
+  .page--fit .page-inner > .swipe-hint:last-child{padding-top:10px;}
+  .page--voice .voice{margin-top:14px;}
+  .page--voice .voice-title{font-size:20px !important;margin-bottom:10px !important;}
+  .page--voice .voice-body{font-size:14.5px;line-height:1.85;padding:14px 14px 14px 16px;}
+  .page--voice .voice-meta{margin-top:10px;}
+  .page--voice .btn-gold{margin-top:14px;padding-top:14px;padding-bottom:14px;}
+  .voice-intro{display:none;}
+  .page--fit.page--read .page-inner > p:not(.eyebrow):not(.lead):not(.statement):not(.signature):not(.keyline){font-size:14.5px;line-height:1.9;}
+  .page--fit.page--read .page-inner p + p{margin-top:10px;}
+  .page--fit.page--read .statement--sm{margin:14px 0 !important;padding:20px 4px 14px;font-size:18px !important;line-height:1.75;}
+  .keyline{margin-top:12px !important;font-size:19px !important;}
+  .page--fit.page--last .lead--close{font-size:22px !important;}
+  .page--fit.page--last .signature{font-size:38px !important;margin-top:6px !important;}
+  .page--fit.page--last .entry-box{margin-top:10px !important;padding-top:14px;padding-bottom:14px;}
+  .page--fit.page--last .page-footer{margin-top:10px !important;}
+  .page--fit.page--last .page-footer p{margin-top:2px !important;}
+  .spec{margin:12px 0;}
+  .spec div{padding:10px 0;}
+  .spec-note{line-height:1.8 !important;font-size:14px !important;}
+  .page--product .h2{font-size:22px;}
+  .page--steps .steps{margin-top:12px;}
+  .page--steps .steps li{padding-bottom:10px;}
+  .page--steps .steps p{line-height:1.6;}
+  .page--steps .steps-link{min-height:40px;margin-top:6px;}
+  /* ヒーロー */
+  .page--hero .page-inner{padding:10px 16px 8px;}
+  .hero-title-sub{font-size:18px;}
+  .hero-tagline{margin-top:4px !important;font-size:13px !important;}
+  .hero-entry{margin-top:8px !important;}
+  .countdown-box{padding:30px 10px 8px;}
+  .cd{margin-top:4px !important;}
+  .countdown-deadline{margin-top:4px !important;}
+  .page--hero .btn-gold{margin-top:10px;padding-top:14px;padding-bottom:14px;}
+  .page--hero .swipe-hint{padding-top:6px;}
 }
 
 /* 低い画面（iPhone SE 等）：ヒーローを詰める */
