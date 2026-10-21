@@ -71,6 +71,25 @@ root.classList.add('js');
   document.getElementById('page-total').textContent = pad(total);
   const dots = Array.from(pages, () => dotsWrap.appendChild(document.createElement('i')));
 
+  // 的中実績：初めて表示したときだけ払戻額を 0 から数え上げる
+  const countUp = (page) => {
+    if (reduce) return;
+    page.querySelectorAll('.hit-amount').forEach((el) => {
+      const final = el.textContent;
+      const n = parseInt(final.replace(/,/g, ''), 10);
+      if (!n) return;
+      el.style.minWidth = `${el.offsetWidth}px`; // 桁が増えてもレイアウトを揺らさない
+      el.textContent = '0';
+      const t0 = performance.now() + 300;
+      const step = (t) => {
+        const k = Math.max(0, Math.min(1, (t - t0) / 1000));
+        el.textContent = k < 1 ? Math.round(n * (1 - Math.pow(1 - k, 3))).toLocaleString('ja-JP') : final;
+        if (k < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    });
+  };
+
   let current = -1;
   const setCurrent = (i) => {
     if (i === current) return;
@@ -80,7 +99,10 @@ root.classList.add('js');
     prev.disabled = i === 0;
     next.disabled = i === total - 1;
     pages.forEach((p, j) => p.classList.toggle('is-active', j === i));
-    pages[i].classList.add('is-seen');
+    if (!pages[i].classList.contains('is-seen')) {
+      pages[i].classList.add('is-seen');
+      countUp(pages[i]);
+    }
     dots.forEach((d, j) => {
       d.classList.toggle('on', j === i);
       if (j < i) d.classList.add('seen');

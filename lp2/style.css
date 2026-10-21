@@ -297,7 +297,7 @@ strong.gold{font-weight:700;background:linear-gradient(transparent 70%,rgba(226,
 }
 .hit-badge{flex:0 0 auto;padding:2px 8px;border-radius:4px;border:1px solid var(--gold);font-size:11px;font-weight:900;letter-spacing:.1em;line-height:1.6;color:var(--gold-light);}
 .hit--premium .hit-badge{border-color:var(--red);background:var(--red);color:#fff;}
-.hit-race{margin:0;font-family:var(--f-mincho);font-weight:800;font-size:20px;line-height:1.4;color:var(--text);}
+.hit-race{margin:0;text-wrap:balance;font-family:var(--f-mincho);font-weight:800;font-size:20px;line-height:1.4;color:var(--text);}
 .hit-pick{margin:6px 0 0 !important;padding:0 16px;font-size:14px !important;font-weight:700;color:var(--gold-light) !important;}
 .hit-board{
   position:relative;margin:12px 12px 0;padding:4px 14px;border-radius:10px;
@@ -313,7 +313,7 @@ strong.gold{font-weight:700;background:linear-gradient(transparent 70%,rgba(226,
 .hit-kind{padding:2px 9px;border-radius:4px;background:var(--gold);color:var(--cta-text);font-size:13px;font-weight:900;line-height:1.5;white-space:nowrap;}
 .hit-type small{padding:1px 8px;border-radius:999px;background:var(--red);color:#fff;font-size:12px;font-weight:900;line-height:1.6;white-space:nowrap;}
 .hit-money{display:flex;align-items:baseline;gap:4px;flex-wrap:wrap;justify-content:flex-end;text-align:right;}
-.hit-amount{font-family:var(--f-en);font-weight:700;font-size:40px;line-height:1;letter-spacing:.01em;background:var(--grad-gold-text);-webkit-background-clip:text;background-clip:text;color:transparent;font-variant-numeric:tabular-nums;}
+.hit-amount{text-align:right;font-family:var(--f-en);font-weight:700;font-size:40px;line-height:1;letter-spacing:.01em;background:var(--grad-gold-text);-webkit-background-clip:text;background-clip:text;color:transparent;font-variant-numeric:tabular-nums;}
 .hit--featured .hit-amount{font-size:56px;}
 .hit-yen{font-weight:900;font-size:14px;color:var(--text);white-space:nowrap;}
 /* G1大勝負：購入額（控えめ）→ 払戻（主役） */
@@ -346,6 +346,57 @@ strong.gold{font-weight:700;background:linear-gradient(transparent 70%,rgba(226,
 .x-frame .twitter-tweet-rendered::after{display:none;}
 .x-frame iframe{width:100% !important;max-width:none !important;pointer-events:none;} /* 横スワイプと干渉させない。タップは .x-open が受ける */
 .x-open{position:absolute;inset:0;z-index:2;border-radius:12px;}
+
+/* ---- 的中実績ページ：1レース1ページ、スクロールなしで1画面に収める ---- */
+.page--hit .page-inner{display:flex;flex-direction:column;height:100%;padding-top:18px;padding-bottom:12px;}
+.page--hit .page-inner > * + *{margin-top:10px;}
+.page--hit .h2{font-size:clamp(21px,6vw,25px);line-height:1.45;}
+.hit-intro{font-size:13px !important;line-height:1.7;color:var(--text-muted) !important;}
+.page--hit .hit{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;margin-top:12px !important;}
+.page--hit .hit-head,.page--hit .hit-pick,.page--hit .hit-board,.page--hit .hit-flag{flex:0 0 auto;}
+/* X埋め込みは残りの高さに収めて下を切る。全文はタップでXへ */
+.x-frame--clip{flex:1 1 auto;min-height:92px;display:flex;flex-direction:column;}
+.x-frame--clip .x-frame-head{flex:0 0 auto;}
+.x-clip{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;}
+.x-clip::after{content:"";position:absolute;left:0;right:0;bottom:0;height:56px;background:linear-gradient(transparent,#000);pointer-events:none;z-index:1;}
+.x-more{flex:0 0 auto;margin:0 !important;padding:9px 12px;text-align:center;background:#16181c;border-top:1px solid var(--x-line);font-size:13px !important;font-weight:700;line-height:1.4;color:var(--gold-light) !important;}
+
+/* 皐月賞：馬券写真を主役に */
+.ticket{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;margin:10px 12px 0;}
+.ticket picture{flex:1 1 auto;min-height:0;display:flex;justify-content:center;}
+.ticket img{width:auto;max-width:100%;height:100%;max-height:220px;object-fit:contain;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.5);transform:rotate(-1.5deg);}
+.ticket figcaption{margin-top:6px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--text-muted);}
+.x-links{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px;}
+.x-links a{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border-radius:10px;background:#000;border:1px solid var(--x-line);font-size:13px;font-weight:700;color:#e7e9ea;text-decoration:none;}
+.page--hit .hit--g1 .hit-amount{font-size:clamp(34px,10vw,44px);}
+.page--hit .hit--g1 .hit-pay--sub .hit-amount{font-size:24px;}
+.page--hit .hit--g1 .hit-pay{padding:8px 0;}
+
+/* 低い画面：余白と金額を詰める */
+@media (max-height:700px){
+  .page--hit .page-inner{padding-top:12px;}
+  .page--hit .h2{font-size:20px;}
+  .page--hit .hit-head{padding-top:10px;}
+  .page--hit .hit-pay{padding:8px 0;}
+  .page--hit .hit-amount{font-size:34px;}
+  .page--hit .hit--featured .hit-amount{font-size:44px;}
+  .page--hit .hit-flag{padding:5px 12px;font-size:12px !important;}
+  .hit-intro{display:none;}
+  /* 皐月賞：馬券写真を優先（購入額は写真に写っているので省く） */
+  .hit--g1 .hit-pay--sub,.hit--g1 .hit-pick,.ticket figcaption{display:none;}
+  .page--hit .hit--g1 .hit-amount{font-size:34px;}
+  .ticket{margin-top:8px;}
+}
+.ticket{min-height:110px;}
+
+/* めくった瞬間：払戻が数え上がった直後に「的中」スタンプが押される */
+@media (prefers-reduced-motion:no-preference){
+  .js .page--hit .hit-head::after{opacity:0;transform:rotate(-14deg) scale(2.6);}
+  .js .page--hit.is-seen .hit-head::after{animation:stamp .42s cubic-bezier(.2,1.5,.4,1) 1.25s forwards;}
+  .js .page--hit.is-seen .hit-board{animation:board-glow 1.2s ease-out 1.2s 1;}
+}
+@keyframes stamp{to{opacity:.95;transform:rotate(-14deg) scale(1);}}
+@keyframes board-glow{0%{box-shadow:inset 0 0 0 1px rgba(226,184,87,.06),0 0 0 rgba(226,184,87,0);}30%{box-shadow:inset 0 0 0 1px rgba(226,184,87,.5),0 0 28px rgba(226,184,87,.35);}100%{box-shadow:inset 0 0 0 1px rgba(226,184,87,.06),0 0 0 rgba(226,184,87,0);}}
 .x-open:focus-visible{outline-offset:-3px;}
 
 /* ==========================================================
