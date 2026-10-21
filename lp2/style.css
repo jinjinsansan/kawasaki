@@ -316,6 +316,10 @@ strong.gold{font-weight:700;background:linear-gradient(transparent 70%,rgba(226,
 .hit-amount{font-family:var(--f-en);font-weight:700;font-size:40px;line-height:1;letter-spacing:.01em;background:var(--grad-gold-text);-webkit-background-clip:text;background-clip:text;color:transparent;font-variant-numeric:tabular-nums;}
 .hit--featured .hit-amount{font-size:56px;}
 .hit-yen{font-weight:900;font-size:14px;color:var(--text);white-space:nowrap;}
+/* G1大勝負：購入額（控えめ）→ 払戻（主役） */
+.hit--g1 .hit-amount{font-size:clamp(38px,11vw,48px);}
+.hit--g1 .hit-pay--sub .hit-amount{font-size:28px;background:none;color:var(--text-sub);}
+.hit--g1 .hit-pay--sub .hit-yen{color:var(--text-muted);}
 
 /* X埋め込み：widgets.js 読み込み前はスケルトン＋リンク、読み込み後は公式ウィジェット。全面リンクで元投稿へ */
 .x-frame{position:relative;margin:12px;border-radius:12px;background:#000;border:1px solid var(--x-line);overflow:hidden;}
