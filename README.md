@@ -37,8 +37,9 @@ GitHub リポジトリを Vercel に Import → Framework Preset「Other」、Bu
 
 ## 究極2ウィーク LP（`lp2/`）
 
-スワイプ型LP（サブドメイン用・別Vercelプロジェクト）。Vercel では同じリポジトリを別プロジェクトとして Import し、**Root Directory を `lp2`** に設定する。ルートのプロジェクトでは `vercel.json` の redirects で `/lp2/*` をトップへ転送している（`.vercelignore` に `lp2` を書くと lp2 プロジェクト側でも除外されて404になるので不可）。
+スワイプ型LP（https://2week.clubkawasaki.net ・別Vercelプロジェクト）。Vercel では同じリポジトリを別プロジェクトとして Import し、**Root Directory を `lp2`** に設定する。ルートのプロジェクトでは `vercel.json` の redirects で `/lp2/*` をトップへ転送している（`.vercelignore` に `lp2` を書くと lp2 プロジェクト側でも除外されて404になるので不可）。
 
 - 申込URL：`lp2/main.js` の `CTA_URL`
 - 締切：`lp2/main.js` の `DEADLINE`（2026/10/22 24:00 JST）。締切後は表示のみ「募集終了」に切り替わり、CTAは有効のまま
-- 未確定：参加費（`lp2/index.html` と `lp2/tokushoho.html` の「◯◯,◯◯◯円」）、OGP・canonical（サブドメイン確定後）
+- 参加費：19,800円（税抜）／21,780円（税込）。`lp2/index.html`（2か所）と `lp2/tokushoho.html`
+- OGP画像：`lp2/assets/og.jpg`（1200×630）
