@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ja" data-deadline="2026-10-22T20:00:00+09:00" data-closed-text="公開中" data-closed-redirect="/">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>今夜20:00公開｜タカシプレゼンツ 究極2ウィーク</title>
+<meta name="description" content="今夜20時、川崎タカシが「究極2ウィーク」を公開します。直近の的中実績をすべて公開中。">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0c0a09">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://2week.clubkawasaki.net/teaser">
+<meta property="og:site_name" content="カワサキクラブ">
+<meta property="og:title" content="今夜20:00公開｜タカシプレゼンツ 究極2ウィーク">
+<meta property="og:description" content="今夜20時、タカシが“究極の2週間”を公開する。直近の的中実績をすべて公開中。">
+<meta property="og:image" content="https://2week.clubkawasaki.net/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&amp;family=Zen+Kaku+Gothic+New:wght@400;500;700;900&amp;family=Oswald:wght@500;700&amp;display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="assets/takashi.webp" type="image/webp">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="teaser.css">
+<script src="main.js" defer></script>
+</head>
+<body class="swipe">
+
+<div class="app">
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-ja">カワサキクラブ</span>
+    <span class="brand-en">ULTIMATE 2 WEEKS</span>
+  </div>
+  <div class="topbar-timer">
+    <span class="topbar-timer-label" data-open-only>公開まで</span>
+    <span class="topbar-timer-value" data-countdown>--:--:--</span>
+  </div>
+  <div class="progress" aria-hidden="true"><span class="progress-bar" id="progress-bar"></span></div>
+</header>
+
+<main class="deck" id="deck" tabindex="-1">
+
+<!-- 01 ヒーロー：公開までのカウントダウンだけを見せる -->
+<section class="page page--hero is-active is-seen" aria-label="今夜20時公開">
+  <div class="hero-fx" aria-hidden="true"><span></span><span></span></div>
+  <div class="page-inner">
+    <p class="kicker">タカシプレゼンツ</p>
+    <h1 class="hero-title">
+      <span class="hero-title-sub">究極</span><span class="gold-text hero-title-main"><span class="hero-2">2</span>ウィーク</span>
+    </h1>
+    <p class="hero-catch" data-open-only>今夜20:00<span class="nw">公開</span></p>
+    <p class="hero-catch" data-closed-only>ただいま<span class="nw">公開中</span></p>
+    <p class="hero-tagline" data-open-only>今夜20時、タカシが<span class="nw">“究極の2週間”を公開する。</span></p>
+    <div class="hero-entry">
+      <picture class="hero-photo">
+        <source srcset="assets/takashi.webp" type="image/webp">
+        <img src="assets/takashi.jpg" alt="川崎タカシ" width="399" height="399" fetchpriority="high">
+      </picture>
+      <div class="countdown-box">
+        <div class="cd-head">
+          <p class="countdown-label" data-open-only>公開まで</p>
+          <span class="cd-tonight" data-open-only>今夜20:00 解禁</span>
+          <p class="countdown-label countdown-label--closed" data-closed-only>公開しました</p>
+        </div>
+        <div class="cd" data-open-only role="timer" aria-label="公開までの残り時間">
+          <span class="cd-unit cd-unit--d"><b class="cd-num" data-cd-d>-</b><span class="cd-lbl">日</span></span>
+          <span class="cd-unit"><b class="cd-num" data-cd-h>--</b><span class="cd-lbl">時間</span></span>
+          <span class="cd-sep" aria-hidden="true">:</span>
+          <span class="cd-unit"><b class="cd-num" data-cd-m>--</b><span class="cd-lbl">分</span></span>
+          <span class="cd-sep" aria-hidden="true">:</span>
+          <span class="cd-unit"><b class="cd-num cd-num--s" data-cd-s>--</b><span class="cd-lbl">秒</span></span>
+        </div>
+        <p class="cd-closed tz-live" data-closed-only>公開中</p>
+        <p class="countdown-deadline">公開：10月22日（木）20:00</p>
+      </div>
+    </div>
+    <a class="btn-gold pulse" href="/" data-closed-only>今すぐ見る<span class="en">→</span></a>
+    <p class="swipe-hint" aria-hidden="true">まずは的中実績を見てください<span class="chev"><i>›</i><i>›</i><i>›</i></span></p>
+  </div>
+</section>
+
+<!-- 02 無料配信の的中実績：一覧で一気に見せる -->
+<section class="page page--fit page--board" aria-label="無料配信の的中実績">
+  <div class="page-inner">
+    <p class="eyebrow">FREE PICKS</p>
+    <h2 class="h2">直近の<em>無料配信</em>だけで、<br><span class="nw">この的中。</span></h2>
+    <ol class="tz-board">
+      <li><a class="tz-row" href="https://x.com/VVkeibaVV/status/2111024327676264579" target="_blank" rel="noopener" style="--i:0">
+        <span class="tz-race"><span class="nw">富士</span><span class="nw">ステークス</span></span>
+        <span class="tz-pay"><span class="hit-kind">馬単</span><span class="hit-amount">25,120</span><span class="tz-yen">円</span></span>
+      </a></li>
+      <li><a class="tz-row" href="https://x.com/VVkeibaVV/status/2108875533933285508" target="_blank" rel="noopener" style="--i:1">
+        <span class="tz-race"><span class="nw">アイルランド</span><span class="nw">トロフィー</span></span>
+        <span class="tz-pay"><span class="hit-kind">3連単</span><span class="hit-amount">7,740</span><span class="tz-yen">円</span></span>
+      </a></li>
+      <li><a class="tz-row" href="https://x.com/VVkeibaVV/status/2109251029443526895" target="_blank" rel="noopener" style="--i:2">
+        <span class="tz-race"><span class="nw">スワン</span><span class="nw">ステークス</span></span>
+        <span class="tz-pay"><span class="hit-kind">馬単</span><span class="hit-amount">13,850</span><span class="tz-yen">円</span></span>
+      </a></li>
+      <li><a class="tz-row" href="https://x.com/VVkeibaVV/status/2109509973365694478" target="_blank" rel="noopener" style="--i:3">
+        <span class="tz-race"><span class="nw">オクトーバー</span><span class="nw">ステークス</span></span>
+        <span class="tz-pay"><span class="hit-kind">3連単</span><span class="hit-amount">37,190</span><span class="tz-yen">円</span></span>
+      </a></li>
+      <li><a class="tz-row" href="https://x.com/VVkeibaVV/status/2111359917106037049" target="_blank" rel="noopener" style="--i:4">
+        <span class="tz-race"><span class="nw">3歳以上</span><span class="nw">2勝クラス</span><small>10月17日 東京12レース</small></span>
+        <span class="tz-pay"><span class="hit-kind">3連単</span><span class="hit-amount">5,910</span><span class="tz-yen">円</span></span>
+      </a></li>
+    </ol>
+    <p class="tz-note">タップするとXの投稿を表示します</p>
+  </div>
+</section>
+
+<!-- 03 有料配信の的中実績 -->
+<section class="page page--fit page--board page--premium" aria-label="有料配信の的中実績">
+  <div class="page-inner">
+    <p class="eyebrow eyebrow--red">PREMIUM PICKS</p>
+    <h2 class="h2"><em>有料配信</em>は、<br><span class="nw">わずかな点数で</span><span class="nw">仕留める。</span></h2>
+    <ol class="tz-board tz-board--premium">
+      <li><a class="tz-row" href="https://x.com/VVkeibaVV/status/2111683724907844031" target="_blank" rel="noopener" style="--i:0">
+        <span class="tz-race"><span class="nw">新潟牝馬</span><span class="nw">ステークス</span></span>
+        <span class="tz-pays">
+          <span class="tz-pay"><span class="hit-kind">馬単</span><small>6点</small><span class="hit-amount">2,130</span><span class="tz-yen">円</span></span>
+          <span class="tz-pay"><span class="hit-kind">3連単</span><small>36点</small><span class="hit-amount">8,090</span><span class="tz-yen">円</span></span>
+        </span>
+      </a></li>
+      <li><a class="tz-row" href="https://x.com/VVkeibaVV/status/2111065536700502348" target="_blank" rel="noopener" style="--i:1">
+        <span class="tz-race"><span class="nw">トルマリン</span><span class="nw">ステークス</span></span>
+        <span class="tz-pays">
+          <span class="tz-pay"><span class="hit-kind">3連複</span><small>12点</small><span class="hit-amount">9,100</span><span class="tz-yen">円</span></span>
+          <span class="tz-pay"><span class="hit-kind">3連単</span><small>36点</small><span class="hit-amount">61,650</span><span class="tz-yen">円</span></span>
+        </span>
+      </a></li>
+    </ol>
+    <p class="tz-note">タップするとXの投稿を表示します</p>
+  </div>
+</section>
+
+<!-- 04 皐月賞：本LPと同じ構成 -->
+<section class="page page--hit" aria-label="皐月賞の的中実績">
+  <div class="page-inner">
+    <p class="eyebrow">G1 BIG WIN</p>
+    <h2 class="h2">春のG1・皐月賞<br>単勝一点で<em class="nw">200万円</em>払い戻し</h2>
+    <article class="hit hit--free hit--featured hit--g1">
+      <p class="hit-flag">木曜に「一強」と断言 → 馬券を先出し</p>
+      <header class="hit-head"><span class="hit-badge">G1</span><h3 class="hit-race">皐月賞</h3></header>
+      <p class="hit-pick">◎ロブチェン（2026年4月19日 中山11R）</p>
+      <figure class="ticket">
+        <picture><source srcset="/assets/satsuki-ticket.webp" type="image/webp"><img src="/assets/satsuki-ticket.jpg" alt="皐月賞 単勝 4番ロブチェン 500,000円の馬券" width="720" height="510" loading="lazy"></picture>
+        <figcaption>レース前にXで公開した馬券</figcaption>
+      </figure>
+      <div class="hit-board">
+        <p class="hit-pay hit-pay--sub"><span class="hit-type"><span class="hit-kind">単勝</span><small>一点勝負</small></span><span class="hit-money"><span class="hit-amount">500,000</span><span class="hit-yen">円 購入</span></span></p>
+        <p class="hit-pay"><span class="hit-type"><span class="hit-kind">払戻</span></span><span class="hit-money"><span class="hit-amount">2,000,000</span><span class="hit-yen">円 的中！</span></span></p>
+      </div>
+      <div class="x-links">
+        <a href="https://x.com/VVkeibaVV/status/2045718765783200150" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>① レース前の予想</a>
+        <a href="https://x.com/VVkeibaVV/status/2045777984414785691" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>② 的中報告</a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- 05 予告：中身は伏せたまま -->
+<section class="page page--fit page--lock" aria-label="今夜公開する内容">
+  <div class="page-inner">
+    <p class="eyebrow">TONIGHT 20:00</p>
+    <p class="statement"><span class="marker">この2週間で稼げないと、<br>あなたは一生競馬で<br>負けると思います。</span></p>
+    <div class="tz-lock">
+      <p class="tz-lock-title">タカシプレゼンツ<br><span class="gold-text">究極2ウィーク</span></p>
+      <dl class="tz-lock-spec">
+        <div><dt>対象</dt><dd>菊花賞・天皇賞ウィーク</dd></div>
+        <div><dt>内容</dt><dd class="tz-blur" aria-hidden="true">川崎タカシの渾身の予想を配信</dd></div>
+        <div><dt>配信</dt><dd class="tz-blur" aria-hidden="true">会員専用メルマガ</dd></div>
+        <div><dt>参加費</dt><dd class="tz-blur" aria-hidden="true">00,000円</dd></div>
+      </dl>
+      <p class="tz-lock-badge"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 1 1 6 0v3H9z"/></svg>今夜20:00 解禁</p>
+    </div>
+    <p class="swipe-hint" aria-hidden="true">続きは今夜20時に<span class="chev"><i>›</i><i>›</i><i>›</i></span></p>
+  </div>
+</section>
+
+<!-- 06 待たせる：通知・カレンダー -->
+<section class="page page--fit page--wait" aria-label="今夜20時を待て">
+  <div class="page-inner">
+    <p class="eyebrow">SAVE THE DATE</p>
+    <p class="tz-wait" data-open-only>今夜20時を、<br><span class="gold-text">待て。</span></p>
+    <p class="tz-wait" data-closed-only>お待たせ<br><span class="nw">しました。</span></p>
+    <p class="tz-wait-sub">タカシが“究極の2週間”の<span class="nw">すべてを公開します。</span></p>
+    <div class="entry-box">
+      <p class="entry-deadline"><span data-open-only>公開まで <b data-countdown>--:--:--</b></span><span data-closed-only>ただいま公開中</span></p>
+      <div data-open-only>
+        <a class="tz-line" href="https://lin.ee/uDgbNni" target="_blank" rel="noopener">LINEで20時の通知を受け取る</a>
+        <p class="tz-cal-label">カレンダーに登録して忘れない</p>
+        <div class="tz-cal">
+          <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&amp;text=%E3%82%BF%E3%82%AB%E3%82%B7%E3%83%97%E3%83%AC%E3%82%BC%E3%83%B3%E3%83%84%20%E7%A9%B6%E6%A5%B52%E3%82%A6%E3%82%A3%E3%83%BC%E3%82%AF%20%E5%85%AC%E9%96%8B&amp;dates=20261022T110000Z/20261022T113000Z&amp;details=https%3A%2F%2F2week.clubkawasaki.net%2F&amp;location=https%3A%2F%2F2week.clubkawasaki.net%2F" target="_blank" rel="noopener">Googleカレンダー</a>
+          <a href="takashi-2week.ics">iPhoneカレンダー</a>
+        </div>
+      </div>
+      <a class="btn-gold pulse" href="/" data-closed-only>今すぐ見る<span class="en">→</span></a>
+    </div>
+    <footer class="page-footer">
+      <nav><a href="/privacy">プライバシーポリシー</a></nav>
+      <p class="disclaimer">提供する予想は的中や利益を保証するものではありません。馬券の購入は20歳以上、ご自身の判断と責任でお願いいたします。</p>
+      <p>© 2026 カワサキクラブ</p>
+    </footer>
+  </div>
+</section>
+
+</main>
+
+<nav class="dock" aria-label="ページ送り">
+  <div class="dots" id="dots" aria-hidden="true"></div>
+  <div class="dock-row">
+    <button class="dock-btn" type="button" id="prev" aria-label="前のページ"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="dock-center">
+      <span class="dock-count" aria-live="polite"><b id="page-now">1</b><span class="dock-slash">/</span><span id="page-total">6</span></span>
+      <a class="dock-cta tz-dock-line" href="https://lin.ee/uDgbNni" target="_blank" rel="noopener" data-open-only>20時に通知を受け取る</a>
+      <a class="dock-cta" href="/" data-closed-only>今すぐ見る</a>
+    </div>
+    <button class="dock-btn" type="button" id="next" aria-label="次のページ"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+</nav>
+
+</div>
+</body>
+</html>

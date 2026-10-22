@@ -3,11 +3,13 @@
 // 申込URL（全CTA共通）：メルマガ配信申込フォーム
 const CTA_URL = 'https://takashiskeiba.com/fm/32650/KVgXxhEc';
 
-// 募集締切：2026/10/22（木）24:00 JST。締切後もCTAは有効のまま、表示だけ締切仕様に切り替える。
-const DEADLINE = Date.parse('2026-10-23T00:00:00+09:00');
-
 const root = document.documentElement;
 root.classList.add('js');
+
+// 募集締切：2026/10/22（木）24:00 JST。締切後もCTAは有効のまま、表示だけ締切仕様に切り替える。
+// 予告ページ（teaser.html）は <html data-deadline> で公開時刻を、data-closed-text で0になった後の表示を指定する。
+const DEADLINE = Date.parse(root.dataset.deadline || '2026-10-23T00:00:00+09:00');
+const CLOSED_TEXT = root.dataset.closedText || '募集終了';
 
 (() => {
   // ---- 確認用パラメータ（本番に影響なし）----
@@ -19,6 +21,11 @@ root.classList.add('js');
   if (!Number.isNaN(qNow)) offset = qNow - Date.now();
   if (q.get('state') === 'closed') offset = DEADLINE - Date.now() + 1000;
   const now = () => Date.now() + offset;
+  // 予告ページ：公開時刻を過ぎてから開いた人は本LPへ（確認用パラメータ付きのときは除く）
+  if (root.dataset.closedRedirect && offset === 0 && now() >= DEADLINE) {
+    location.replace(root.dataset.closedRedirect);
+    return;
+  }
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // ---- CTA ----
@@ -39,7 +46,7 @@ root.classList.add('js');
     if (left <= 0) {
       root.classList.add('is-closed');
       root.classList.remove('is-tonight', 'is-final', 'has-days');
-      timers.forEach((el) => { el.textContent = '募集終了'; });
+      timers.forEach((el) => { el.textContent = CLOSED_TEXT; });
       clearInterval(tick);
       return;
     }
