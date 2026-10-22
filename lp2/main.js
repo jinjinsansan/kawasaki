@@ -21,9 +21,12 @@ const CLOSED_TEXT = root.dataset.closedText || '募集終了';
   if (!Number.isNaN(qNow)) offset = qNow - Date.now();
   if (q.get('state') === 'closed') offset = DEADLINE - Date.now() + 1000;
   const now = () => Date.now() + offset;
-  // 予告ページ：公開時刻を過ぎてから開いた人は本LPへ（確認用パラメータ付きのときは除く）
-  if (root.dataset.closedRedirect && offset === 0 && now() >= DEADLINE) {
-    location.replace(root.dataset.closedRedirect);
+  // 予告ページ：公開時刻を過ぎたら本LPへ（確認用パラメータ付きのときは除く）
+  //   トップ（/）はサーバー側（middleware.js）が20時で予告→本LPに切り替える。
+  //   端末の時計が進んでいてトップで予告が出た場合は、ここで飛ばすとループするので飛ばさない。
+  const redirect = offset === 0 ? root.dataset.closedRedirect : '';
+  if (redirect && now() >= DEADLINE && location.pathname !== redirect) {
+    location.replace(redirect);
     return;
   }
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -47,6 +50,8 @@ const CLOSED_TEXT = root.dataset.closedText || '募集終了';
       root.classList.add('is-closed');
       root.classList.remove('is-tonight', 'is-final', 'has-days');
       timers.forEach((el) => { el.textContent = CLOSED_TEXT; });
+      // 開いたまま公開時刻を迎えた人は、数秒おいて本LPを読み込み直す（サーバー側の切替を待つ）
+      if (tick && redirect) setTimeout(() => location.replace(redirect), 3000);
       clearInterval(tick);
       return;
     }
