@@ -1,7 +1,7 @@
 /* タカシプレゼンツ 究極2ウィーク（スワイプ型LP） v2 */
 
-// 申込URL（全CTA共通）。メルマガ配信申込URLが決まったらここに入れる。
-const CTA_URL = '';
+// 申込URL（全CTA共通）：メルマガ配信申込フォーム
+const CTA_URL = 'https://takashiskeiba.com/fm/32650/KVgXxhEc';
 
 // 募集締切：2026/10/22（木）24:00 JST。締切後もCTAは有効のまま、表示だけ締切仕様に切り替える。
 const DEADLINE = Date.parse('2026-10-23T00:00:00+09:00');
