@@ -9,7 +9,7 @@ export default function middleware(request) {
   const preview = new URL(request.url).searchParams.get('preview');
   const showTeaser = preview ? preview === 'teaser' : Date.now() < LAUNCH;
   if (showTeaser) {
-    return new Response(null, { headers: { 'x-middleware-rewrite': new URL('/teaser.html', request.url).toString() } });
+    return new Response(null, { headers: { 'x-middleware-rewrite': new URL('/teaser', request.url).toString() } });
   }
   return new Response(null, { headers: { 'x-middleware-next': '1' } });
 }
