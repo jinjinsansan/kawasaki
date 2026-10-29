@@ -40,6 +40,8 @@ GitHub リポジトリを Vercel に Import → Framework Preset「Other」、Bu
 スワイプ型LP（https://2week.clubkawasaki.net ・別Vercelプロジェクト）。Vercel では同じリポジトリを別プロジェクトとして Import し、**Root Directory を `lp2`** に設定する。ルートのプロジェクトでは `vercel.json` の redirects で `/lp2/*` をトップへ転送している（`.vercelignore` に `lp2` を書くと lp2 プロジェクト側でも除外されて404になるので不可）。
 
 - 申込URL：`lp2/main.js` の `CTA_URL`
-- 締切：`lp2/main.js` の `DEADLINE`（2026/10/22 24:00 JST）。締切後は表示のみ「募集終了」に切り替わり、CTAは有効のまま
-- 参加費：19,800円（税抜）／21,780円（税込）。`lp2/index.html`（2か所）と `lp2/tokushoho.html`
+- 現在の内容：究極2ウィーク【後半戦】天皇賞・JBC・BC 決戦ウィーク（経緯は `docs/2week-launch.md`）
+- 募集開始：`lp2/index.html` の `<html data-open-at>`。開始前は申込ボタンが押せず「20:00から受付開始」と表示
+- 締切：`lp2/index.html` の `<html data-deadline>`。未設定なら締切カウントダウンを出さず「好評受付中」表示。締切後は表示のみ「募集終了」に切り替わり、CTAは有効のまま
+- 参加費：15,000円（税抜）／16,500円（税込）。`lp2/index.html`（ヒーロー・商品内容・申込の3か所）と `lp2/tokushoho.html`
 - OGP画像：`lp2/assets/og.jpg`（1200×630）

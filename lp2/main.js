@@ -6,10 +6,15 @@ const CTA_URL = 'https://takashiskeiba.com/fm/32650/KVgXxhEc';
 const root = document.documentElement;
 root.classList.add('js');
 
-// 募集締切：2026/10/22（木）24:00 JST。締切後もCTAは有効のまま、表示だけ締切仕様に切り替える。
-// 予告ページ（teaser.html）は <html data-deadline> で公開時刻を、data-closed-text で0になった後の表示を指定する。
-const DEADLINE = Date.parse(root.dataset.deadline || '2026-10-23T00:00:00+09:00');
+// 募集開始：<html data-open-at>。開始前は申込ボタンを押せないようにし、開始までをカウントダウンする。
+// 募集締切：<html data-deadline>。未設定なら締切カウントダウンは出さず「受付中」表示にする。
+//   締切後もCTAは有効のまま、表示だけ締切仕様に切り替える。
+// 予告ページ（teaser.html）は data-deadline で公開時刻を、data-closed-text で0になった後の表示を指定する。
+const OPEN_AT = Date.parse(root.dataset.openAt || '');
+const DEADLINE = Date.parse(root.dataset.deadline || '');
+const HAS_DEADLINE = !Number.isNaN(DEADLINE);
 const CLOSED_TEXT = root.dataset.closedText || '募集終了';
+const OPEN_TEXT = '受付中';
 
 (() => {
   // ---- 確認用パラメータ（本番に影響なし）----
@@ -19,7 +24,7 @@ const CLOSED_TEXT = root.dataset.closedText || '募集終了';
   let offset = 0;
   const qNow = Date.parse(q.get('now') || '');
   if (!Number.isNaN(qNow)) offset = qNow - Date.now();
-  if (q.get('state') === 'closed') offset = DEADLINE - Date.now() + 1000;
+  if (q.get('state') === 'closed' && HAS_DEADLINE) offset = DEADLINE - Date.now() + 1000;
   const now = () => Date.now() + offset;
   // 予告ページ：公開時刻を過ぎたら本LPへ（確認用パラメータ付きのときは除く）
   //   トップ（/）はサーバー側（middleware.js）が20時で予告→本LPに切り替える。
@@ -32,20 +37,45 @@ const CLOSED_TEXT = root.dataset.closedText || '募集終了';
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // ---- CTA ----
-  document.querySelectorAll('[data-cta]').forEach((a) => {
-    if (CTA_URL) a.href = CTA_URL;
-    else a.addEventListener('click', (e) => e.preventDefault());
+  // 募集開始前（.is-pre）は申込URLを外して押せないようにする。開始時刻になれば自動で押せるようになる。
+  const ctas = document.querySelectorAll('[data-cta]');
+  ctas.forEach((a) => {
+    a.addEventListener('click', (e) => {
+      if (!CTA_URL || root.classList.contains('is-pre')) e.preventDefault();
+    });
   });
+  const setLocked = (locked) => {
+    ctas.forEach((a) => {
+      if (locked || !CTA_URL) a.removeAttribute('href');
+      else a.href = CTA_URL;
+      a.toggleAttribute('aria-disabled', locked);
+    });
+  };
 
-  // ---- カウントダウン ----
+  // ---- カウントダウン（開始前は開始まで、開始後は締切まで）----
   const timers = document.querySelectorAll('[data-countdown]');
   const seg = (k) => document.querySelectorAll(`[data-cd-${k}]`);
   const segs = { d: seg('d'), h: seg('h'), m: seg('m'), s: seg('s') };
   const put = (list, v) => list.forEach((el) => { if (el.textContent !== v) el.textContent = v; });
   const pad = (n) => String(n).padStart(2, '0');
   let tick;
+  let locked;
   const render = () => {
-    const left = DEADLINE - now();
+    const t = now();
+    const pre = t < OPEN_AT;
+    if (pre !== locked) {
+      locked = pre;
+      root.classList.toggle('is-pre', pre);
+      setLocked(pre);
+    }
+    if (!pre && !HAS_DEADLINE) {
+      root.classList.add('no-deadline');
+      root.classList.remove('is-tonight', 'is-final', 'has-days');
+      timers.forEach((el) => { el.textContent = OPEN_TEXT; });
+      clearInterval(tick);
+      return;
+    }
+    const left = (pre ? OPEN_AT : DEADLINE) - t;
     if (left <= 0) {
       root.classList.add('is-closed');
       root.classList.remove('is-tonight', 'is-final', 'has-days');
@@ -69,7 +99,7 @@ const CLOSED_TEXT = root.dataset.closedText || '募集終了';
     timers.forEach((el) => { el.textContent = text; });
   };
   render();
-  if (!root.classList.contains('is-closed')) tick = setInterval(render, 1000);
+  if (!root.classList.contains('is-closed') && !root.classList.contains('no-deadline')) tick = setInterval(render, 1000);
 
   // ---- スワイプ（横スクロールスナップ） ----
   const deck = document.getElementById('deck');
