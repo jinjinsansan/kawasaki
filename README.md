@@ -44,4 +44,4 @@ GitHub リポジトリを Vercel に Import → Framework Preset「Other」、Bu
 - 募集開始：`lp2/index.html` の `<html data-open-at>`。開始前は申込ボタンが押せず「20:00から受付開始」と表示
 - 締切：`lp2/index.html` の `<html data-deadline>`。未設定なら締切カウントダウンを出さず「好評受付中」表示。締切後は表示のみ「募集終了」に切り替わり、CTAは有効のまま
 - 参加費：15,000円（税抜）／16,500円（税込）。`lp2/index.html`（ヒーロー・商品内容・申込の3か所）と `lp2/tokushoho.html`
-- OGP画像：`lp2/assets/og.jpg`（1200×630）
+- OGP画像：`lp2/assets/og-v2.jpg`（1200×630）。差し替えるときはファイル名を変える（`/assets/*` は7日キャッシュ、LINE・Xも画像URLで覚えている）
