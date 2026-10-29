@@ -106,5 +106,6 @@
 - 締切：**未定（保留）**。決まったら `lp2/index.html` の `<html>` に `data-deadline="2026-11-..T..:00+09:00"` を足し、`lp2/tokushoho.html` の「募集期間」とヒーローの `countdown-deadline` の文言を直す。未設定のあいだは「好評受付中」表示。
 - 確認用：`/?now=2026-10-29T19:59:50+09:00`（開始前）、`/?now=2026-10-29T20:01:00+09:00`（開始後）。
 - 低い画面（高さ700px以下）では商品内容ページの締めの一文を隠して1画面に収めている。
-- 共有用の画像：`lp2/assets/og-v3.jpg`（決戦の1週間・参加費入り）。LINE・Xが前の画像を使い回さないよう改名のたびにファイル名を変えた。古いURL `og.jpg`・`og-v2.jpg` も同じ画像で上書き。共有するURLは `https://2week.clubkawasaki.net/?v=3`（`/assets/*` はブラウザ・CDNで7日キャッシュされるため、名前を変えるのが確実）。
+- 共有用の画像：`lp2/assets/og-v3.jpg`（決戦の1週間・参加費入り）。LINE・Xが前の画像を使い回さないよう改名のたびにファイル名を変えた。古いURL `og.jpg`・`og-v2.jpg` も同じ画像で上書き。共有するURLは **https://1week.clubkawasaki.net/**（`/assets/*` はブラウザ・CDNで7日キャッシュされるため、名前を変えるのが確実）。
 - 変えていないもの：お客様の声4の「この究極の2週間も全乗っかりします！」（川崎さん了承）、予告ページ（`/teaser` は `/` へ移動するので表示されない）。
+- ドメイン：前半戦の続きに見えないよう **`1week.clubkawasaki.net`** に変更（10/29）。DNSはCloudflare（CNAME `1week` → `fdd5c1d3d9cc7006.vercel-dns-016.com`、DNS only）、Vercelは `kawasaki-lp2` に追加。canonical・og:url・og:image を 1week に変更し、`2week.clubkawasaki.net` へのアクセスは `lp2/vercel.json` の redirects で同じパスのまま 1week へ転送（一時転送。外すときはこの redirects を消す）。

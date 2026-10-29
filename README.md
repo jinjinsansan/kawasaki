@@ -37,7 +37,7 @@ GitHub リポジトリを Vercel に Import → Framework Preset「Other」、Bu
 
 ## 究極2ウィーク LP（`lp2/`）
 
-スワイプ型LP（https://2week.clubkawasaki.net ・別Vercelプロジェクト）。Vercel では同じリポジトリを別プロジェクトとして Import し、**Root Directory を `lp2`** に設定する。ルートのプロジェクトでは `vercel.json` の redirects で `/lp2/*` をトップへ転送している（`.vercelignore` に `lp2` を書くと lp2 プロジェクト側でも除外されて404になるので不可）。
+スワイプ型LP（https://1week.clubkawasaki.net ・別Vercelプロジェクト。旧 https://2week.clubkawasaki.net は `lp2/vercel.json` の redirects で 1week へ転送）。Vercel では同じリポジトリを別プロジェクトとして Import し、**Root Directory を `lp2`** に設定する。ルートのプロジェクトでは `vercel.json` の redirects で `/lp2/*` をトップへ転送している（`.vercelignore` に `lp2` を書くと lp2 プロジェクト側でも除外されて404になるので不可）。
 
 - 申込URL：`lp2/main.js` の `CTA_URL`
 - 現在の内容：タカシプレゼンツ 決戦の1週間（天皇賞・JBC・BC）（経緯は `docs/2week-launch.md`）
