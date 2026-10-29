@@ -1,7 +1,7 @@
 /* タカシプレゼンツ 究極2ウィーク（スワイプ型LP） v2 */
 
 // 申込URL（全CTA共通）：メルマガ配信申込フォーム
-const CTA_URL = 'https://takashiskeiba.com/fm/32739/9Zgv7xa';
+const CTA_URL = 'https://takashiskeiba.com/fm/32739/9Zgv7xaR';
 
 const root = document.documentElement;
 root.classList.add('js');
