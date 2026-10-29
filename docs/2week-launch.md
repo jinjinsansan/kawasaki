@@ -18,7 +18,7 @@
 ### 本LP（`lp2/index.html`）
 - 横スワイプ型、全26ページ。どのページも縦スクロールなしで1画面に収まる（390×844／375×667／360×640／430×932 で確認）。
 - 構成：ヒーロー → あいさつ2 → 的中実績8（無料5・有料2・皐月賞）→ お客様の声4 → 商品内容 → 申込の流れ → 申込カード → あとがき8。
-- 申込URL：`lp2/main.js` の `CTA_URL`（https://takashiskeiba.com/fm/32650/KVgXxhEc）。
+- 申込URL：`lp2/main.js` の `CTA_URL`（https://takashiskeiba.com/fm/32739/9Zgv7xa）。
 - 問い合わせLINE：https://lin.ee/uDgbNni （申込の流れ・特商法・プライバシーポリシー）。
 - 参加費：19,800円（税抜）／21,780円（税込）。`lp2/index.html`（2か所）と `lp2/tokushoho.html`。
 - 締切：`lp2/main.js` の既定値 2026/10/23 00:00 JST（＝10/22 24:00）。
