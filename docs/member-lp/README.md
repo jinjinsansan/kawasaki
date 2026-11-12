@@ -54,7 +54,7 @@ member/
 - `/?state=unlocked`：扉を開けた後（プランが見える）状態
 
 ## 公開前にやること
-- [ ] 申込URL：`member/content.js` の `CTA_URL`（今は `#`。押しても何も起きない）
+- [x] 申込URL：`member/content.js` の `CTA_URL` = https://takashiskeiba.com/fm/32822/EyfNhRMS（全プラン共通）
 - [ ] みやこSの的中画像：`member/assets/proof/` に置き、`content.js` 冒頭の `MIYAKO_IMG` にパス（例 `assets/proof/miyako.webp`）を入れる。空のあいだは画像枠ごと出さない
 - [x] 2025エリザベス女王杯の的中画像（川崎氏提供、3連単07→01→12・払戻493,600円）：`member/assets/proof/eriza2025.webp`。第六章「今週の『エリザベス女王杯』」の直後の画面（`C('eriza')`）に表示
 - [x] 価格は税込で表示（川崎氏の原稿の価格は税抜。消費税10%を足した額）：164,780円／107,800円／54,780円。特商法には本体価格も併記

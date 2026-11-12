@@ -2,7 +2,7 @@
    原稿は docs/member-lp/design-prompt.md の全文を一字一句そのまま使用。
    画面（A案）の区切り＝screens の配列。B案は同じ配列を連続して流し込む。 */
 (function () {
-  const CTA_URL = '#';                       // 申込URL（全プラン共通）
+  const CTA_URL = 'https://takashiskeiba.com/fm/32822/EyfNhRMS'; // 申込URL（全プラン共通・川崎氏提供 11/12）
   const LINE_URL = 'https://lin.ee/uDgbNni'; // お問い合わせ
   const X_URL = 'https://x.com/VVkeibaVV/status/2103655594536431987';
   const KEY_UNLOCK = 'kc_member_unlocked';
