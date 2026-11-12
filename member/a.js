@@ -51,6 +51,55 @@
     if (over(el)) el.classList.add('denser');
   };
 
+  // 決め台詞：一文字ずつ現れるように文字を span に分ける（読み上げは元の文のまま）
+  const splitChars = (scr) => {
+    if (reduce) return;
+    scr.querySelectorAll('.key').forEach((key) => {
+      key.setAttribute('aria-label', key.textContent);
+      let n = 0;
+      const walk = (node) => {
+        [...node.childNodes].forEach((c) => {
+          if (c.nodeType === 3) {
+            const frag = document.createDocumentFragment();
+            Array.from(c.textContent).forEach((ch) => {
+              const sp = document.createElement('span');
+              sp.className = 'ch';
+              sp.setAttribute('aria-hidden', 'true');
+              sp.style.setProperty('--i', n++);
+              sp.textContent = ch;
+              frag.appendChild(sp);
+            });
+            c.replaceWith(frag);
+          } else if (c.nodeType === 1) walk(c);
+        });
+      };
+      walk(key);
+      key.style.setProperty('--n', n);
+    });
+  };
+
+  // 数字：初めて表示したときに 0 から数え上げる（271,010円・1.75万人・180万円など）
+  const countUp = (scr) => {
+    if (reduce) return;
+    scr.querySelectorAll('.miyako .num, .nums div:nth-child(-n+2) b, .cmp-profit b, .rec-val b').forEach((el) => {
+      const final = el.textContent;
+      const dec = (final.split('.')[1] || '').length;
+      const n = parseFloat(final.replace(/,/g, ''));
+      if (!n) return;
+      el.style.display = 'inline-block';
+      el.style.minWidth = `${el.offsetWidth}px`;
+      const t0 = performance.now() + 450;
+      const step = (t) => {
+        const k = Math.max(0, Math.min(1, (t - t0) / 1300));
+        const v = n * (1 - Math.pow(1 - k, 3));
+        el.textContent = k < 1 ? v.toLocaleString('ja-JP', { minimumFractionDigits: dec, maximumFractionDigits: dec }) : final;
+        if (k < 1) requestAnimationFrame(step);
+      };
+      el.textContent = (0).toFixed(dec);
+      requestAnimationFrame(step);
+    });
+  };
+
   const mount = (upto) => {
     const frag = document.createDocumentFragment();
     const added = [];
@@ -67,14 +116,16 @@
       added.push(el);
     }
     deck.appendChild(frag);
-    added.forEach((el) => { io.observe(el); fit(el); });
+    added.forEach((el) => { if (el.classList.contains('scr--key')) splitChars(el); io.observe(el); fit(el); });
     KC.wire(deck);
   };
 
   const setActive = (i) => {
     if (i === cur && deck.children[i].classList.contains('is-on')) return;
     cur = i;
-    deck.children[i].classList.add('is-on');
+    const scr = deck.children[i];
+    if (!scr.classList.contains('is-on')) countUp(scr);
+    scr.classList.add('is-on');
     const ch = screens[i].ch;
     hud.classList.toggle('is-hidden', i === 0);
     hudCh.innerHTML = ch === 0 ? '序' : `第<b>${ch}</b>章／全<b>8</b>章`;

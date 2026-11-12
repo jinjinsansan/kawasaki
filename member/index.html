@@ -88,6 +88,17 @@ body.kc-a{background:var(--paper-2) var(--noise);}
   .js .scr--opener-art.is-on .opener > :nth-child(2){transition-delay:.35s;}
   .js .scr--opener-art.is-on .opener > :nth-child(3){transition-delay:.55s;}
 }
+/* 本文の強調：太字＋金の下線（画面に入ると左から引かれる） */
+.tx .em{font-weight:700;color:var(--ink);padding-bottom:1px;background:linear-gradient(var(--gold-2),var(--gold-2)) no-repeat 0 100%/0% 2px;-webkit-box-decoration-break:clone;box-decoration-break:clone;transition:background-size 1.1s var(--ease) .9s;}
+.is-on .tx .em,html:not(.js) .tx .em{background-size:100% 2px;}
+@media (prefers-reduced-motion:reduce){.tx .em{background-size:100% 2px;transition:none;}}
+/* 決め台詞：一文字ずつ現れ、そのあとマーカーが引かれる */
+@media (prefers-reduced-motion:no-preference){
+  .js .scr--key .key .ch{opacity:0;transition:opacity .5s var(--ease);transition-delay:calc(var(--i) * 45ms + .35s);}
+  .js .scr--key.is-on .key .ch{opacity:1;}
+  .js .scr--key .key mark{transition-delay:calc(var(--n, 20) * 45ms + .5s);}
+  .js .scr--key .key + .key .ch{transition-delay:calc(var(--i) * 45ms + 1.6s);}
+}
 /* 決め台詞 */
 .scr--key{background:var(--paper-2) var(--noise);}
 .scr--key::before{border-color:var(--rule-2);}
