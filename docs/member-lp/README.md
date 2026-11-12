@@ -45,7 +45,8 @@ member/
 
 ## 公開前にやること
 - [ ] 申込URL：`member/content.js` の `CTA_URL`（今は `#`。押しても何も起きない）
-- [ ] みやこSの的中画像：`member/assets/` に置き、`content.js` の `miyako()` の `figure.shot` の中を `<img src="assets/miyako.jpg" alt="みやこS 3連単271,010円 的中">` にする
+- [ ] みやこSの的中画像：`member/assets/proof/` に置き、`content.js` 冒頭の `MIYAKO_IMG` にパス（例 `assets/proof/miyako.webp`）を入れる。空のあいだは画像枠ごと出さない
+- [x] 2025エリザベス女王杯の的中画像（川崎氏提供、3連単07→01→12・払戻493,600円）：`member/assets/proof/eriza2025.webp`。第六章「今週の『エリザベス女王杯』」の直後の画面（`C('eriza')`）に表示
 - [ ] 価格の税込・税抜：`content.js` の `.plan-tax` と `member/tokushoho.html` の販売価格
 - [ ] 特商法の支払方法・提供方法：前回（lp2）と同じ「銀行振込 → LINEで決済報告 → 会員専用メルマガ」で仮置き。違えば直す
 - [ ] 検索除け：確認期間中は全ページ `noindex`。公開時に `member/index.html` の `<meta name="robots" content="noindex">` を外す（特商法・プライバシーは残してよい）

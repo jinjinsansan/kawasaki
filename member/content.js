@@ -6,6 +6,7 @@
   const LINE_URL = 'https://lin.ee/uDgbNni'; // お問い合わせ
   const X_URL = 'https://x.com/VVkeibaVV/status/2103655594536431987';
   const KEY_UNLOCK = 'kc_member_unlocked';
+  const MIYAKO_IMG = '';                     // みやこSの的中画像（届いたら assets/proof/ に置いてパスを入れる。空なら枠ごと出さない）
 
   const P = (p) => ({ p });
   const K = (a, m, b) => ({ key: [a, m, b] });
@@ -73,6 +74,7 @@
     ]},
     { n: 6, art: '10', title: '川崎タカシに賭けたいという方へ', screens: [
       [P('ここまで長い文章を読んでいただき、ありがとうございました。'), P('皆さんは今週の「エリザベス女王杯」のことしか興味がないと思いますが、私はそういう単発的なレース予想には、やはり何度考えても否定的です。')],
+      [C('eriza')],
       [P('競馬は楽をしては勝てないのですが、楽をしてその場のお金が欲しい人がやっているのも分かります。今週だけ勝てればいい人、なんならその1レースだけ勝てればいい人も多いのも分かります。')],
       [C('art', '19')],
       [P('でも、考えてみてください。[[それで本当にお金は増えていますか？]]\n[[今週勝っても、翌週で溶かしていませんか？]]今だけ良くても、後で苦しみませんか？'), P('「同じことのルーティン」になっていませんか？ということです。')],
@@ -158,7 +160,17 @@
     <div><dt>無料配信</dt><dd>◎ロードクロンヌ</dd></div>
     <div class="is-paid"><dt>有料配信</dt><dd>3連単 <b class="num">271,010</b>円的中<small>（3連単16点）</small></dd></div>
   </dl>
-  <figure class="shot" data-slot="miyako-hit"><span>的中画像（縦長）</span></figure>
+  ${MIYAKO_IMG ? `<figure class="shot" data-slot="miyako-hit"><img src="${MIYAKO_IMG}" alt="みやこS 的中画像" loading="lazy"></figure>` : ''}
+</div>`;
+    },
+    eriza() {
+      return `<div class="miyako miyako--eriza">
+  <p class="miyako-race">2025 エリザベス女王杯</p>
+  <dl class="miyako-rows">
+    <div><dt>買い目</dt><dd>3連単 07→01→12</dd></div>
+    <div class="is-paid"><dt>払戻</dt><dd><b class="num">493,600</b>円的中<small>（2点・購入4,000円）</small></dd></div>
+  </dl>
+  <figure class="shot shot--receipt"><img src="assets/proof/eriza2025.webp" alt="2025年エリザベス女王杯 京都11R 3連単07→01→12 的中、払戻金額493,600円の照会画面" width="736" height="753" loading="lazy"></figure>
 </div>`;
     },
     numbers() {

@@ -88,6 +88,9 @@ button{font:inherit;color:inherit;}
 .shot::before{top:-5px;left:-5px;border-width:1px 0 0 1px;}
 .shot::after{bottom:-5px;right:-5px;border-width:0 1px 1px 0;}
 .shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.miyako--eriza .miyako-race{font-size:18px;letter-spacing:.16em;padding-left:.16em;}
+.shot--receipt{aspect-ratio:736/753;}
+.shot--receipt img{object-fit:contain;}
 
 /* ---- 章見出し ---- */
 .opener{display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;}
