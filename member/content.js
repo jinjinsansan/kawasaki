@@ -99,9 +99,9 @@
 
   const COMMON = ['G1全配信', '地方競馬・通常配信レース', '地方競馬・会員独占配信レース（週2鞍程度）', 'JRA・会員独占配信レース（週1鞍程度）', 'JRA・note配信レース全レース'];
   const PLANS = [
-    { no: 1, name: '2027年末までの完全制覇プラン', price: '149,800', top: true },
-    { no: 2, name: '2027年 日本ダービーまでの半年プラン', price: '98,000' },
-    { no: 3, name: '2026年 年末駆け込みプラン', price: '49,800' },
+    { no: 1, name: '2027年末までの完全制覇プラン', price: '164,780', top: true },
+    { no: 2, name: '2027年 日本ダービーまでの半年プラン', price: '107,800' },
+    { no: 3, name: '2026年 年末駆け込みプラン', price: '54,780' },
   ];
   const KANJI = ['序', '一', '二', '三', '四', '五', '六', '七', '八'];
 
@@ -207,7 +207,7 @@
       return `<article class="plan${p.top ? ' is-top' : ''}">
   <p class="plan-no"><span>${p.no}</span></p>
   <h3 class="plan-name">${p.name}</h3>
-  <p class="plan-price"><span class="plan-price-lbl">料金</span><b>${p.price}</b><span class="plan-yen">円</span><span class="plan-tax" data-tax></span></p>
+  <p class="plan-price"><span class="plan-price-lbl">料金</span><b>${p.price}</b><span class="plan-yen">円</span><span class="plan-tax">（税込）</span></p>
   <p class="plan-lbl">【配信内容】</p>
   <ol class="plan-list">${items}</ol>
   <a class="btn${p.top ? '' : ' btn--line'}" href="${CTA_URL}" data-cta>このプランで参加する</a>

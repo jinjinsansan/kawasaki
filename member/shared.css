@@ -169,7 +169,7 @@ button{font:inherit;color:inherit;}
 .plan-price b{font-size:46px;font-weight:600;line-height:1;letter-spacing:.01em;}
 .plan.is-top .plan-price b{color:var(--gold);}
 .plan-yen{font-size:15px;}
-.plan-tax{min-width:3.6em;font-size:11px;color:var(--ink-3);} /* 税込／税抜の注記用（未確定のため空） */
+.plan-tax{min-width:3.6em;font-size:11px;color:var(--ink-3);} /* 税込の注記 */
 .plan-lbl{margin:14px 0 4px;font-size:12px;letter-spacing:.1em;color:var(--ink-3);}
 .plan-list{list-style:none;margin:0;padding:0;counter-reset:pl;}
 .plan-list li{counter-increment:pl;display:grid;grid-template-columns:1.1em minmax(0,1fr);gap:0 10px;padding:7px 0;border-bottom:1px dotted var(--rule-2);font-size:14px;line-height:1.6;}
