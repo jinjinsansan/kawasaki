@@ -150,7 +150,7 @@
     <button type="button" class="resume-btn" data-go="resume">続きから読む</button>
     <button type="button" class="resume-btn resume-btn--gold" data-go="plans">プランを見る</button>
   </div>
-  ${KC.mode === 'a' ? `<div class="voice-start"><button type="button" class="voice-btn" data-voice><span class="voice-ico" aria-hidden="true"></span>音声で聴く<small>約13分</small></button><p class="voice-note">※音声はAIによる読み上げです</p></div>` : ''}
+  ${KC.mode === 'a' ? `<div class="voice-start"><button type="button" class="voice-btn" data-voice><span class="voice-ico" aria-hidden="true"></span>AI朗読で聴く<small>約8分</small></button><p class="voice-note">※音声はAIによる読み上げです</p></div>` : ''}
   <p class="cue">${cue}<span class="cue-time">読了まで約${KC.minutes(KC.chars())}分</span></p>
 </div>`;
     },

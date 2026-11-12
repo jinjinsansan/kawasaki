@@ -26,7 +26,9 @@ OUT = os.path.join(ROOT, 'member', 'assets', 'voice')
 VOICE = 'ETXjMrhy5NZL6i4w0V3W'  # Gen – Calm Japanese Narration Voice（落ち着いた男性）
 MODEL = 'eleven_v3'
 KEY = os.environ['ELEVENLABS_API_KEY_STAR']
-GAP, GAP_TITLE = 0.6, 1.2  # 段落の間・見出しの後の間（秒）
+GAP, GAP_TITLE = 0.4, 0.9  # 段落の間・見出しの後の間（秒）。各段落の頭と終わりの無音は削ってから足す
+TRIM = ('silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.05,areverse,'
+        'silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.08,areverse')
 
 
 def load():
@@ -150,9 +152,9 @@ def join(chs):
             if 'pause' in p:
                 f = silence(p['pause'])
             else:
-                f = p['file'][:-4] + '.wav'
+                f = p['file'][:-4] + '.t.wav'
                 if not os.path.exists(f):
-                    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', p['file'], '-ac', '1', '-ar', '44100', f], check=True)
+                    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', p['file'], '-af', TRIM, '-ac', '1', '-ar', '44100', f], check=True)
             parts.append(f)
             t += dur(f)
             if 'text' in p and k < len(ch['paras']) - 1:
@@ -181,7 +183,7 @@ if __name__ == '__main__':
         c, i = map(int, sys.argv[2].split('-'))
         gen(chs, (c, i))
         f = [p for ch in chs if ch['n'] == c for p in ch['paras']][i]['file']
-        for x in (f + '.txt', f[:-4] + '.wav'):
+        for x in (f + '.txt', f[:-4] + '.t.wav'):
             if os.path.exists(x):
                 os.remove(x)
     elif cmd == 'check':

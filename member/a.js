@@ -154,8 +154,19 @@
     const bar = document.getElementById('vbar');
     const btn = document.getElementById('vbar-btn');
     const label = bar.querySelector('span');
+    const rateBtn = document.getElementById('vbar-rate');
     const audio = new Audio();
     audio.preload = 'auto';
+    // 読む速さ：既定は 1.5 倍（全体で約8分）。選んだ速さは次に開いたときも使う
+    const RATES = [1, 1.25, 1.5, 1.75, 2];
+    const RATE_KEY = 'kc_member_voice_rate';
+    let rate = parseFloat(KC.store.get(RATE_KEY)) || 1.5;
+    const applyRate = () => {
+      audio.defaultPlaybackRate = rate;
+      audio.playbackRate = rate;
+      rateBtn.textContent = `${rate}x`;
+    };
+    applyRate();
     let marks = null;     // [{chap, t, i}]（画面順）
     let tl = null;
     let chap = -1;
@@ -191,7 +202,7 @@
       btn.setAttribute('aria-label', audio.paused ? '再生' : '一時停止');
     };
     const seek = (m) => new Promise((res) => {
-      const go = () => { audio.currentTime = m.t; res(); };
+      const go = () => { audio.currentTime = m.t; applyRate(); res(); };
       if (chap === m.chap) return go();
       chap = m.chap;
       audio.src = tl[chap].src;
@@ -200,8 +211,9 @@
     });
     const playFrom = async (i) => {
       await load();
-      // その画面の目印。なければ、その手前でいちばん近い目印から
-      const m = marks.find((x) => x.i === i) || [...marks].reverse().find((x) => x.i < i) || marks[0];
+      // その画面の目印から。声のない画面（表紙など）なら、次に声のある画面から
+      const m = marks.find((x) => x.i === i) || marks.find((x) => x.i > i);
+      if (!m) { stop(); return; }
       mark = m;
       target = m.i;
       on = true;
@@ -242,11 +254,16 @@
     btn.addEventListener('click', () => {
       if (audio.paused) {
         // 止めている間にほかの画面へ移っていたら、そこから読む
-        if (mark && mark.i !== cur && marks.some((x) => x.i === cur)) playFrom(cur);
+        if (!mark || mark.i !== cur) playFrom(cur);
         else audio.play().catch(() => {});
       } else audio.pause();
     });
     document.getElementById('vbar-x').addEventListener('click', stop);
+    rateBtn.addEventListener('click', () => {
+      rate = RATES[(RATES.indexOf(rate) + 1) % RATES.length];
+      KC.store.set(RATE_KEY, String(rate));
+      applyRate();
+    });
     deck.addEventListener('click', (e) => {
       if (e.target.closest('[data-voice]')) playFrom(cur);
     });
@@ -260,10 +277,9 @@
       onActive(i) {
         if (!on || audio.paused || !marks) return;
         if (i === target || (mark && i === mark.i)) return; // 声に合わせて送った画面
-        // 読者が自分でスワイプした：その画面に声があればそこから、なければ（プランなど）止める
+        // 読者が自分でスワイプした：その画面に声があればそこから。声のない画面（表紙・扉・プラン）では一時停止
         if (marks.some((x) => x.i === i)) playFrom(i);
-        else if (i > marks[marks.length - 1].i) stop();
-        else playFrom(i);
+        else audio.pause();
       },
     };
   })();

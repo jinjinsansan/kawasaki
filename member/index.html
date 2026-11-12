@@ -143,6 +143,7 @@ body.kc-a{background:var(--paper-2) var(--noise);}
 .vbar button{display:grid;place-items:center;width:34px;height:34px;border:0;border-radius:50%;background:var(--gold);cursor:pointer;padding:0;}
 .vbar button i{width:10px;height:12px;border-left:3px solid var(--paper);border-right:3px solid var(--paper);}
 .vbar.is-paused button i{width:0;height:0;border-style:solid;border-width:6px 0 6px 10px;border-color:transparent transparent transparent var(--paper);margin-left:3px;}
+.vbar button.vbar-rate{width:auto;height:28px;padding:0 10px;border:1px solid var(--gold-2);border-radius:999px;background:none;color:var(--gold);font:inherit;font-size:12px;font-weight:600;letter-spacing:.04em;font-variant-numeric:tabular-nums;}
 .vbar button.vbar-x{width:26px;height:26px;background:none;color:var(--ink-3);font-size:16px;line-height:1;}
 </style>
 <script src="/content.js"></script>
@@ -151,7 +152,7 @@ body.kc-a{background:var(--paper-2) var(--noise);}
 </head>
 <body class="kc-a">
 <div class="hud is-hidden" id="hud" aria-hidden="true"><span class="hud-ch" id="hud-ch"></span><span class="hud-bar"><i id="hud-bar"></i></span></div>
-<div class="vbar" id="vbar" hidden><button type="button" id="vbar-btn" aria-label="一時停止"><i></i></button><span>AI音声で朗読中</span><button type="button" class="vbar-x" id="vbar-x" aria-label="音声を止める">×</button></div>
+<div class="vbar" id="vbar" hidden><button type="button" id="vbar-btn" aria-label="一時停止"><i></i></button><span>AI音声で朗読中</span><button type="button" class="vbar-rate" id="vbar-rate" aria-label="読む速さを変える">1.5x</button><button type="button" class="vbar-x" id="vbar-x" aria-label="音声を止める">×</button></div>
 <main class="a-deck" id="deck" tabindex="-1" aria-label="川崎クラブ 手記"></main>
 <noscript><p style="padding:24px">このページはJavaScriptを有効にしてご覧ください。</p></noscript>
 </body>
