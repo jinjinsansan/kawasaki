@@ -171,7 +171,7 @@
     <div><dt>買い目</dt><dd>3連単 07→01→12</dd></div>
     <div class="is-paid"><dt>払戻</dt><dd><b class="num">493,600</b>円的中<small>（2点・購入4,000円）</small></dd></div>
   </dl>
-  <figure class="shot shot--receipt"><img src="assets/proof/eriza2025.webp" alt="2025年エリザベス女王杯 京都11R 3連単07→01→12 的中、払戻金額493,600円の照会画面" width="736" height="753" loading="lazy"></figure>
+  <figure class="shot shot--receipt"><img src="assets/proof/eriza2025-v2.webp" alt="2025年エリザベス女王杯 京都11R 3連単07→01→12 的中、払戻金額493,600円の照会画面" width="800" height="800" loading="lazy"></figure>
 </div>`;
     },
     numbers() {
