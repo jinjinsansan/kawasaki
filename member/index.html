@@ -71,6 +71,23 @@ body.kc-a{background:var(--paper-2) var(--noise);}
 .opener-v .opener-title{font-size:clamp(25px,7vw,30px);line-height:1.75;letter-spacing:.14em;text-align:start;}
 .opener-num{position:absolute;left:-6px;bottom:34px;font-size:clamp(150px,44vw,210px);line-height:.8;opacity:.55;}
 .opener-v .warn{margin:.3em 0;vertical-align:baseline;}
+/* 挿絵（1画面まるごと）。絵の地は紙と同じ生成りなので multiply で紙に溶け込ませる */
+.art{margin:0;display:flex;justify-content:center;}
+.art img{display:block;width:auto;max-width:100%;height:auto;aspect-ratio:2/3;mix-blend-mode:multiply;}
+.scr--art .scr-in{max-width:none;}
+.scr--art .art img{max-height:calc(100dvh - 120px - env(safe-area-inset-top) - env(safe-area-inset-bottom));}
+.scr--art::after{display:none;}
+/* 章扉（絵＋章タイトル） */
+.scr--opener-art{background:var(--paper) var(--noise);}
+.scr--opener-art .scr-in{display:flex;align-items:center;}
+.opener--art{gap:10px;width:100%;height:auto;}
+.opener--art .art img{max-height:calc(100dvh - 270px - env(safe-area-inset-top) - env(safe-area-inset-bottom));}
+.opener--art .opener-no{margin-top:10px;}
+.opener--art .opener-title{font-size:clamp(19px,5.4vw,23px);}
+@media (prefers-reduced-motion:no-preference){
+  .js .scr--opener-art.is-on .opener > :nth-child(2){transition-delay:.35s;}
+  .js .scr--opener-art.is-on .opener > :nth-child(3){transition-delay:.55s;}
+}
 /* 決め台詞 */
 .scr--key{background:var(--paper-2) var(--noise);}
 .scr--key::before{border-color:var(--rule-2);}

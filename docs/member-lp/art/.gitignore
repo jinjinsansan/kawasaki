@@ -1,0 +1,6 @@
+_request*.txt
+_codex_reply*.txt
+# 元のPNG（1枚4MB前後）と参照画像はコミットしない。ページ用は member/assets/art/*.webp
+img/
+test/
+ref/

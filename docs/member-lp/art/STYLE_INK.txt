@@ -1,0 +1,7 @@
+STYLE INK (apply to every image of this style)
+- Illustration for a quiet, premium essay web page printed on cream paper (#f5f0e6).
+- Japanese editorial illustration: confident black ink line art with fine hatching, like a high-quality newspaper/magazine illustration. Monochrome dark-brown ink (#221e19) on cream paper, with ONE accent color only: muted antique gold (#b8954d) used sparingly (light, a few highlights).
+- Background is plain cream paper; edges of the drawing fade softly into the paper (no hard rectangle border).
+- Calm, serious, literary mood. No comedy, no chibi, no glow effects.
+- Vertical, portrait 1024x1536. Main subject in the center and upper 70%.
+- NO text, letters, numbers, logos, speech bubbles or readable UI anywhere (phone and monitor screens show only abstract lines or a soft glow).

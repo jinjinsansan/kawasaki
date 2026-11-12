@@ -1,0 +1,4 @@
+CHARACTER — always the SAME man in every image: TAKASHI KAWASAKI (horse-racing analyst, the narrator).
+- Look at docs/member-lp/art/ref/ref1.jpg, ref2.jpg and ref3.jpg first. They are official anime versions of him. Match his face exactly: Japanese man in his 40s, broad stocky build, round full face, short dark hair swept up and back, thick straight eyebrows, narrow serious eyes, short stubble on the jaw, firm closed mouth. Serious, calm, slightly stern.
+- IGNORE everything else in the reference images: no titles, no letters, no "T-AI" logos, no glowing effects, no red/black poster backgrounds. Use them ONLY for his face, hair and body shape.
+- Default clothes: dark charcoal suit, white shirt, no tie. In the hospital: light blue hospital gown.

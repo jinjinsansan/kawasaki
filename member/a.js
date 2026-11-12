@@ -16,12 +16,14 @@
   const screens = [];
   KC.CH.forEach((ch) => {
     if (ch.n > 0) {
-      screens.push({ ch: ch.n, kind: 'opener', html:
-        `<div class="opener"><div class="opener-v"><p class="opener-no">第${KC.KANJI[ch.n]}章</p><h2 class="opener-title">${KC.chapterTitle(ch)}</h2></div><span class="opener-num" aria-hidden="true">${ch.n}</span></div>` });
+      // 章扉：挿絵があれば「絵＋章タイトル」、なければ縦書きの章扉
+      screens.push({ ch: ch.n, kind: ch.art ? 'opener scr--opener-art' : 'opener', html: ch.art
+        ? `<div class="opener opener--art">${KC.artImg(ch.art, 'art art--opener')}<p class="opener-no">第${KC.KANJI[ch.n]}章</p><h2 class="opener-title">${KC.chapterTitle(ch)}</h2></div>`
+        : `<div class="opener"><div class="opener-v"><p class="opener-no">第${KC.KANJI[ch.n]}章</p><h2 class="opener-title">${KC.chapterTitle(ch)}</h2></div><span class="opener-num" aria-hidden="true">${ch.n}</span></div>` });
     }
     ch.screens.forEach((s, k) => {
       const first = ch.n > 0 && k === 0 && s[0].p != null;
-      const kind = s[0].c === 'cover' ? 'cover' : s.every((b) => b.key) ? 'key' : s[0].c === 'door' ? 'door' : '';
+      const kind = s[0].c === 'cover' ? 'cover' : s[0].c === 'art' ? 'art' : s.every((b) => b.key) ? 'key' : s[0].c === 'door' ? 'door' : '';
       screens.push({ ch: ch.n, kind, first, html: s.map(KC.block).join('') });
     });
   });
