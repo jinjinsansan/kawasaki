@@ -1,7 +1,9 @@
 # 川崎クラブ 長期会員募集LP（`member/`）：制作記録
 
 - 公開予定URL：https://member.clubkawasaki.net/
-- Vercel：別プロジェクトとして Import し、**Root Directory を `member`** にする（lp2 と同じやり方）
+- Vercel：プロジェクト `kawasaki-member`（Root Directory：`member`、GitHub連携・`main` へのプッシュで本番デプロイ）。11/12 作成
+  - ドメイン `member.clubkawasaki.net` は追加済み。DNSはCloudflareに CNAME `member` → `f6e7f5a0abf252d7.vercel-dns-016.com`（DNS only）
+  - DNS設定前の確認用：https://kawasaki-member.vercel.app/
 - デザイン依頼書：`docs/member-lp/design-prompt.md`
 - デザイナーのハンドオフ：`docs/member-lp/handoff/README.md`（仕様の詳細はこちら）。共有用画像の元データ `ogp.html` も同じ場所
 
@@ -34,5 +36,6 @@ member/
 - [ ] 価格の税込・税抜：`content.js` の `.plan-tax` と `member/tokushoho.html` の販売価格
 - [ ] 特商法の支払方法・提供方法：前回（lp2）と同じ「銀行振込 → LINEで決済報告 → 会員専用メルマガ」で仮置き。違えば直す
 - [ ] 検索除け：確認期間中は全ページ `noindex`。公開時に `member/index.html` の `<meta name="robots" content="noindex">` を外す（特商法・プライバシーは残してよい）
-- [ ] Vercelプロジェクト作成（Root Directory：`member`）とドメイン `member.clubkawasaki.net`（DNSはCloudflare、CNAME・DNS only）
+- [x] Vercelプロジェクト作成とドメイン追加
+- [ ] CloudflareのDNSにCNAMEを追加（上記）
 - [ ] 本文中の「今週の『エリザベス女王杯』」は公開週によって古くなる（原稿どおり）
