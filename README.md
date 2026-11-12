@@ -35,6 +35,10 @@ GitHub リポジトリを Vercel に Import → Framework Preset「Other」、Bu
 - [x] **プライバシーポリシー**：`privacy.html`（運営責任者・連絡先は過去サイト「AI競馬研究所」に準拠）
 - [x] **OGP画像の絶対URL**：`https://www.clubkawasaki.net/assets/og-v3.jpg`（ドメイン変更時は `og:image` / `og:url` / `canonical` を更新）
 
+## 長期会員募集 LP（`member/`）
+
+縦スワイプ型の手記LP（https://member.clubkawasaki.net ・別Vercelプロジェクト、Root Directory を `member`）。申込URLは `member/content.js` の `CTA_URL`。詳細と公開前チェックリストは `docs/member-lp/README.md`。ルートのプロジェクトでは `/member/*` をトップへ転送している。
+
 ## 究極2ウィーク LP（`lp2/`）
 
 スワイプ型LP（https://1week.clubkawasaki.net ・別Vercelプロジェクト。旧 https://2week.clubkawasaki.net は `lp2/vercel.json` の redirects で 1week へ転送）。Vercel では同じリポジトリを別プロジェクトとして Import し、**Root Directory を `lp2`** に設定する。ルートのプロジェクトでは `vercel.json` の redirects で `/lp2/*` をトップへ転送している（`.vercelignore` に `lp2` を書くと lp2 プロジェクト側でも除外されて404になるので不可）。

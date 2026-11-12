@@ -34,6 +34,11 @@
       "source": "/lp2/:path*",
       "destination": "/",
       "permanent": false
+    },
+    {
+      "source": "/member/:path*",
+      "destination": "/",
+      "permanent": false
     }
   ]
 }

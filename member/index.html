@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>圧倒的成果を上げる「川崎クラブ」</title>
+<meta name="description" content="川崎タカシの手記。大病、SNSへの憤り、そして「予想」ではなく期待値で勝ち続ける理由。">
+<meta name="theme-color" content="#f5f0e6">
+<!-- 確認期間中は検索に出さない。公開時に外す -->
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="カワサキクラブ">
+<meta property="og:description" content="川崎タカシの手記。大病、SNSへの憤り、そして「予想」ではなく期待値で勝ち続ける理由。">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="圧倒的成果を上げる「川崎クラブ」">
+<meta property="og:url" content="https://member.clubkawasaki.net/">
+<meta property="og:image" content="https://member.clubkawasaki.net/assets/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;600;700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&amp;text=%E5%B7%9D%E5%B4%8E%E3%82%BF%E3%82%AB%E3%82%B7&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<style>
+/* ===== A案：縦スワイプ（ストーリー型） ===== */
+html,body.kc-a{height:100%;overflow:hidden;}
+body.kc-a{background:var(--paper-2) var(--noise);}
+.a-deck{position:relative;height:100dvh;max-width:520px;margin:0 auto;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none;background:var(--paper) var(--noise);outline:none;}
+.a-deck::-webkit-scrollbar{display:none;}
+@media (min-width:600px){.a-deck{border-left:1px solid var(--rule);border-right:1px solid var(--rule);box-shadow:0 0 60px -20px rgba(60,40,10,.25);}}
+.scr{position:relative;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  padding:calc(58px + env(safe-area-inset-top)) 28px calc(44px + env(safe-area-inset-bottom));}
+.scr-in{width:100%;max-width:21.5em;}
+.scr--key .scr-in{max-width:20em;}
+.scr.dense{--fs:15.5px;--lh:1.92;--shot-h:min(28dvh,240px);--on:92px;}
+.scr.denser{--fs:14.5px;--lh:1.85;--fk:21px;}
+.scr.dense .plan{padding:26px 16px 18px;}
+.scr.dense .plan-list li{padding:5px 0;font-size:13.5px;}
+.scr.dense .plan-price b{font-size:40px;}
+.scr.dense .btn{margin-top:14px;}
+.scr.denser .plan{padding:24px 14px 14px;}
+.scr.denser .plan-name{font-size:16px;}
+.scr.denser .plan-price{margin-top:4px;padding-bottom:8px;}
+.scr.denser .plan-price b{font-size:34px;}
+.scr.denser .plan-lbl{margin-top:8px;}
+.scr.denser .plan-list li{padding:3px 0;font-size:13px;}
+.scr.denser .plan-list li.is-extra{padding:5px 8px;}
+.scr.denser .btn{min-height:48px;margin-top:10px;}
+.scr .foot{margin-top:28px;}
+.scr .xpost-clip{height:max(150px,calc(100dvh - 400px));max-height:420px;}
+.scr .xpost-clip::after{content:"";position:absolute;left:0;right:0;bottom:0;height:56px;background:linear-gradient(transparent,#fff);pointer-events:none;}
+.scr .door-frame{width:clamp(130px,22dvh,176px);height:clamp(176px,30dvh,236px);}
+/* ---- 誌面の装飾 ---- */
+.scr::before{content:"";position:absolute;inset:calc(10px + env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom));border:1px solid var(--rule);pointer-events:none;}
+.scr[data-num]:not(.scr--opener)::after{content:attr(data-num);position:absolute;right:-.06em;bottom:0;font-family:var(--f-s);font-weight:500;font-size:min(92vw,400px);line-height:1;color:var(--gold-2);opacity:.075;pointer-events:none;z-index:0;}
+.scr-in{position:relative;z-index:1;}
+.folio{position:absolute;left:28px;right:28px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:1;display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin:0;font-size:10px;letter-spacing:.12em;color:var(--ink-3);}
+.folio span{font-family:var(--f-s);font-size:10px;letter-spacing:.32em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.folio b{font-family:var(--f-s);font-size:13px;font-weight:600;color:var(--gold);font-variant-numeric:lining-nums;}
+/* 章扉：縦書き */
+.scr--opener{background:var(--paper-2) var(--noise);}
+.scr--opener::before{border-color:var(--rule-2);}
+.scr--opener .scr-in{max-width:none;height:100%;}
+.opener{position:relative;display:flex;align-items:center;justify-content:center;height:100%;gap:0;}
+.opener-v{writing-mode:vertical-rl;display:flex;gap:22px;align-items:flex-start;max-height:min(62dvh,520px);}
+.opener-v .opener-no{padding:0;letter-spacing:.6em;font-size:13px;}
+.opener-v .opener-title{font-size:clamp(25px,7vw,30px);line-height:1.75;letter-spacing:.14em;text-align:start;}
+.opener-num{position:absolute;left:-6px;bottom:34px;font-size:clamp(150px,44vw,210px);line-height:.8;opacity:.55;}
+.opener-v .warn{margin:.3em 0;vertical-align:baseline;}
+/* 決め台詞 */
+.scr--key{background:var(--paper-2) var(--noise);}
+.scr--key::before{border-color:var(--rule-2);}
+.scr--key .scr-in::before{content:"“";display:block;height:.5em;margin:0 0 6px -.06em;font-family:var(--f-s);font-size:96px;line-height:1;color:var(--gold-2);}
+/* 章の書き出し：一文字目を大きく */
+.scr--first .tx:first-child::first-letter{float:left;margin:.08em .16em 0 0;font-size:3.05em;line-height:1;font-weight:700;color:var(--gold);}
+/* フェード：行ごとに少しずつ */
+@media (prefers-reduced-motion:no-preference){
+  .js .scr-in > *{opacity:0;transform:translateY(10px);transition:opacity 1s var(--ease),transform 1s var(--ease);}
+  .js .scr.is-on .scr-in > *{opacity:1;transform:none;}
+  .js .scr.is-on .scr-in > :nth-child(2){transition-delay:.22s;}
+  .js .scr.is-on .scr-in > :nth-child(3){transition-delay:.44s;}
+  .js .scr.is-on .scr-in > :nth-child(4){transition-delay:.66s;}
+  .js .scr--cover .cover > *{opacity:0;transform:translateY(8px);transition:opacity 1.1s var(--ease),transform 1.1s var(--ease);}
+  .js .scr--cover.is-on .cover > *{opacity:1;transform:none;}
+  .js .scr--cover.is-on .cover > :nth-child(2){transition-delay:.15s;}
+  .js .scr--cover.is-on .cover > :nth-child(3){transition-delay:.35s;}
+  .js .scr--cover.is-on .cover > :nth-child(n+4){transition-delay:.6s;}
+  .js .scr--opener .opener > *{opacity:0;transition:opacity 1.4s var(--ease),transform 1.4s var(--ease);}
+  .js .scr--opener .opener-v{transform:translateY(-12px);}
+  .js .scr--opener .opener-num{transform:translateX(-16px);}
+  .js .scr--opener.is-on .opener > *{opacity:1;transform:none;}
+  .js .scr--opener.is-on .opener-num{opacity:.55;transition-delay:.3s;}
+}
+/* 現在地（上部） */
+.hud{position:fixed;top:0;left:50%;z-index:5;display:flex;align-items:center;gap:14px;width:100%;max-width:520px;transform:translateX(-50%);
+  padding:calc(18px + env(safe-area-inset-top)) 28px 0;pointer-events:none;transition:opacity .6s;}
+.hud.is-hidden{opacity:0;}
+.hud-ch{flex:0 0 auto;font-size:11px;letter-spacing:.18em;color:var(--ink-2);white-space:nowrap;}
+.hud-ch b{font-family:var(--f-s);font-size:15px;font-weight:600;color:var(--gold);margin:0 1px;}
+.hud-bar{flex:1;height:1px;background:var(--rule);}
+.hud-bar i{display:block;height:100%;background:var(--gold-2);transform-origin:left;transform:scaleX(var(--p,0));transition:transform .6s var(--ease);}
+</style>
+<script src="/content.js"></script>
+<script src="/a.js" defer></script>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</head>
+<body class="kc-a">
+<div class="hud is-hidden" id="hud" aria-hidden="true"><span class="hud-ch" id="hud-ch"></span><span class="hud-bar"><i id="hud-bar"></i></span></div>
+<main class="a-deck" id="deck" tabindex="-1" aria-label="川崎クラブ 手記"></main>
+<noscript><p style="padding:24px">このページはJavaScriptを有効にしてご覧ください。</p></noscript>
+</body>
+</html>

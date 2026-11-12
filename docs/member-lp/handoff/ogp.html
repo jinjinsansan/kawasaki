@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>OGP 1200×630</title>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;600;700&amp;family=Cormorant+Garamond:wght@500;600&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+html,body{margin:0;background:#ccc;}
+.og{position:relative;width:1200px;height:630px;overflow:hidden;background:var(--paper) var(--noise);display:grid;grid-template-columns:1fr 470px;}
+.og::before{content:"";position:absolute;inset:28px;border:1px solid var(--gold-2);pointer-events:none;}
+.og::after{content:"";position:absolute;inset:34px;border:1px solid var(--rule);pointer-events:none;}
+.og-l{display:flex;flex-direction:column;justify-content:center;gap:34px;padding:0 0 0 96px;}
+.og-mark{display:flex;align-items:center;gap:16px;margin:0;font-family:var(--f-s);font-size:20px;font-weight:600;letter-spacing:.42em;color:var(--gold);}
+.og-mark span{width:44px;height:1px;background:var(--gold-2);}
+.og-title{margin:0;font-weight:700;line-height:1.25;}
+.og-title small{display:block;margin-bottom:14px;font-size:30px;font-weight:600;letter-spacing:.3em;color:var(--ink-2);}
+.og-title span{display:block;font-size:92px;letter-spacing:.02em;margin-left:-.45em;}
+.og-sub{margin:0;font-size:22px;letter-spacing:.14em;color:var(--ink-2);}
+.og-r{display:flex;flex-direction:column;justify-content:center;gap:0;padding:0 80px 0 0;}
+.og-r .record{max-width:none;}
+.og-r .record-row{padding:18px 2px 14px;}
+.og-r .rec-date{font-size:24px;}
+.og-r .rec-kind{font-size:15px;white-space:nowrap;}
+.og-r .rec-val{font-size:18px;}
+.og-r .rec-val b{font-size:50px;}
+.og-big{display:flex;flex-direction:column;align-items:flex-end;padding:20px 2px 18px;border-bottom:1px solid var(--ink);}
+.og-big p{margin:0;font-size:16px;letter-spacing:.12em;color:var(--ink-3);}
+.og-big p b{color:var(--ink);font-size:20px;letter-spacing:.2em;margin-right:12px;}
+.og-big div{display:flex;align-items:baseline;gap:6px;font-size:20px;}
+.og-big div b{font-variant-numeric:lining-nums;font-family:var(--f-s);font-size:86px;font-weight:600;line-height:1;color:var(--gold);}
+</style>
+</head>
+<body>
+<div class="og" id="og">
+  <div class="og-l">
+    <p class="og-mark"><span></span>KAWASAKI CLUB</p>
+    <h1 class="og-title"><small>圧倒的成果を上げる</small><span>「川崎クラブ」</span></h1>
+    <p class="og-sub">競馬は人生である</p>
+  </div>
+  <div class="og-r">
+    <div class="record">
+      <div class="record-row"><span class="rec-date">2026/11/07</span><span class="rec-kind">有料配信</span><span class="rec-val"><b>9</b>戦<b>7</b>的中</span></div>
+      <div class="record-row"><span class="rec-date">2026/11/08</span><span class="rec-kind">有料配信</span><span class="rec-val"><b>8</b>戦<b>6</b>的中</span></div>
+    </div>
+    <div class="og-big"><p><b>みやこS</b>有料配信 3連単</p><div><b>271,010</b>円的中</div></div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,20 @@
+/* 特商法・プライバシーポリシー（shared.css のトークンを使う） */
+.doc-head{max-width:44em;margin:0 auto;padding:22px 24px 0;}
+.doc-head a{font-family:var(--f-s);font-size:12px;font-weight:600;letter-spacing:.42em;color:var(--gold);text-decoration:none;}
+.doc{max-width:44em;margin:0 auto;padding:28px 24px 56px;font-size:15px;line-height:1.95;letter-spacing:.03em;}
+.doc h1{margin:0 0 24px;font-size:22px;font-weight:700;letter-spacing:.06em;}
+.doc h2{margin:36px 0 10px;font-size:17px;font-weight:700;}
+.doc p{margin:0 0 12px;}
+.doc ul{margin:0 0 12px;padding-left:1.4em;}
+.doc table{width:100%;border-collapse:collapse;border-top:3px double var(--rule-2);border-bottom:1px solid var(--rule-2);}
+.doc th,.doc td{padding:14px 0;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top;}
+.doc th{width:11em;padding-right:16px;font-size:13px;font-weight:700;color:var(--ink-2);}
+.doc td{overflow-wrap:anywhere;}
+@media (max-width:600px){
+  .doc th,.doc td{display:block;width:auto;padding:0;border:0;}
+  .doc th{padding-top:14px;}
+  .doc td{padding:2px 0 14px;border-bottom:1px solid var(--rule);}
+}
+.doc-back{display:inline-flex;align-items:center;min-height:44px;margin-top:28px;font-size:14px;}
+.doc-foot{padding:18px 24px 28px;border-top:1px solid var(--rule);text-align:center;}
+.doc-foot p{margin:0;font-size:11px;letter-spacing:.1em;color:var(--ink-3);}
