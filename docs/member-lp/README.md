@@ -37,5 +37,5 @@ member/
 - [ ] 特商法の支払方法・提供方法：前回（lp2）と同じ「銀行振込 → LINEで決済報告 → 会員専用メルマガ」で仮置き。違えば直す
 - [ ] 検索除け：確認期間中は全ページ `noindex`。公開時に `member/index.html` の `<meta name="robots" content="noindex">` を外す（特商法・プライバシーは残してよい）
 - [x] Vercelプロジェクト作成とドメイン追加
-- [ ] CloudflareのDNSにCNAMEを追加（上記）
+- [x] CloudflareのDNSにCNAMEを追加（11/12 13:35 https で表示を確認）
 - [ ] 本文中の「今週の『エリザベス女王杯』」は公開週によって古くなる（原稿どおり）
