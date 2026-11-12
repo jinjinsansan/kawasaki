@@ -131,6 +131,19 @@ body.kc-a{background:var(--paper-2) var(--noise);}
 .hud-ch b{font-family:var(--f-s);font-size:15px;font-weight:600;color:var(--gold);margin:0 1px;}
 .hud-bar{flex:1;height:1px;background:var(--rule);}
 .hud-bar i{display:block;height:100%;background:var(--gold-2);transform-origin:left;transform:scaleX(var(--p,0));transition:transform .6s var(--ease);}
+/* 朗読（AI音声） */
+.voice-start{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.voice-btn{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 20px 0 16px;border:1px solid var(--gold-2);border-radius:999px;background:var(--card);color:var(--ink);font:inherit;font-size:14px;letter-spacing:.12em;cursor:pointer;}
+.voice-btn small{font-size:11px;letter-spacing:.08em;color:var(--gold);}
+.voice-ico{width:0;height:0;border-style:solid;border-width:6px 0 6px 10px;border-color:transparent transparent transparent var(--gold);}
+.voice-note{margin:0;font-size:10.5px;letter-spacing:.08em;color:var(--ink-3);}
+.vbar{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));z-index:6;display:flex;align-items:center;gap:10px;transform:translateX(-50%);
+  padding:6px 14px 6px 6px;border:1px solid var(--gold-2);border-radius:999px;background:var(--card);box-shadow:0 10px 24px -14px rgba(60,40,10,.6);font-size:11px;letter-spacing:.08em;color:var(--ink-2);white-space:nowrap;}
+.vbar[hidden]{display:none;}
+.vbar button{display:grid;place-items:center;width:34px;height:34px;border:0;border-radius:50%;background:var(--gold);cursor:pointer;padding:0;}
+.vbar button i{width:10px;height:12px;border-left:3px solid var(--paper);border-right:3px solid var(--paper);}
+.vbar.is-paused button i{width:0;height:0;border-style:solid;border-width:6px 0 6px 10px;border-color:transparent transparent transparent var(--paper);margin-left:3px;}
+.vbar button.vbar-x{width:26px;height:26px;background:none;color:var(--ink-3);font-size:16px;line-height:1;}
 </style>
 <script src="/content.js"></script>
 <script src="/a.js" defer></script>
@@ -138,6 +151,7 @@ body.kc-a{background:var(--paper-2) var(--noise);}
 </head>
 <body class="kc-a">
 <div class="hud is-hidden" id="hud" aria-hidden="true"><span class="hud-ch" id="hud-ch"></span><span class="hud-bar"><i id="hud-bar"></i></span></div>
+<div class="vbar" id="vbar" hidden><button type="button" id="vbar-btn" aria-label="一時停止"><i></i></button><span>AI音声で朗読中</span><button type="button" class="vbar-x" id="vbar-x" aria-label="音声を止める">×</button></div>
 <main class="a-deck" id="deck" tabindex="-1" aria-label="川崎クラブ 手記"></main>
 <noscript><p style="padding:24px">このページはJavaScriptを有効にしてご覧ください。</p></noscript>
 </body>
