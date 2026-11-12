@@ -5,6 +5,7 @@
   - ドメイン `member.clubkawasaki.net` は追加済み。DNSはCloudflareに CNAME `member` → `f6e7f5a0abf252d7.vercel-dns-016.com`（DNS only）
   - DNS設定前の確認用：https://kawasaki-member.vercel.app/
 - デザイン依頼書：`docs/member-lp/design-prompt.md`
+- 引継ぎ書（今の状態・残り作業・直し方）：`docs/member-lp/HANDOFF.md`
 - デザイナーのハンドオフ：`docs/member-lp/handoff/README.md`（仕様の詳細はこちら）。共有用画像の元データ `ogp.html` も同じ場所
 
 ## 方針
