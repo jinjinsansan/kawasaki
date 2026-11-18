@@ -41,7 +41,7 @@ GitHub リポジトリを Vercel に Import → Framework Preset「Other」、Bu
 
 ## 指数システム 体験デモ（`demo/`）
 
-ステップメールから開いてもらう、川崎の「独自指数＆投票システム」の体験デモ（数字はすべて架空のサンプル）。デザインは Claude Design のハンドオフ v4（依頼文 `docs/demo/design-prompt.md`、仕様 `docs/demo/handoff/README.md`）。本番は https://tai.clubkawasaki.net （Vercelプロジェクト `kawasaki-tai`、Root Directory を `demo`、`main` へのプッシュで自動デプロイ。DNSはCloudflareに CNAME `tai` → `b60feeb9f3202246.vercel-dns-016.com`（DNS only）。確認用 https://kawasaki-tai.vercel.app/ ）。ルートのプロジェクトでは `/demo/*` をトップへ転送している。
+ステップメールから開いてもらう、川崎の「独自指数＆投票システム」の体験デモ（数字はすべて架空のサンプル）。デザインは Claude Design のハンドオフ v4（依頼文 `docs/demo/design-prompt.md`、仕様 `docs/demo/handoff/README.md`）。本番は https://tai.clubkawasaki.net （Vercelプロジェクト `kawasaki-tai`、Root Directory を `demo`、`main` へのプッシュで自動デプロイ。DNSはCloudflareに CNAME `tai` → `b60feeb9f3202246.vercel-dns-016.com`（DNS only）。確認用 https://kawasaki-tai.vercel.app/ ）。ルートのプロジェクトでは `/demo/*` をトップへ転送している。現状と残り作業は `docs/demo/README.md`。
 
 ## 究極2ウィーク LP（`lp2/`）
 
