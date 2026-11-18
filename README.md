@@ -39,6 +39,10 @@ GitHub リポジトリを Vercel に Import → Framework Preset「Other」、Bu
 
 縦スワイプ型の手記LP（https://member.clubkawasaki.net ・別Vercelプロジェクト、Root Directory を `member`）。申込URLは `member/content.js` の `CTA_URL`。詳細と公開前チェックリストは `docs/member-lp/README.md`。ルートのプロジェクトでは `/member/*` をトップへ転送している。
 
+## 指数システム 体験デモ（`demo/`）
+
+ステップメールから開いてもらう、川崎の「独自指数＆投票システム」の体験デモ（数字はすべて架空のサンプル）。いまは試作で、Claude Design にデザインを依頼中（依頼文 `docs/demo/design-prompt.md`）。本番は別Vercelプロジェクト（Root Directory を `demo`）で出す予定。ルートのプロジェクトでは `/demo/*` をトップへ転送している。
+
 ## 究極2ウィーク LP（`lp2/`）
 
 スワイプ型LP（https://1week.clubkawasaki.net ・別Vercelプロジェクト。旧 https://2week.clubkawasaki.net は `lp2/vercel.json` の redirects で 1week へ転送）。Vercel では同じリポジトリを別プロジェクトとして Import し、**Root Directory を `lp2`** に設定する。ルートのプロジェクトでは `vercel.json` の redirects で `/lp2/*` をトップへ転送している（`.vercelignore` に `lp2` を書くと lp2 プロジェクト側でも除外されて404になるので不可）。

@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>独自指数 解析デモ</title>
+<meta name="robots" content="noindex">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;700;900&display=swap">
+<style>
+/* 1画面ずつ進むスマホ用デモ。解析中は黒（ネオンの線が流れる）、判定と資金計算は白（カード） */
+:root {
+  --bg: #090b10; --panel: #11141c; --panel2: #171b26; --line: #252b3a;
+  --fg: #eceff5; --mute: #8b93a7; --gold: #e6b450; --gold-ink: #1a1305;
+  --c1: #3fd2ff; --c2: #ff4fa3; --c3: #3ee08a; --c4: #ff8a3d; --c5: #a184ff; --c6: #ffd84a;
+  --good: #3ee08a; --bad: #ff5d6c;
+  --f-disp: "Dela Gothic One", "Noto Sans JP", sans-serif;
+  --f-body: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: dark;
+}
+body.paper {
+  --bg: #f3f4f7; --panel: #ffffff; --panel2: #f7f8fb; --line: #e2e5ec;
+  --fg: #12151d; --mute: #5d6678; --gold: #a8740c; --gold-ink: #ffffff;
+  --good: #14a05a; --bad: #d4364a;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--f-body); font-size: 15px; line-height: 1.7;
+  transition: background-color .6s ease, color .6s ease;
+  -webkit-font-smoothing: antialiased;
+}
+.app {
+  max-width: 480px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px 72px;
+}
+
+/* 上の帯 */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-block: 4px 10px; }
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px; letter-spacing: .04em; }
+.brand img { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--gold); }
+.chip { font-family: var(--f-mono); font-size: 10px; font-weight: 700; letter-spacing: .12em; padding: 3px 8px; border-radius: 99px; border: 1px solid var(--gold); color: var(--gold); white-space: nowrap; }
+.live { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--bad); margin-right: 5px; vertical-align: 1px; animation: blink 1.2s infinite; }
+@keyframes blink { 50% { opacity: .25; } }
+
+.steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 18px; }
+.steps span { font-size: 10px; color: var(--mute); text-align: center; padding-top: 6px; border-top: 3px solid var(--line); transition: color .3s, border-color .3s; white-space: nowrap; }
+.steps span.on { color: var(--fg); border-color: var(--gold); font-weight: 700; }
+.steps span.done { border-color: color-mix(in srgb, var(--gold) 45%, transparent); }
+
+.screen { display: none; }
+.screen.show { display: block; animation: rise .45s ease both; }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+h1, h2 { font-family: var(--f-disp); font-weight: 400; line-height: 1.25; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(25px, 7.6vw, 34px); }
+h1 em { font-style: normal; color: var(--gold); }
+h2 { font-size: 22px; }
+.lead { color: var(--mute); font-size: 14px; margin: 10px 0 0; }
+.eyebrow { font-family: var(--f-mono); font-size: 11px; letter-spacing: .14em; color: var(--mute); text-transform: uppercase; margin-bottom: 6px; }
+
+.term { margin-top: 18px; background: #000; border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; font-family: var(--f-mono); font-size: 12px; color: #c9d1e4; overflow: hidden; white-space: nowrap; }
+.term b { color: var(--c3); font-weight: 400; }
+.term i { font-style: normal; color: var(--mute); }
+.caret { display: inline-block; width: 7px; height: 13px; background: var(--gold); vertical-align: -2px; animation: blink 1s steps(1) infinite; }
+
+/* レースカード */
+.races { display: grid; gap: 10px; margin-top: 16px; }
+.race {
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 12px;
+  width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px;
+  transition: border-color .2s, transform .15s;
+}
+.race:hover, .race:focus-visible { border-color: var(--gold); outline: none; }
+.race:active { transform: scale(.985); }
+.race .rno { font-family: var(--f-mono); font-size: 11px; color: var(--mute); letter-spacing: .06em; }
+.race .rname { font-weight: 900; font-size: 17px; line-height: 1.35; }
+.race .rmeta { font-size: 12px; color: var(--mute); }
+.race .go { grid-row: 1 / span 3; grid-column: 2; font-family: var(--f-mono); font-size: 12px; font-weight: 700; color: var(--gold-ink); background: var(--gold); border-radius: 8px; padding: 8px 10px; white-space: nowrap; }
+.surface { display: inline-block; font-size: 10px; font-weight: 700; padding: 0 6px; border-radius: 4px; margin-right: 6px; vertical-align: 1px; }
+.surface.turf { background: #1f7a3c; color: #fff; }
+.surface.dirt { background: #8a5a2b; color: #fff; }
+.note { font-size: 11px; color: var(--mute); margin-top: 12px; }
+
+/* 解析 */
+.tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 14px; }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; min-width: 0; }
+.tile .k { font-size: 10px; color: var(--mute); letter-spacing: .04em; }
+.tile .v { font-family: var(--f-mono); font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: nowrap; }
+.tile:nth-child(1) .v { color: var(--c1); }
+.tile:nth-child(2) .v { color: var(--c5); }
+.tile:nth-child(3) .v { color: var(--c2); }
+.tile:nth-child(4) .v { color: var(--c6); }
+.meshwrap { position: relative; margin-top: 10px; border: 1px solid var(--line); border-radius: 12px; background: radial-gradient(120% 80% at 40% 50%, #121a2a 0%, #07090d 70%); overflow: hidden; }
+#mesh { display: block; width: 100%; }
+.bar { height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; margin-top: 10px; }
+.bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--c1), var(--c5), var(--c2), var(--gold)); }
+.log { margin-top: 10px; height: 148px; overflow: hidden; background: #000; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-family: var(--f-mono); font-size: 11px; line-height: 1.6; display: flex; flex-direction: column; justify-content: flex-end; }
+.log div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #c3cad9; animation: logIn .25s ease both; }
+@keyframes logIn { from { opacity: 0; transform: translateX(-6px); } }
+.log .t { color: #586074; margin-right: 8px; }
+.tag { display: inline-block; min-width: 46px; margin-right: 6px; }
+.tag.load { color: var(--c1); } .tag.model { color: var(--c5); } .tag.odds { color: var(--c4); }
+.tag.calc { color: var(--c6); } .tag.ev { color: var(--c2); } .tag.ok { color: var(--c3); }
+
+/* 指数表 */
+.idxhead, .row { display: grid; grid-template-columns: 26px minmax(0, 1fr) 44px 46px 50px; gap: 0 8px; align-items: center; }
+.idxhead { font-size: 10px; color: var(--mute); padding: 0 10px 6px; margin-top: 14px; }
+.idxhead span:nth-child(n+3) { text-align: right; }
+.table { position: relative; }
+.row {
+  position: absolute; left: 0; right: 0; height: 46px; padding: 0 10px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 9px;
+  transition: transform .7s cubic-bezier(.2,.8,.2,1), border-color .4s, box-shadow .4s;
+}
+.row.hot { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), 0 0 18px color-mix(in srgb, var(--gold) 30%, transparent); }
+.num { width: 26px; height: 26px; border-radius: 5px; display: grid; place-items: center; font-family: var(--f-mono); font-weight: 700; font-size: 13px; border: 1px solid rgba(255,255,255,.25); }
+.nm { min-width: 0; }
+.nm b { display: block; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.nm .ib { display: flex; align-items: center; gap: 6px; }
+.nm .ib s { flex: 1; height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; text-decoration: none; }
+.nm .ib s i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--c1), var(--c5)); transition: width 1s cubic-bezier(.2,.8,.2,1); }
+.row.hot .nm .ib s i { background: linear-gradient(90deg, var(--c6), var(--gold)); }
+.nm .ib em { font-style: normal; font-family: var(--f-mono); font-size: 11px; font-weight: 700; width: 30px; text-align: right; font-variant-numeric: tabular-nums; }
+.cell { font-family: var(--f-mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+.cell.ev { font-weight: 700; }
+.cell.ev.plus { color: var(--gold); }
+.mark { position: absolute; left: -6px; top: -7px; width: 18px; height: 18px; border-radius: 50%; background: var(--gold); color: var(--gold-ink); font-size: 10px; font-weight: 900; display: grid; place-items: center; transform: scale(0); transition: transform .35s cubic-bezier(.3,1.6,.5,1); }
+.row.marked .mark { transform: scale(1); }
+.legend { font-size: 11px; color: var(--mute); margin-top: 10px; }
+.legend b { color: var(--gold); }
+
+/* 判定 */
+.verdict { margin-top: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px; text-align: center; box-shadow: 0 10px 30px rgba(20, 30, 60, .06); }
+.stamp { display: inline-block; font-family: var(--f-disp); font-size: 56px; line-height: 1; padding: 12px 26px 14px; border: 4px solid currentColor; border-radius: 12px; transform: rotate(-4deg) scale(1.6); opacity: 0; animation: stamp .45s cubic-bezier(.3,1.5,.5,1) .25s forwards; }
+.stamp.buy { color: var(--bad); }
+.stamp.pass { color: var(--mute); }
+@keyframes stamp { to { transform: rotate(-4deg) scale(1); opacity: 1; } }
+.verdict p { margin: 14px 0 0; font-size: 14px; }
+.verdict p strong { color: var(--gold); }
+.card { margin-top: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.card h3 { margin: 0 0 10px; font-size: 13px; color: var(--mute); font-weight: 700; display: flex; justify-content: space-between; gap: 8px; }
+.bet { display: grid; grid-template-columns: 52px minmax(0, 1fr) 72px; gap: 4px 10px; align-items: center; padding: 8px 0; border-top: 1px dashed var(--line); }
+.bet:first-of-type { border-top: 0; }
+.bet .kind { font-size: 12px; font-weight: 700; background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; text-align: center; padding: 2px 0; }
+.bet .pick { font-family: var(--f-mono); font-weight: 700; font-size: 15px; }
+.bet .yen { font-family: var(--f-mono); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.bet .alloc { grid-column: 2 / 4; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.bet .alloc i { display: block; height: 100%; width: 0; background: var(--gold); transition: width .9s ease .6s; }
+.zero { font-family: var(--f-mono); font-size: 30px; font-weight: 700; text-align: center; padding: 6px 0; }
+.quote { margin-top: 18px; text-align: center; font-family: var(--f-disp); font-size: 20px; }
+.quote small { display: block; font-family: var(--f-body); font-size: 11px; color: var(--mute); margin-top: 4px; }
+
+/* 資金シミュレーター */
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.seg button { font: inherit; font-size: 14px; font-weight: 700; padding: 8px 0; border-radius: 8px; border: 1px solid var(--line); background: var(--panel2); color: var(--fg); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.field { margin-top: 14px; }
+.field label { display: flex; justify-content: space-between; font-size: 12px; color: var(--mute); margin-bottom: 4px; }
+.field label output { font-family: var(--f-mono); font-weight: 700; color: var(--fg); font-size: 14px; }
+input[type="range"] { width: 100%; accent-color: var(--gold); }
+.result { margin-top: 14px; text-align: center; }
+.result .k { font-size: 12px; color: var(--mute); }
+.result .big { font-family: var(--f-mono); font-weight: 700; font-size: clamp(30px, 10vw, 42px); line-height: 1.2; font-variant-numeric: tabular-nums; }
+.result .big small { font-size: .45em; margin-left: 2px; }
+.result .gain { font-family: var(--f-mono); color: var(--good); font-weight: 700; font-size: 14px; }
+#chart { display: block; width: 100%; height: auto; margin-top: 10px; }
+.mtable { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+.mtable td { padding: 6px 0; border-top: 1px solid var(--line); }
+.mtable td:nth-child(2) { text-align: right; font-family: var(--f-mono); font-weight: 700; font-variant-numeric: tabular-nums; }
+.mtable td:nth-child(3) { text-align: right; font-family: var(--f-mono); color: var(--good); font-size: 12px; width: 40%; font-variant-numeric: tabular-nums; }
+.cond { font-size: 11px; color: var(--mute); margin-top: 12px; line-height: 1.7; }
+.cond b { color: var(--fg); }
+
+/* 終わり */
+.end { text-align: center; padding-top: 18px; }
+.end .face { width: 132px; height: 132px; border-radius: 50%; border: 3px solid var(--gold); box-shadow: 0 0 0 8px color-mix(in srgb, var(--gold) 15%, transparent), 0 0 40px color-mix(in srgb, var(--gold) 35%, transparent); }
+.end h2 { margin-top: 18px; font-size: 26px; }
+.end p { color: var(--mute); font-size: 14px; }
+
+/* ボタン */
+.actions { display: grid; gap: 8px; margin-top: 18px; }
+.btn { font: inherit; font-weight: 900; font-size: 16px; padding: 14px; border-radius: 12px; border: 0; cursor: pointer; background: var(--gold); color: var(--gold-ink); transition: transform .15s, opacity .3s; }
+.btn:active { transform: scale(.98); }
+.btn:focus-visible, .seg button:focus-visible { outline: 3px solid var(--c1); outline-offset: 2px; }
+.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); font-weight: 700; font-size: 14px; }
+.btn[disabled] { opacity: .35; cursor: default; }
+.btn.pulse:not([disabled]) { animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--gold) 25%, transparent); } }
+
+/* 常に出す注記 */
+.foot {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+  padding: 7px max(16px, env(safe-area-inset-right, 0px)) calc(7px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px);
+  border-top: 1px solid var(--line); font-size: 10.5px; color: var(--mute); text-align: center; line-height: 1.5;
+}
+.foot b { color: var(--gold); font-family: var(--f-mono); letter-spacing: .1em; margin-right: 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><img src="assets/takashi-face.webp" alt="">独自指数＆投票システム</div>
+    <span class="chip"><span class="live"></span>DEMO</span>
+  </header>
+  <nav class="steps" aria-label="進み具合">
+    <span data-s="1">レース</span><span data-s="2">解析</span><span data-s="3">指数</span><span data-s="4">判定</span><span data-s="5">資金</span>
+  </nav>
+
+  <!-- 1 レースを選ぶ -->
+  <section class="screen show" id="s-pick">
+    <div class="eyebrow">Index × Bet Control</div>
+    <h1>完璧な指数<br>×<em>ベットコントロール</em></h1>
+    <p class="lead">レースを1つ選んでください。指数の計算から「買う・買わない」の判定まで、システムの流れをそのまま体験できます。</p>
+    <div class="term" aria-hidden="true"><b>takashi@index</b> <i>~ $</i> select --race <span class="caret"></span></div>
+    <div class="races" id="races"></div>
+    <p class="note">※ デモ用の架空のレースです。実在のレース・馬ではありません。</p>
+  </section>
+
+  <!-- 2 解析 -->
+  <section class="screen" id="s-scan">
+    <div class="eyebrow" id="scanRace"></div>
+    <h2>指数を計算しています</h2>
+    <div class="tiles">
+      <div class="tile"><div class="k">読み込んだレース（過去10年）</div><div class="v" id="t1">0</div></div>
+      <div class="tile"><div class="k">1頭あたりの分析項目</div><div class="v" id="t2">0</div></div>
+      <div class="tile"><div class="k">予測投票数シミュレーション</div><div class="v" id="t3">0</div></div>
+      <div class="tile"><div class="k">計算時間</div><div class="v" id="t4">0.00s</div></div>
+    </div>
+    <div class="meshwrap"><canvas id="mesh" aria-label="データが指数エンジンに流れ込み、各馬の指数が計算される様子"></canvas></div>
+    <div class="bar"><i id="prog"></i></div>
+    <div class="log" id="log" aria-live="polite"></div>
+    <div class="actions"><button class="btn pulse" id="toIndex" disabled>計算中…</button></div>
+  </section>
+
+  <!-- 3 指数 -->
+  <section class="screen" id="s-index">
+    <div class="eyebrow" id="idxRace"></div>
+    <h2>指数と期待値</h2>
+    <div class="idxhead"><span>馬番</span><span>馬名・指数</span><span>勝率</span><span>オッズ</span><span>期待値</span></div>
+    <div class="table" id="table"></div>
+    <p class="legend">期待値＝予測勝率×予測オッズ。<b>1.00を超えた馬</b>だけが買う候補になります。オッズは締切時点の予測値です。</p>
+    <div class="actions"><button class="btn pulse" id="toVerdict" disabled>判定を見る</button></div>
+  </section>
+
+  <!-- 4 判定 -->
+  <section class="screen" id="s-verdict">
+    <div class="eyebrow" id="vRace"></div>
+    <h2>このレースの判定</h2>
+    <div class="verdict" id="verdict"></div>
+    <div class="card" id="bets"></div>
+    <div class="quote">予想ではなく、答え合わせ。<small>期待値で決めるから、迷わない。</small></div>
+    <div class="actions">
+      <button class="btn" id="toSim">資金の増え方を試算する</button>
+      <button class="btn ghost" data-restart>別のレースで試す</button>
+    </div>
+  </section>
+
+  <!-- 5 資金シミュレーター -->
+  <section class="screen" id="s-sim">
+    <div class="eyebrow">Compound Simulator</div>
+    <h2>軍資金はどこまで増えるか</h2>
+    <p class="lead">川崎の記事と同じ条件で計算します。軍資金を選んで、期間を動かしてみてください。</p>
+    <div class="card">
+      <div class="seg" role="group" aria-label="軍資金">
+        <button type="button" id="p30" data-v="30000" aria-pressed="true">3万円</button>
+        <button type="button" id="p50" data-v="50000" aria-pressed="false">5万円</button>
+        <button type="button" id="p100" data-v="100000" aria-pressed="false">10万円</button>
+      </div>
+      <div class="field">
+        <label for="fund">軍資金 <output id="fundOut">30,000円</output></label>
+        <input type="range" id="fund" min="10000" max="300000" step="10000" value="30000">
+      </div>
+      <div class="field">
+        <label for="months">期間 <output id="monthsOut">12か月</output></label>
+        <input type="range" id="months" min="1" max="12" step="1" value="12">
+      </div>
+      <div class="result">
+        <div class="k" id="resK">12か月後の資金</div>
+        <div class="big" id="resV">0<small>円</small></div>
+        <div class="gain" id="resG"></div>
+      </div>
+      <svg id="chart" viewBox="0 0 340 170" role="img" aria-label="月ごとの資金の推移"></svg>
+      <table class="mtable" id="mtable"></table>
+      <p class="cond"><b>計算の条件（記事の試算と同じ）</b><br>月8開催／1日の投票額は軍資金の3倍／月間回収率101.5%／資金が増えたら投票額も同じ割合で増やす（複利）。<br>回収率101.5%が毎月続いた場合の計算です。実際の回収率は月ごとに変わり、投票額が大きくなるとオッズが下がることもあります。</p>
+    </div>
+    <div class="actions"><button class="btn" id="toEnd">次へ</button></div>
+  </section>
+
+  <!-- 6 終わり -->
+  <section class="screen" id="s-end">
+    <div class="end">
+      <img class="face" src="assets/takashi-face.webp" alt="川崎タカシ">
+      <h2>ここまでがデモです</h2>
+      <p>本物の指数と投票システムは、一般には公開していません。</p>
+    </div>
+    <div class="actions">
+      <button class="btn" data-restart>別のレースで試す</button>
+    </div>
+    <p class="note">※ このページのレース・馬・指数・オッズ・判定はすべてデモ用のサンプルです。実際の予想や成績ではありません。</p>
+  </section>
+</div>
+
+<footer class="foot"><b>DEMO</b>表示される数字はすべてデモ用のサンプルです</footer>
+
+<script>
+(() => {
+  'use strict';
+  const $ = (s, r = document) => r.querySelector(s);
+  const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const yen = (n) => Math.round(n).toLocaleString('ja-JP');
+
+  // ── デモ用の架空レース ────────────────────────────
+  // ev: 期待値を1.00超えにする馬番と値。ほかの馬は1.00未満になるよう作る
+  const RACES = [
+    { id: 'r1', no: '京都 11R', name: 'デモ記念', grade: 'G3', surface: 'turf', dist: '芝2200m', field: 14, cond: '晴・良',
+      seed: 11, top: [7, 3, 11, 1], ev: { 7: 1.24, 3: 1.12 },
+      bets: [['単勝', '7', 0.4], ['馬連', '3-7', 0.35], ['ワイド', '3-7', 0.25]] },
+    { id: 'r2', no: '東京 11R', name: 'サンプルステークス', grade: 'OP', surface: 'dirt', dist: 'ダ1600m', field: 16, cond: '曇・稍重',
+      seed: 23, top: [5, 11, 14, 2], ev: { 11: 1.31 },
+      bets: [['単勝', '11', 0.6], ['複勝', '11', 0.4]] },
+    { id: 'r3', no: '中山 10R', name: 'テスト特別', grade: '3勝', surface: 'turf', dist: '芝1200m', field: 16, cond: '雨・重',
+      seed: 37, top: [9, 4, 15, 12], ev: {}, bets: [] },
+  ];
+  const NAMES = ['アカツキノカゼ','シロガネボルト','ミナモノヒカリ','クロフネノユメ','サクラフブキ','ハヤテマル','ギンノツバサ','ヨアケノウタ',
+    'コハクノヒトミ','ライジンブレイブ','ツキミソウ','アオイホライズン','カゲロウステップ','ホシノカケラ','ベニスズメ','タイガノイブキ',
+    'ソラノキセキ','ナギサノコエ','イナズマリーフ','ムラクモダンサー','カザハナ','トキノハグルマ','ユウヅツ','ハガネノココロ'];
+  const WAKU = ['#ffffff','#1b1b1b','#e5383b','#2f6fe0','#f2d02c','#25a052','#f08a1c','#f39ac0'];
+  const WAKU_FG = ['#111','#fff','#fff','#fff','#111','#fff','#fff','#111'];
+
+  function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
+  function wakuOf(num, n) { // JRAの枠順：頭数が8を超えたぶん、8枠から順に2頭ずつ入る
+    const size = Array(8).fill(1); let extra = Math.max(0, n - 8);
+    for (let k = 7; extra > 0; k = k === 0 ? 7 : k - 1) { size[k]++; extra--; }
+    let acc = 0; for (let k = 0; k < 8; k++) { acc += size[k]; if (num <= acc) return k; }
+    return 7;
+  }
+  function buildHorses(r) {
+    const rand = rng(r.seed);
+    const pool = NAMES.slice().sort(() => rand() - 0.5);
+    const hs = [];
+    for (let i = 1; i <= r.field; i++) {
+      const rank = r.top.indexOf(i);
+      const idx = rank >= 0 ? 78 - rank * 3.2 - rand() * 1.2 : 44 + rand() * 22;
+      hs.push({ num: i, name: pool[i - 1], idx: Math.round(idx * 10) / 10 });
+    }
+    const w = hs.map((h) => Math.exp(h.idx / 6)); const sum = w.reduce((a, b) => a + b, 0);
+    hs.forEach((h, i) => {
+      h.p = w[i] / sum;
+      const ev = r.ev[h.num] ?? (0.62 + rand() * 0.3);
+      h.ev = ev; h.odds = Math.max(1.1, ev / h.p);
+      h.ev = h.p * h.odds; h.waku = wakuOf(h.num, r.field);
+    });
+    return hs;
+  }
+
+  // ── 画面の切り替え ────────────────────────────
+  const STEP_OF = { pick: 1, scan: 2, index: 3, verdict: 4, sim: 5, end: 5 };
+  let cur = null, horses = [], timers = [], raf = 0;
+  function clearRun() { timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf); }
+  function later(fn, ms) { timers.push(setTimeout(fn, RM ? Math.min(ms, 60) : ms)); }
+  function show(id) {
+    document.querySelectorAll('.screen').forEach((s) => s.classList.toggle('show', s.id === 's-' + id));
+    const n = STEP_OF[id];
+    document.querySelectorAll('.steps span').forEach((s) => {
+      const k = +s.dataset.s; s.classList.toggle('on', k === n); s.classList.toggle('done', k < n);
+    });
+    document.body.classList.toggle('paper', id === 'verdict' || id === 'sim');
+    scrollTo({ top: 0, behavior: RM ? 'auto' : 'smooth' });
+  }
+
+  // 1. レース一覧
+  $('#races').innerHTML = RACES.map((r) => `
+    <button class="race" data-id="${r.id}">
+      <span class="rno">${r.no}　${r.field}頭立て　サンプル</span>
+      <span class="rname">${r.name}（${r.grade}）</span>
+      <span class="rmeta"><span class="surface ${r.surface}">${r.surface === 'turf' ? '芝' : 'ダ'}</span>${r.dist}・${r.cond}</span>
+      <span class="go">解析 ▶</span>
+    </button>`).join('');
+  $('#races').addEventListener('click', (e) => {
+    const b = e.target.closest('.race'); if (!b) return;
+    cur = RACES.find((r) => r.id === b.dataset.id); horses = buildHorses(cur); startScan();
+  });
+  document.querySelectorAll('[data-restart]').forEach((b) => b.addEventListener('click', () => { clearRun(); show('pick'); }));
+
+  const raceLabel = () => `${cur.no}　${cur.name}（${cur.grade}）　${cur.dist}`;
+
+  // 2. 解析（キャンバスで線と光を流す）
+  const face = new Image(); face.src = 'assets/takashi-face.webp';
+  const SOURCES = [['過去10年の結果', '#3fd2ff'], ['血統', '#a184ff'], ['調教タイム', '#3ee08a'], ['馬場・展開', '#ffd84a'], ['予測投票数モデル', '#ff4fa3'], ['オッズ推移', '#ff8a3d']];
+
+  function startScan() {
+    clearRun(); show('scan');
+    $('#scanRace').textContent = raceLabel();
+    const btn = $('#toIndex'); btn.disabled = true; btn.textContent = '計算中…';
+    const log = $('#log'); log.innerHTML = '';
+    $('#prog').style.width = '0';
+
+    const cv = $('#mesh'), ctx = cv.getContext('2d');
+    const W = cv.clientWidth || 340, rowH = 21, H = Math.max(330, cur.field * rowH + 36);
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + 'px'; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const cx = W * 0.46, cy = H / 2, R = Math.min(42, W * 0.12);
+    const srcX = 8, srcW = Math.min(104, W * 0.3);
+    const src = SOURCES.map(([label, color], i) => ({ label, color, x: srcX, y: 34 + i * ((H - 68) / (SOURCES.length - 1)) }));
+    const hx = W - 70;
+    const hs = horses.map((h, i) => ({ h, x: hx, y: 18 + i * ((H - 36) / Math.max(1, cur.field - 1)), done: 0 }));
+    const parts = [];
+    const DUR = RM ? 300 : 7200;
+    const t0 = performance.now();
+    const order = horses.map((_, i) => i).sort(() => Math.random() - 0.5);
+
+    function bez(a, b, t) { // 横向きのS字カーブ
+      const mx = (a.x + b.x) / 2, u = 1 - t;
+      return { x: u*u*u*a.x + 3*u*u*t*mx + 3*u*t*t*mx + t*t*t*b.x, y: u*u*u*a.y + 3*u*u*t*a.y + 3*u*t*t*b.y + t*t*t*b.y };
+    }
+    function curve(a, b, color, alpha) {
+      const mx = (a.x + b.x) / 2;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.bezierCurveTo(mx, a.y, mx, b.y, b.x, b.y);
+      ctx.strokeStyle = color; ctx.globalAlpha = alpha; ctx.lineWidth = 1; ctx.stroke(); ctx.globalAlpha = 1;
+    }
+    function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+
+    function frame(now) {
+      const t = now - t0, k = Math.min(1, t / DUR);
+      ctx.clearRect(0, 0, W, H);
+      // 点のグリッド
+      ctx.fillStyle = 'rgba(120,140,180,.12)';
+      for (let gx = 10; gx < W; gx += 18) for (let gy = 10; gy < H; gy += 18) ctx.fillRect(gx, gy, 1, 1);
+
+      const center = { x: cx, y: cy };
+      // 線
+      src.forEach((s) => curve({ x: s.x + srcW, y: s.y }, { x: cx - R, y: cy }, s.color, 0.35));
+      hs.forEach((n) => curve({ x: cx + R, y: cy }, { x: n.x - 4, y: n.y }, n.done ? '#e6b450' : '#4a5470', n.done ? 0.55 : 0.25));
+
+      // 光の粒を足す
+      if (k < 0.92) {
+        if (k < 0.75) for (let i = 0; i < 2; i++) { const s = src[(Math.random() * src.length) | 0]; parts.push({ a: { x: s.x + srcW, y: s.y }, b: { x: cx - R, y: cy }, t: 0, sp: 0.012 + Math.random() * 0.012, c: s.color }); }
+        if (k > 0.22) { const n = hs[(Math.random() * hs.length) | 0]; parts.push({ a: { x: cx + R, y: cy }, b: { x: n.x - 4, y: n.y }, t: 0, sp: 0.016 + Math.random() * 0.014, c: SOURCES[(Math.random() * 6) | 0][1] }); }
+      }
+      for (let i = parts.length - 1; i >= 0; i--) {
+        const p = parts[i]; p.t += p.sp; if (p.t >= 1) { parts.splice(i, 1); continue; }
+        for (let j = 0; j < 4; j++) { const q = bez(p.a, p.b, Math.max(0, p.t - j * 0.018)); ctx.globalAlpha = 1 - j * 0.24; ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(q.x, q.y, 2 - j * 0.35, 0, 7); ctx.fill(); }
+        ctx.globalAlpha = 1;
+      }
+
+      // 左：データの箱
+      ctx.font = '700 10px "Noto Sans JP", sans-serif'; ctx.textBaseline = 'middle';
+      src.forEach((s, i) => {
+        const on = k > i * 0.05;
+        rr(s.x, s.y - 11, srcW, 22, 6); ctx.fillStyle = '#0d1118'; ctx.fill();
+        ctx.strokeStyle = on ? s.color : '#2a3142'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(s.x + 9, s.y, 3, 0, 7); ctx.fill();
+        ctx.fillStyle = '#dfe5f1'; ctx.fillText(s.label, s.x + 17, s.y + 0.5, srcW - 22);
+      });
+
+      // 中央：川崎の顔と回る輪
+      const pulse = 1 + Math.sin(t / 260) * 0.04;
+      const g = ctx.createRadialGradient(cx, cy, R * 0.6, cx, cy, R * 2.1);
+      g.addColorStop(0, 'rgba(230,180,80,.35)'); g.addColorStop(1, 'rgba(230,180,80,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R * 2.1 * pulse, 0, 7); ctx.fill();
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(t / 900);
+      ctx.setLineDash([4, 6]); ctx.strokeStyle = '#e6b450'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 0, R + 9, 0, 7); ctx.stroke();
+      ctx.rotate(-t / 450); ctx.setLineDash([22, 14]); ctx.strokeStyle = 'rgba(63,210,255,.6)'; ctx.beginPath(); ctx.arc(0, 0, R + 15, 0, 7); ctx.stroke();
+      ctx.restore(); ctx.setLineDash([]);
+      ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.clip();
+      if (face.complete && face.naturalWidth) ctx.drawImage(face, cx - R, cy - R, R * 2, R * 2); else { ctx.fillStyle = '#222'; ctx.fill(); }
+      ctx.restore();
+      ctx.strokeStyle = '#e6b450'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.stroke();
+      ctx.font = '700 9px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
+      rr(cx - 34, cy + R + 22, 68, 16, 4); ctx.fillStyle = '#000'; ctx.fill(); ctx.strokeStyle = '#e6b450'; ctx.stroke();
+      ctx.fillStyle = '#e6b450'; ctx.fillText(k < 1 ? 'INDEX ENGINE' : 'COMPLETE', cx, cy + R + 30.5);
+      ctx.textAlign = 'left';
+
+      // 右：各馬。順番に計算が終わって指数が出る
+      const doneCount = Math.floor(Math.max(0, (k - 0.25) / 0.68) * hs.length);
+      order.slice(0, doneCount).forEach((i) => { hs[i].done = 1; });
+      ctx.font = '700 10px "JetBrains Mono", monospace';
+      hs.forEach((n) => {
+        const w = n.h.waku;
+        rr(n.x - 4, n.y - 8, 18, 16, 3); ctx.fillStyle = WAKU[w]; ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,.3)'; ctx.stroke();
+        ctx.fillStyle = WAKU_FG[w]; ctx.textAlign = 'center'; ctx.fillText(n.h.num, n.x + 5, n.y + 0.5); ctx.textAlign = 'left';
+        if (n.done) { ctx.fillStyle = n.h.ev > 1 ? '#e6b450' : '#c9d1e4'; ctx.fillText(n.h.idx.toFixed(1), n.x + 20, n.y + 0.5); }
+        else { ctx.fillStyle = '#4a5470'; ctx.fillText('--.-', n.x + 20, n.y + 0.5); }
+      });
+
+      // 数字のタイル
+      const ease = 1 - Math.pow(1 - k, 3);
+      $('#t1').textContent = yen(34812 * ease);
+      $('#t2').textContent = yen(412 * Math.min(1, k * 2.2));
+      $('#t3').textContent = yen(1200000 * ease);
+      $('#t4').textContent = (2.84 * k).toFixed(2) + 's';
+      $('#prog').style.width = (k * 100) + '%';
+
+      if (k < 1 || parts.length) raf = requestAnimationFrame(frame);
+      
+    }
+    raf = requestAnimationFrame(frame);
+
+    // 流れるログ
+    const top = horses.slice().sort((a, b) => b.idx - a.idx);
+    const evs = horses.filter((h) => h.ev > 1).sort((a, b) => b.ev - a.ev);
+    const lines = [
+      [0, 'load', '過去10年 34,812レースを読み込み'],
+      [450, 'load', '血統テーブル 2代前まで照合'],
+      [900, 'load', '調教タイム 直近4本を取得'],
+      [1300, 'model', '予測投票数モデル 起動'],
+      [1750, 'odds', '締切時点の予測オッズを生成'],
+      [2200, 'model', `馬場補正 ${cur.cond} → 係数を調整`],
+      ...top.slice(0, 4).map((h, i) => [2700 + i * 520, 'calc', `${h.num}番 ${h.name} 指数 ${h.idx.toFixed(1)}`]),
+      [4900, 'ev', '期待値＝予測勝率×予測オッズ を全頭計算'],
+      ...(evs.length ? evs.map((h, i) => [5400 + i * 400, 'ev', `${h.num}番 期待値 ${h.ev.toFixed(2)} ▲ 1.00超え`]) : [[5400, 'ev', '期待値1.00超え 0頭']]),
+      [6200, 'calc', evs.length ? 'ベットコントロール 配分を計算' : '投票額 0円で確定'],
+      [7000, 'ok', '解析完了'],
+    ];
+    const t0d = Date.now();
+    lines.forEach(([ms, tag, text]) => later(() => {
+      const d = document.createElement('div');
+      const s = ((Date.now() - t0d) / 1000).toFixed(2).padStart(5, '0');
+      d.innerHTML = `<span class="t">${s}</span><span class="tag ${tag}">[${tag}]</span>`;
+      d.appendChild(document.createTextNode(text));
+      log.appendChild(d); while (log.children.length > 8) log.removeChild(log.firstChild);
+    }, ms));
+    later(() => { btn.disabled = false; btn.textContent = '指数を見る ▶'; }, 7300);
+  }
+  $('#toIndex').addEventListener('click', startIndex);
+
+  // 3. 指数表（馬番順に出して、指数順に並べ替える）
+  function startIndex() {
+    clearRun(); show('index');
+    $('#idxRace').textContent = raceLabel();
+    const tbl = $('#table'), H = 52; tbl.innerHTML = ''; tbl.style.height = horses.length * H + 'px';
+    const btn = $('#toVerdict'); btn.disabled = true;
+    const maxIdx = Math.max(...horses.map((h) => h.idx));
+    const MARKS = ['◎', '○', '▲', '△'];
+    const ranked = horses.slice().sort((a, b) => b.idx - a.idx);
+    const els = horses.map((h, i) => {
+      const el = document.createElement('div'); el.className = 'row';
+      el.style.transform = `translateY(${i * H}px)`;
+      el.innerHTML = `
+        <span class="num" style="background:${WAKU[h.waku]};color:${WAKU_FG[h.waku]}">${h.num}</span>
+        <span class="nm"><b></b><span class="ib"><s><i></i></s><em>--.-</em></span></span>
+        <span class="cell">${(h.p * 100).toFixed(1)}%</span>
+        <span class="cell">${h.odds.toFixed(1)}</span>
+        <span class="cell ev">–</span>
+        <span class="mark"></span>`;
+      el.querySelector('b').textContent = h.name;
+      tbl.appendChild(el); return el;
+    });
+    horses.forEach((h, i) => later(() => {
+      els[i].querySelector('.ib i').style.width = (h.idx / maxIdx * 100) + '%';
+      countTo(els[i].querySelector('em'), h.idx, 1, 900);
+    }, 200 + i * 70));
+    later(() => { // 指数順に並べ替え
+      ranked.forEach((h, r) => { els[h.num - 1].style.transform = `translateY(${r * H}px)`; });
+    }, 1700 + horses.length * 30);
+    later(() => { // 期待値と印
+      horses.forEach((h, i) => {
+        const c = els[i].querySelector('.ev'); c.textContent = h.ev.toFixed(2);
+        if (h.ev > 1) { c.classList.add('plus'); els[i].classList.add('hot'); }
+      });
+      ranked.slice(0, 4).forEach((h, r) => { const el = els[h.num - 1]; el.querySelector('.mark').textContent = MARKS[r]; el.classList.add('marked'); });
+      btn.disabled = false;
+    }, 2700 + horses.length * 30);
+  }
+  function countTo(el, to, dec, ms) {
+    if (RM) { el.textContent = to.toFixed(dec); return; }
+    const s = performance.now();
+    const step = (n) => { const k = Math.min(1, (n - s) / ms); el.textContent = (to * (1 - Math.pow(1 - k, 3))).toFixed(dec); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+  $('#toVerdict').addEventListener('click', startVerdict);
+
+  // 4. 判定
+  function startVerdict() {
+    clearRun(); show('verdict');
+    $('#vRace').textContent = raceLabel();
+    const evs = horses.filter((h) => h.ev > 1).sort((a, b) => b.ev - a.ev);
+    const v = $('#verdict'), bets = $('#bets');
+    if (evs.length) {
+      v.innerHTML = `<span class="stamp buy">買い</span><p>期待値1.00を超えた馬：${evs.map((h) => `<strong>${h.num}番 ${h.name}（${h.ev.toFixed(2)}）</strong>`).join('、')}</p>`;
+      const budget = 10000;
+      bets.innerHTML = `<h3><span>ベットコントロール</span><span>予算 ${yen(budget)}円の場合</span></h3>` +
+        cur.bets.map(([kind, pick, w]) => `<div class="bet"><span class="kind">${kind}</span><span class="pick">${pick}</span><span class="yen">${yen(budget * w)}円</span><span class="alloc"><i data-w="${w * 100}"></i></span></div>`).join('');
+      requestAnimationFrame(() => requestAnimationFrame(() => bets.querySelectorAll('.alloc i').forEach((i) => { i.style.width = i.dataset.w + '%'; })));
+    } else {
+      v.innerHTML = `<span class="stamp pass">見送り</span><p>期待値1.00を超える馬がいません。<br>このレースは<strong>買いません</strong>。</p>`;
+      bets.innerHTML = `<h3><span>ベットコントロール</span><span>このレースの投票額</span></h3><div class="zero">0円</div><p class="note" style="text-align:center;margin:0">買わないレースを決めるのも、指数の仕事です。</p>`;
+    }
+  }
+  $('#toSim').addEventListener('click', () => { clearRun(); show('sim'); renderSim(); });
+  $('#toEnd').addEventListener('click', () => { clearRun(); show('end'); });
+
+  // 5. 資金シミュレーター（記事の試算と同じ式：1か月で 1 + 3倍×8回×1.5% = 1.36倍）
+  const MONTHLY = 1 + 3 * 8 * 0.015;
+  const fund = $('#fund'), months = $('#months');
+  const presets = document.querySelectorAll('.seg button');
+  presets.forEach((b) => b.addEventListener('click', () => { fund.value = b.dataset.v; renderSim(); }));
+  fund.addEventListener('input', renderSim); months.addEventListener('input', renderSim);
+  let shown = 0;
+  function renderSim() {
+    const F = +fund.value, M = +months.value;
+    presets.forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.v === F)));
+    $('#fundOut').textContent = yen(F) + '円';
+    $('#monthsOut').textContent = M + 'か月';
+    const series = Array.from({ length: M + 1 }, (_, m) => F * Math.pow(MONTHLY, m));
+    const end = series[M];
+    $('#resK').textContent = M + 'か月後の資金';
+    animateNum($('#resV'), shown, end); shown = end;
+    $('#resG').textContent = '利益 +' + yen(end - F) + '円';
+    $('#mtable').innerHTML = [1, 3, 6, 12].filter((m) => m <= M).map((m) => {
+      const v = F * Math.pow(MONTHLY, m);
+      return `<tr><td>${m === 12 ? '1年後' : m === 6 ? '半年後' : m + 'か月後'}</td><td>${yen(v)}円</td><td>+${yen(v - F)}円</td></tr>`;
+    }).join('');
+    drawChart(series);
+  }
+  function animateNum(el, from, to) {
+    if (RM) { el.innerHTML = yen(to) + '<small>円</small>'; return; }
+    const s = performance.now(), ms = 500;
+    const step = (n) => { const k = Math.min(1, (n - s) / ms), e = 1 - Math.pow(1 - k, 3); el.innerHTML = yen(from + (to - from) * e) + '<small>円</small>'; if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+  function niceMax(v) { const p = Math.pow(10, Math.floor(Math.log10(v))); return [1, 2, 2.5, 5, 10].map((m) => m * p).find((m) => m >= v); }
+  function drawChart(series) {
+    const svg = $("#chart"), W = 340, H = 170, L = 46, Rp = 22, T = 12, B = 24;
+    const M = series.length - 1, ymax = niceMax(series[M]);
+    const x = (m) => L + (W - L - Rp) * (M ? m / M : 0.5), y = (v) => T + (H - T - B) * (1 - v / ymax);
+    const css = getComputedStyle(document.body);
+    const line = css.getPropertyValue('--line').trim(), mute = css.getPropertyValue('--mute').trim(), gold = css.getPropertyValue('--gold').trim();
+    const fmt = (v) => v >= 10000 ? (v / 10000).toLocaleString('ja-JP', { maximumFractionDigits: 1 }) + '万' : yen(v);
+    let s = '';
+    for (let i = 0; i <= 4; i++) { const v = ymax * i / 4, yy = y(v); s += `<line x1="${L}" x2="${W - Rp}" y1="${yy}" y2="${yy}" stroke="${line}" stroke-width="1"/><text x="${L - 6}" y="${yy + 3.5}" text-anchor="end" font-size="10" fill="${mute}" font-family="JetBrains Mono, monospace">${fmt(v)}</text>`; }
+    const ticks = M <= 6 ? series.map((_, m) => m) : [0, 3, 6, 9, 12].filter((m) => m <= M);
+    ticks.forEach((m) => { s += `<text x="${x(m)}" y="${H - 6}" text-anchor="middle" font-size="10" fill="${mute}" font-family="JetBrains Mono, monospace">${m}か月</text>`; });
+    const pts = series.map((v, m) => `${x(m)},${y(v)}`).join(' ');
+    s += `<polygon points="${x(0)},${y(0)} ${pts} ${x(M)},${y(0)}" fill="${gold}" fill-opacity=".14"/>`;
+    s += `<polyline points="${pts}" fill="none" stroke="${gold}" stroke-width="2.5" stroke-linejoin="round"/>`;
+    series.forEach((v, m) => { s += `<circle cx="${x(m)}" cy="${y(v)}" r="${m === M ? 5 : 2.5}" fill="${m === M ? gold : 'var(--panel)'}" stroke="${gold}" stroke-width="1.5"/>`; });
+    svg.innerHTML = s;
+  }
+
+  // 確認用：#r1-index・#r3-verdict・#sim のように画面へ直接飛べる
+  const m = location.hash.match(/^#(?:(r[123])-)?(scan|index|verdict|sim|end)$/);
+  if (m) {
+    cur = RACES.find((r) => r.id === (m[1] || 'r1')); horses = buildHorses(cur);
+    ({ scan: startScan, index: startIndex, verdict: startVerdict, sim: () => { show('sim'); renderSim(); }, end: () => show('end') })[m[2]]();
+  } else show('pick');
+})();
+</script>
+</body>
+</html>

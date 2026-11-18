@@ -39,6 +39,11 @@
       "source": "/member/:path*",
       "destination": "/",
       "permanent": false
+    },
+    {
+      "source": "/demo/:path*",
+      "destination": "/",
+      "permanent": false
     }
   ]
 }
