@@ -41,7 +41,7 @@ GitHub リポジトリを Vercel に Import → Framework Preset「Other」、Bu
 
 ## 指数システム 体験デモ（`demo/`）
 
-ステップメールから開いてもらう、川崎の「独自指数＆投票システム」の体験デモ（数字はすべて架空のサンプル）。いまは試作で、Claude Design にデザインを依頼中（依頼文 `docs/demo/design-prompt.md`）。本番は別Vercelプロジェクト（Root Directory を `demo`）で出す予定。ルートのプロジェクトでは `/demo/*` をトップへ転送している。
+ステップメールから開いてもらう、川崎の「独自指数＆投票システム」の体験デモ（数字はすべて架空のサンプル）。デザインは Claude Design のハンドオフ v4（依頼文 `docs/demo/design-prompt.md`、仕様 `docs/demo/handoff/README.md`）。本番は別Vercelプロジェクト（Root Directory を `demo`）で出す予定。ルートのプロジェクトでは `/demo/*` をトップへ転送している。
 
 ## 究極2ウィーク LP（`lp2/`）
 
