@@ -548,7 +548,7 @@ function vSent(mail) {
     </div>
     <form class="field" id="codeForm" novalidate style="margin-top:14px">
       <label for="code">ボタンが開かないときは、メールの6桁の番号</label>
-      <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="例）123456">
+      <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="例）123456">
       <p class="note" id="codeErr" role="alert" style="margin-top:8px;color:var(--red)" hidden></p>
       <div class="btns" style="margin-top:12px"><button class="btn" type="submit">番号で開く<span>▶</span></button></div>
     </form>
@@ -901,7 +901,7 @@ document.addEventListener('submit', (e) => {
   if (e.target.id === 'codeForm') {
     e.preventDefault();
     const code = $('#code').value.replace(/\D/g, ''), err = $('#codeErr');
-    if (code.length !== 6) { err.textContent = '6桁の番号を入れてください。'; err.hidden = false; return; }
+    if (code.length < 6 || code.length > 8) { err.textContent = 'メールに書かれた番号を入れてください。'; err.hidden = false; return; }
     sb.auth.verifyOtp({ email: lastMail, token: code, type: 'email' }).then(({ data, error }) => {
       if (error) { err.textContent = '番号が違うか、期限が切れています。もう一度メールを送ってください。'; err.hidden = false; return; }
       session = data.session; boot();
