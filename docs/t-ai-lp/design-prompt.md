@@ -19,7 +19,7 @@ GitHub：`jinjinsansan/kawasaki`（`main` ブランチ）
 |---|---|
 | `demo/index.html` | **体験デモ**（あなたのv4。公開中 https://tai.clubkawasaki.net ）。世界観をLPと**そろえてください** |
 | `docs/demo/handoff/README.md` | 体験デモのデザイントークン（黒 #0c0a09・ワインレッドの光・金 #e2b857 / #f5dc92 など） |
-| `docs/t-ai-lp/refund-terms.md` | 返金保証の条件（案）。LPの返金保証の欄に使う |
+| `docs/t-ai-lp/refund-terms.md` | 返金保証の条件（**川崎さん確認済み**）。LPの返金保証の欄に使う |
 | `member/tokushoho.html`・`member/privacy.html` | 特商法・プライバシーポリシーの前例（形式の参考） |
 | この依頼文の末尾 | **原稿の全文** |
 
@@ -83,8 +83,8 @@ GitHub：`jinjinsansan/kawasaki`（`main` ブランチ）
 ## 返金保証の見せ方
 
 - 「2大返金保証」は、このLPの**決め手**。料金表の直後に、証書や保証書のような格調ある見せ方で
-- 見出しと要点は原稿の文。そのすぐ下に、**条件の詳細**（`docs/t-ai-lp/refund-terms.md` の「返金保証の条件」）を開閉式で置く
-- 条件の文はまだ川崎さんの確認待ちなので、差し替えやすい形に
+- 見出しと要点は原稿の文。そのすぐ下に、**条件の詳細**（`docs/t-ai-lp/refund-terms.md` の「返金保証の条件」の章。「決めた理由」以降は載せない）を開閉式で置く
+- 条件の文は川崎さんの確認済み（11/19）。`refund-terms.md` の「返金保証の条件」の章をそのまま載せる
 
 ## 素材
 
