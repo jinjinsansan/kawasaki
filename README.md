@@ -43,6 +43,10 @@ GitHub リポジトリを Vercel に Import → Framework Preset「Other」、Bu
 
 ステップメールから開いてもらう、川崎の「独自指数＆投票システム」の体験デモ（数字はすべて架空のサンプル）。デザインは Claude Design のハンドオフ v4（依頼文 `docs/demo/design-prompt.md`、仕様 `docs/demo/handoff/README.md`）。本番は https://tai.clubkawasaki.net （Vercelプロジェクト `kawasaki-tai`、Root Directory を `demo`、`main` へのプッシュで自動デプロイ。DNSはCloudflareに CNAME `tai` → `b60feeb9f3202246.vercel-dns-016.com`（DNS only）。確認用 https://kawasaki-tai.vercel.app/ ）。ルートのプロジェクトでは `/demo/*` をトップへ転送している。現状と残り作業は `docs/demo/README.md`。
 
+## T-AI 販売LP（`t-ai/`・制作中）
+
+川崎の新商品「T-AI」の販売LP。公開予定 https://t-ai.clubkawasaki.net （縦スクロール）。Claude Design に依頼中（依頼文と原稿全文 `docs/t-ai-lp/design-prompt.md`、返金保証の条件案 `docs/t-ai-lp/refund-terms.md`）。ルートのプロジェクトでは `/t-ai/*` をトップへ転送している。
+
 ## 究極2ウィーク LP（`lp2/`）
 
 スワイプ型LP（https://1week.clubkawasaki.net ・別Vercelプロジェクト。旧 https://2week.clubkawasaki.net は `lp2/vercel.json` の redirects で 1week へ転送）。Vercel では同じリポジトリを別プロジェクトとして Import し、**Root Directory を `lp2`** に設定する。ルートのプロジェクトでは `vercel.json` の redirects で `/lp2/*` をトップへ転送している（`.vercelignore` に `lp2` を書くと lp2 プロジェクト側でも除外されて404になるので不可）。

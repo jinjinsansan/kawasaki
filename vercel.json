@@ -44,6 +44,11 @@
       "source": "/demo/:path*",
       "destination": "/",
       "permanent": false
+    },
+    {
+      "source": "/t-ai/:path*",
+      "destination": "/",
+      "permanent": false
     }
   ]
 }
