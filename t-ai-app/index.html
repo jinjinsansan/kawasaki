@@ -413,7 +413,8 @@ async function loadData() {
     return {
       id: r.race_id, date: r.date, venue: r.venue, no: r.race_no, name: normName(r.race_name), start: r.start_time || '',
       surface: r.surface === 'ダ' ? 'ダート' : (r.surface || ''), distance: r.distance, field: r.field_size || n, status: r.status,
-      horses: ps.map((h, i) => { const no = h.horse_no ?? i + 1; return { no, gate: h.gate ?? gateOf(no, n), name: h.horse_name, jockey: h.jockey || '', weight: h.weight, last: h.last_run || '', prob: h.prob, rank: h.rank, note: h.note, result: h.result }; }),
+      numbered: ps.every((h) => h.horse_no != null),
+      horses: ps.map((h, i) => { const known = h.horse_no != null, no = known ? h.horse_no : 101 + i; return { no, known, gate: known ? (h.gate ?? gateOf(no, n)) : 0, name: h.horse_name, jockey: h.jockey || '', weight: h.weight, last: h.last_run || '', prob: h.prob, rank: h.rank, note: h.note, result: h.result }; }),
     };
   }).filter((r) => r.status === 'waiting' || r.horses.length);
   const dates = [...new Set(races.map((r) => r.date))].sort();
@@ -494,10 +495,11 @@ const updTxt = () => { const d = new Date(DATA.updatedAt); const j = new Date(d.
 let byId = new Map();
 function afterLoad() { byId = new Map(DATA.races.map((r) => [r.id, r])); listState.d = DATA.today; listState.v = [...new Set(weekRaces(DATA.today).map((r) => r.venue))][0] || ''; const ms = [...new Set(DATA.races.filter((r) => r.status === 'done').map((r) => r.date.slice(0, 7)))]; resState.m = ms[ms.length - 1] || ''; BS.raceId = null; }
 // 買い目に使えるレース：今週の計算済み。無ければ直近の終了したレース
-const buildable = () => { const w = DATA.races.filter((x) => DATA.week.includes(x.date) && x.status === 'ready'); return w.length ? w : DATA.races.filter((x) => DATA.week.includes(x.date) && x.horses.length); };
+const buildable = () => { const w = DATA.races.filter((x) => DATA.week.includes(x.date) && x.status === 'ready' && x.numbered !== false); return w.length ? w : DATA.races.filter((x) => DATA.week.includes(x.date) && x.horses.length); };
 const isG = (r) => /（G[123]）/.test(r.name);
 const top = (r) => r.horses.reduce((a, h) => (!a || h.prob > a.prob ? h : a), null);
-const hn = (h) => `<span class="hn" style="background:${GATE_BG[h.gate]};color:${GATE_FG[h.gate]}">${h.no}</span>`;
+const dno = (h) => (h.known === false ? '－' : h.no);
+const hn = (h) => `<span class="hn" style="background:${GATE_BG[h.gate] || '#fbf7ee'};color:${GATE_FG[h.gate] || '#1b1814'}">${dno(h)}</span>`;
 const hnNo = (r, no) => hn(r.horses.find((h) => h.no === no));
 const ring = (cls = '') => `<svg class="pen ${cls}" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M16,27 C10,7 84,2 94,20 C102,40 34,50 10,36 C0,28 20,11 52,7"/></svg>`;
 const under = () => `<svg class="pen" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2,6 C30,2 66,9 98,4"/></svg>`;
@@ -576,10 +578,12 @@ function vHome() {
   const day = DATA.today, rs = weekRaces(day);
   const ready = rs.filter((r) => r.status === 'ready'), wait = rs.filter((r) => r.status === 'waiting');
   const venues = [...new Set(rs.map((r) => r.venue))].join('・');
-  const main = rs.find((r) => /G1/.test(r.name) && r.horses.length) || ready[0] || rs.find((r) => r.horses.length);
+  const grade = (r) => (/G1/.test(r.name) ? 50 : /G2/.test(r.name) ? 40 : /G3/.test(r.name) ? 30 : /（L）/.test(r.name) ? 20 : /OP/.test(r.name) ? 10 : 0) + (r.no === 11 ? 5 : 0) + r.no / 100;
+  const main = rs.filter((r) => r.horses.length).sort((a, b) => grade(b) - grade(a))[0];
   const mh = main.horses.slice().sort((a, b) => b.prob - a.prob).slice(0, 4), mx = mh[0].prob;
   const strong = (ready.length ? ready : rs.filter((r) => r.horses.length)).map((r) => ({ r, h: top(r) })).filter((x) => x.h.prob >= .3).sort((a, b) => b.h.prob - a.h.prob).slice(0, 5);
-  const sat = weekRaces(DATA.week[0]).filter((r) => r.status === 'done');
+  const doneDays = [...new Set(DATA.races.filter((r) => r.status === 'done').map((r) => r.date))].sort(), aDay = doneDays[doneDays.length - 1] || DATA.week[0];
+  const sat = weekRaces(aDay).filter((r) => r.status === 'done');
   const satHit = sat.filter((r) => top(r).result === 1).length;
   return `<section class="sec">
     <div class="label"><b>今週の一面</b><span>${fd(day)}</span></div>
@@ -597,7 +601,7 @@ function vHome() {
     <div class="box feat" data-pen>
       <div class="fh">${rb(main)}<div><h2>${esc(main.name)}</h2><p>${main.venue}${main.no}R・${meta(main)}</p></div></div>
       ${mh.map((h, i) => `<div class="mrow${i === 0 ? ' top' : ''}"><span class="mk">${MARK[i + 1]}</span>${hn(h)}<span class="nm"><b>${esc(h.name)}</b><span class="bar"><i data-w="${h.prob / mx * 100}"></i></span></span><span class="pct">${i === 0 ? `<span class="ring">${pct(h.prob)}%${ring()}</span>` : pct(h.prob) + '%'}</span></div>`).join('')}
-      <div class="btns"><button class="btn" type="button" data-go="#/race/${main.id}">出馬表を開く<span>▶</span></button><button class="btn sub" type="button" data-go="#/build/${main.id}">このレースで買い目をつくる</button></div>
+      <div class="btns"><button class="btn" type="button" data-go="#/race/${main.id}">出馬表を開く<span>▶</span></button>${main.numbered === false ? '' : `<button class="btn sub" type="button" data-go="#/build/${main.id}">このレースで買い目をつくる</button>`}</div>
     </div>
   </section>
   <section class="sec">
@@ -607,7 +611,7 @@ function vHome() {
     </div>
   </section>
   <section class="sec">
-    <div class="label"><b>答え合わせ</b><span>${fd(DATA.week[0])}</span></div>
+    <div class="label"><b>答え合わせ</b><span>${fd(aDay)}</span></div>
     <div class="big1"><span><small>T-AIの1番手が勝ったレース</small></span><b>${satHit}<small> / ${sat.length}レース</small></b></div>
     <div class="btns"><button class="btn sub" type="button" data-go="#/results">成績の面を開く</button></div>
   </section>`;
@@ -650,19 +654,19 @@ function vRace(r) {
     <div class="th"><span></span><span style="text-align:center">馬番</span><span style="text-align:center">印</span><span>馬名・騎手・斤量・前走${done ? '・着順' : ''}</span><span>勝つ確率</span></div>
     <div class="rows" id="rows" style="height:${r.horses.length * ROW}px">
       ${r.horses.map((h) => `<div class="row${h.prob >= .3 ? ' hi' : ''}${h.prob < .05 ? ' lo' : ''}${h.result === 1 ? ' win' : ''}" data-no="${h.no}">
-        <span class="gt" style="background:${GATE_BG[h.gate]}"></span><span class="no">${h.no}</span><span class="mk">${MARK[h.rank] || ''}</span>
+        <span class="gt" style="background:${GATE_BG[h.gate]}"></span><span class="no">${dno(h)}</span><span class="mk">${MARK[h.rank] || ''}</span>
         <span class="nm"><b>${esc(h.name)}${done ? `<span class="fin">${h.result === 1 ? `<span class="ring">1着${ring()}</span>` : h.result + '着'}</span>` : ''}</b><small>${esc(h.jockey)}・${h.weight}kg・${h.note ? `<em>${esc(h.last)}</em>` : esc(h.last)}</small></span>
         <span class="pc"><span class="rk">${h.rank}位</span><span class="pct"><span class="ring">${h.prob >= .3 ? ring() : ''}<em style="font-style:normal" data-v="${pct(h.prob)}">${pct(h.prob)}</em>%</span></span><span class="bar"><i data-w="${h.prob / top(r).prob * 100}"></i></span></span>
       </div>`).join('')}
     </div>
   </div>
   ${over ? '<p class="dnote">※海外から来た馬など、日本での出走歴がない馬は、確率が低く出ることがあります。</p>' : ''}
-  <section class="sec">
+  ${r.numbered === false ? '<section class="sec"><div class="wait-box"><span class="stamp">枠順待ち</span><p class="h2">馬番は、枠順が<br>確定してから載せます。</p><p class="note">組み合わせの確率と買い目は、枠順の確定後に使えます。各馬の勝つ確率は、もう計算済みです。</p></div></section>' : `<section class="sec">
     <div class="label"><b>組み合わせ</b><span>確率の高い順</span></div>
     <div class="seg sm" role="group" aria-label="券種" id="kindSeg" style="margin-top:12px">${['uma', 'wide', 'fuku'].map((k) => `<button type="button" data-kind="${k}" aria-pressed="${raceState.kind === k}">${KIND[k]}</button>`).join('')}</div>
     <div class="box" style="margin-top:8px" id="combos"></div>
     ${done ? '' : `<div class="btns"><button class="btn" type="button" data-go="#/build/${r.id}">このレースで買い目をつくる<span>▶</span></button></div>`}
-  </section>`;
+  </section>`}`;
 }
 function placeRows(r, animate = true) {
   const order = r.horses.slice().sort(raceState.sort === 'prob' ? (a, b) => b.prob - a.prob : (a, b) => a.no - b.no);
@@ -673,6 +677,7 @@ function placeRows(r, animate = true) {
   document.querySelectorAll('#sortSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.sort === raceState.sort)));
 }
 function renderCombos(r) {
+  if (!$('#combos')) return;
   const list = CALC.combos(r, raceState.kind), mx = list[0].prob, shown = list.slice(0, raceState.limit);
   const done = r.status === 'done', win = done ? r.horses.filter((h) => h.result <= (raceState.kind === 'uma' ? 2 : 3)).map((h) => h.no) : [];
   const hitC = (nums) => done && (raceState.kind === 'wide' ? nums.every((n) => win.includes(n)) : nums.every((n) => win.includes(n)) && nums.length === (raceState.kind === 'uma' ? 2 : 3));
