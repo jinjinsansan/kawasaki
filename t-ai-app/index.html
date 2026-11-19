@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>T-AI新報 会員版（プロトタイプ）</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f2ecdf">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&amp;family=Zen+Kaku+Gothic+New:wght@500;700;900&amp;family=Zen+Kurenaido&amp;family=Oswald:wght@500;700&amp;display=swap">
+<style>
+/* T-AI新報 会員版 ─ 販売LP v4 と同じトークン */
+:root {
+  --paper: #f2ecdf; --paper2: #e9e1cf; --card: #fbf7ee; --ink: #1b1814; --ink2: #4a443b; --ink3: #6f675b;
+  --red: #c1121f; --red2: #a30f1a;
+  --g: "Zen Kaku Gothic New", "Hiragino Sans", sans-serif;
+  --m: "Shippori Mincho B1", "Hiragino Mincho ProN", serif;
+  --pen: "Zen Kurenaido", cursive;
+  --n: "Oswald", "Zen Kaku Gothic New", sans-serif;
+  --pad: max(16px, env(safe-area-inset-left, 0px));
+  --tabh: 62px;
+  --ease: cubic-bezier(.22, .61, .36, 1);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: #d9d1bf; color: var(--ink); font-family: var(--g); font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; overflow-x: hidden; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+input, select { font: inherit; color: inherit; -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+a { color: var(--red); } a:hover { color: var(--red2); }
+button { font: inherit; color: inherit; cursor: pointer; }
+p, h1, h2, h3 { margin: 0; }
+.app { position: relative; max-width: 480px; min-height: 100dvh; margin: 0 auto; background: var(--paper); box-shadow: 0 0 40px rgba(60, 40, 10, .18); padding-bottom: calc(var(--tabh) + 24px + env(safe-area-inset-bottom, 0px)); }
+.app.bare { padding-bottom: 24px; }
+.app::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .5; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3  0 0 0 0 .25  0 0 0 0 .15  0 0 0 .09 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"); }
+:is(button, a, select, input, summary):focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+
+/* 題字（上部） */
+.mast { position: sticky; top: 0; z-index: 10; padding: calc(8px + env(safe-area-inset-top, 0px)) var(--pad) 0; background: var(--paper); }
+.mast-r { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 40px; }
+.mast-t { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.mast-t b { font-family: var(--m); font-weight: 800; font-size: 24px; line-height: 1; letter-spacing: .03em; }
+.mast-t b i { font-style: normal; color: var(--red); }
+.mast-t small { padding: 2px 6px; background: var(--red); color: #fff; font-weight: 900; font-size: 11px; letter-spacing: .08em; }
+.mast-chip { font-size: 10.5px; font-weight: 700; padding: 1px 7px; border: 1px solid var(--ink3); color: var(--ink2); white-space: nowrap; }
+.back { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 12px 0 4px; margin-left: -4px; border: 0; background: none; font-weight: 900; font-size: 15px; }
+.back::before { content: "‹"; font-size: 26px; line-height: 1; margin-top: -3px; }
+.dbl { height: 6px; margin-top: 6px; border-top: 3px solid var(--ink); border-bottom: 1px solid var(--ink); }
+.mast-sub { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--ink); font-size: 11px; font-weight: 500; color: var(--ink2); white-space: nowrap; }
+.mast-sub span:last-child { overflow: hidden; text-overflow: ellipsis; }
+
+/* タブ */
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; max-width: 480px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding-bottom: env(safe-area-inset-bottom, 0px); background: rgba(242, 236, 223, .97); border-top: 2px solid var(--ink); }
+.tabs button { position: relative; display: grid; place-content: center; gap: 0; min-height: var(--tabh); border: 0; background: none; text-align: center; line-height: 1.25; transition: background-color .2s; }
+.tabs button + button { border-left: 1px solid rgba(27, 24, 20, .18); }
+.tabs b { font-weight: 900; font-size: 15px; }
+.tabs small { font-size: 10px; font-weight: 700; color: var(--ink3); }
+.tabs button.on { background: var(--card); }
+.tabs button.on::before { content: ""; position: absolute; left: 0; right: 0; top: -2px; height: 4px; background: var(--red); }
+.tabs button.on b { color: var(--red); }
+.tabs button:active { background: var(--paper2); }
+
+/* 共通 */
+.view { position: relative; padding: 0 0 8px; animation: vin .24s var(--ease) both; }
+.view.still { animation: none; }
+@keyframes vin { from { opacity: 0; transform: translateY(6px); } }
+.sec { padding: 22px var(--pad) 0; }
+.label { display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 13px; letter-spacing: .1em; }
+.label b { padding: 2px 9px; background: var(--red); color: #fff; white-space: nowrap; }
+.label span { color: var(--ink2); font-weight: 700; white-space: nowrap; }
+.label::after { content: ""; flex: 1; height: 1px; background: var(--ink); }
+.h1 { margin-top: 12px; font-weight: 900; font-size: clamp(24px, 7.4vw, 32px); line-height: 1.32; text-wrap: balance; }
+.h1 em { font-style: normal; color: var(--red); }
+.h2 { font-weight: 900; font-size: clamp(20px, 6vw, 25px); line-height: 1.35; text-wrap: balance; }
+.lead { margin-top: 8px; font-family: var(--m); font-weight: 700; font-size: 14.5px; line-height: 1.9; color: var(--ink2); }
+.note { font-size: 12px; line-height: 1.7; color: var(--ink2); }
+.proto { margin: 26px var(--pad) 0; padding-top: 8px; border-top: 1px solid rgba(27, 24, 20, .25); font-size: 11px; color: var(--ink3); text-align: center; }
+.btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 54px; padding: 0 18px; border: 2px solid var(--ink); text-decoration: none; font-weight: 900; font-size: 16px; letter-spacing: .06em; color: #fff; background: var(--red); box-shadow: 4px 4px 0 var(--ink); transition: transform .12s, box-shadow .12s; }
+.btn:hover { color: #fff; }
+.btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--ink); }
+.btn.sub { background: var(--card); color: var(--ink); }
+.btn.sub:hover { color: var(--ink); }
+.btns { display: grid; gap: 12px; margin-top: 18px; }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); border: 2px solid var(--ink); background: var(--card); }
+.seg button { min-height: 44px; border: 0; background: none; font-weight: 900; font-size: 14px; white-space: nowrap; transition: background-color .15s, color .15s; }
+.seg button + button { border-left: 1px solid var(--ink); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.seg button:disabled { color: var(--ink3); cursor: default; background: repeating-linear-gradient(135deg, transparent 0 6px, rgba(27,24,20,.06) 6px 7px); }
+.seg button:active:not(:disabled) { background: var(--paper2); }
+.seg button[aria-pressed="true"]:active { background: var(--ink); }
+.seg.sm button { min-height: 40px; font-size: 13px; }
+.box { border: 2px solid var(--ink); background: var(--card); }
+.cap { display: flex; justify-content: space-between; gap: 8px; padding: 5px 10px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 11.5px; white-space: nowrap; }
+.cap span:last-child { overflow: hidden; text-overflow: ellipsis; }
+.hn { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 3px; font-family: var(--n); font-weight: 500; font-size: 14px; line-height: 1; box-shadow: inset 0 0 0 1px rgba(27, 24, 20, .35); }
+.rb { display: grid; place-items: center; width: 44px; height: 44px; background: var(--ink); color: var(--paper); font-family: var(--n); font-weight: 700; font-size: 18px; line-height: 1; }
+.rb small { font-size: 11px; margin-left: 1px; }
+.rb.g { background: var(--red); color: #fff; }
+.pct { font-family: var(--n); font-weight: 700; font-variant-numeric: tabular-nums; }
+.stamp { display: inline-block; padding: 2px 8px; border: 2px solid var(--red); color: var(--red); font-weight: 900; font-size: 12px; line-height: 1.4; transform: rotate(-4deg); white-space: nowrap; }
+.pen { position: absolute; overflow: visible; pointer-events: none; }
+.pen path { fill: none; stroke: var(--red); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.drawn .pen path { transition: stroke-dashoffset .8s var(--ease); stroke-dashoffset: 0; }
+.ring { position: relative; display: inline-block; }
+.ring .pen { inset: -9px -11px -8px -9px; width: calc(100% + 20px); height: calc(100% + 17px); }
+
+/* ログイン */
+.login { min-height: 100dvh; display: grid; align-content: center; gap: 0; padding: calc(24px + env(safe-area-inset-top, 0px)) var(--pad) 24px; }
+.login .big { display: flex; align-items: baseline; gap: 10px; }
+.login .big b { font-family: var(--m); font-weight: 800; font-size: clamp(46px, 14vw, 64px); line-height: 1; letter-spacing: .03em; }
+.login .big b i { font-style: normal; color: var(--red); }
+.login .seal { display: grid; place-items: center; width: 66px; height: 66px; margin-left: auto; border-radius: 50%; border: 3px solid var(--red); box-shadow: inset 0 0 0 3px var(--paper), inset 0 0 0 4px var(--red); color: var(--red); font-weight: 900; font-size: 15px; line-height: 1.1; text-align: center; transform: rotate(10deg); }
+.field { display: grid; gap: 6px; margin-top: 22px; }
+.field label { font-weight: 900; font-size: 13px; }
+.field input { width: 100%; min-height: 54px; padding: 0 14px; border: 2px solid var(--ink); border-radius: 0; background: #fffdf7; font-family: var(--n); font-size: 17px; letter-spacing: .02em; }
+.field input::placeholder { font-family: var(--g); color: var(--ink3); font-size: 15px; }
+.sent { margin-top: 22px; padding: 18px 14px; border: 2px dashed var(--ink); background: var(--card); }
+.sent .mail { font-family: var(--n); font-size: 17px; word-break: break-all; }
+
+/* 一面 */
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 16px; }
+.stats div { display: grid; gap: 2px; padding: 8px 6px 9px; text-align: center; }
+.stats div + div { border-left: 1px solid var(--ink); }
+.stats small { font-size: 10.5px; font-weight: 700; color: var(--ink2); white-space: nowrap; }
+.stats b { font-family: var(--n); font-weight: 700; font-size: 26px; line-height: 1.05; }
+.stats b.jp { font-family: var(--g); font-weight: 900; font-size: 14px; line-height: 1.9; }
+.stats .red b { color: var(--red); }
+.upd { margin-top: 6px; font-size: 11.5px; color: var(--ink2); text-align: right; }
+.feat { margin-top: 14px; }
+.fh { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; align-items: center; padding: 12px 12px 10px; }
+.fh h2 { font-weight: 900; font-size: 19px; line-height: 1.35; }
+.fh p { font-size: 12px; color: var(--ink2); line-height: 1.5; }
+.mrow { display: grid; grid-template-columns: 22px 26px minmax(0, 1fr) 70px; gap: 8px; align-items: center; min-height: 44px; padding: 4px 12px; border-top: 1px solid var(--ink); }
+.mrow .mk { text-align: center; font-weight: 900; color: var(--red); }
+.mrow .nm { min-width: 0; display: grid; gap: 3px; }
+.mrow .nm b { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.bar { position: relative; height: 6px; background: var(--paper2); }
+.bar i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--ink); transition: width 1s var(--ease); }
+.bar.red i, .top .bar i { background: var(--red); }
+.mrow .pct { text-align: right; font-size: 18px; }
+.mrow.top .pct { color: var(--red); }
+.feat .btns { padding: 4px 12px 14px; margin-top: 8px; }
+.list { margin-top: 12px; border-top: 3px solid var(--ink); }
+.li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; min-height: 58px; padding: 8px 2px; border: 0; border-bottom: 1px solid var(--ink); background: none; text-align: left; transition: background-color .15s; }
+.li:active { background: var(--paper2); }
+.li .t { font-size: 11.5px; font-weight: 700; color: var(--ink2); line-height: 1.4; }
+.li .h { display: flex; align-items: center; gap: 6px; min-width: 0; font-weight: 900; font-size: 15px; line-height: 1.4; }
+.li .h span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.li .pct { font-size: 24px; color: var(--red); }
+.li .arr { margin-left: 6px; color: var(--ink3); font-weight: 900; }
+
+/* 出馬表の一覧 */
+.ctl { display: grid; gap: 8px; }
+.rrow { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; min-height: 70px; padding: 10px 2px; border: 0; border-bottom: 1px solid var(--ink); background: none; text-align: left; transition: background-color .15s; }
+.rrow:active { background: var(--paper2); }
+.rrow .ri { min-width: 0; display: grid; gap: 1px; }
+.rrow .ri .tm { font-family: var(--n); font-size: 12px; color: var(--ink2); line-height: 1.3; }
+.rrow .ri b { font-weight: 900; font-size: 15px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rrow .ri small { font-size: 11.5px; color: var(--ink2); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rrow .rt { display: grid; justify-items: end; gap: 2px; min-width: 84px; }
+.rrow .rt .who { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: var(--ink2); white-space: nowrap; }
+.rrow .rt .pct { font-size: 20px; line-height: 1.1; color: var(--red); }
+.rrow .rt .done { font-size: 11px; font-weight: 700; color: var(--ink2); }
+.rrow.wait { opacity: .78; }
+
+/* レース詳細 */
+.rhead { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; align-items: center; padding: 14px var(--pad) 0; }
+.rhead h1 { font-weight: 900; font-size: 21px; line-height: 1.35; }
+.rhead p { font-size: 12px; color: var(--ink2); line-height: 1.5; }
+.calc { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; margin: 14px var(--pad) 0; padding: 8px 10px; background: var(--ink); color: var(--paper); font-size: 12px; font-weight: 700; }
+.calc .rot { position: relative; height: 6px; background: rgba(242, 236, 223, .15); overflow: hidden; }
+.calc .rot i { position: absolute; inset: 0 auto 0 0; width: 0; background: repeating-linear-gradient(90deg, var(--paper) 0 6px, transparent 6px 9px); }
+.calc.run .rot i { animation: rot 1.25s var(--ease) forwards; }
+.calc.ok .rot i { width: 100%; }
+@keyframes rot { to { width: 100%; } }
+.calc b { font-family: var(--n); font-weight: 500; letter-spacing: .06em; white-space: nowrap; }
+.dctl { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px var(--pad) 0; }
+.dctl .seg { flex: 0 1 220px; }
+.dctl small { font-size: 11px; color: var(--ink2); }
+.tbl { margin: 10px var(--pad) 0; }
+.th { display: grid; grid-template-columns: 6px 30px 22px minmax(0, 1fr) 72px; align-items: center; padding: 4px 0; background: var(--ink); color: var(--paper); font-size: 10.5px; font-weight: 700; }
+.th span:nth-child(5) { text-align: right; padding-right: 10px; }
+.rows { position: relative; }
+.row { position: absolute; left: 0; right: 0; height: 60px; display: grid; grid-template-columns: 6px 30px 22px minmax(0, 1fr) 72px; align-items: center; border-bottom: 1px solid var(--ink); background: var(--card); transition: transform .45s var(--ease); }
+.row .gt { align-self: stretch; }
+.row .no { align-self: stretch; display: grid; place-items: center; font-family: var(--n); font-weight: 700; font-size: 18px; border-right: 1px solid var(--ink); }
+.row .mk { text-align: center; font-weight: 900; font-size: 16px; color: var(--red); }
+.row .nm { min-width: 0; padding: 0 6px 0 2px; display: grid; gap: 1px; }
+.row .nm b { font-size: 14.5px; font-weight: 900; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .nm small { font-size: 11px; color: var(--ink2); line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .nm small em { font-style: normal; font-weight: 700; color: var(--red); }
+.row .pc { position: relative; display: grid; gap: 3px; padding-right: 10px; text-align: right; }
+.row .pc .pct { font-size: 19px; line-height: 1; }
+.row .pc .bar { height: 5px; }
+.row .rk { font-size: 9.5px; font-weight: 700; line-height: 1; color: var(--ink3); }
+.row.hi .pct { color: var(--red); }
+.row.lo { color: var(--ink3); }
+.row.lo .nm b { font-weight: 700; }
+.row.lo .bar i { background: var(--ink3); }
+.row .fin { position: relative; display: inline-block; margin-left: 4px; font-weight: 900; font-size: 11px; color: var(--ink); }
+.row.win { background: #fff; }
+.instant .bar i { transition: none; }
+.dnote { margin: 10px var(--pad) 0; padding: 8px 10px; border-left: 4px solid var(--red); background: var(--card); font-size: 12px; line-height: 1.7; }
+.wait-box { margin: 18px var(--pad) 0; padding: 28px 16px; text-align: center; display: grid; justify-items: center; gap: 12px; border: 2px dashed var(--ink); background: var(--card); }
+.wait-box .stamp { font-size: 18px; padding: 4px 14px; }
+.crow { display: grid; grid-template-columns: 28px minmax(0, 1fr) 64px; gap: 8px; align-items: center; min-height: 46px; padding: 4px 10px; border-top: 1px solid var(--ink); }
+.crow:first-of-type { border-top: 0; }
+.crow .rk { font-family: var(--n); font-size: 14px; color: var(--ink2); text-align: center; }
+.crow .tk { display: flex; align-items: center; gap: 3px; }
+.crow .tk i { font-style: normal; color: var(--ink3); font-weight: 700; }
+.crow .pr { display: grid; gap: 3px; text-align: right; }
+.crow .pr .pct { font-size: 16px; line-height: 1; }
+.crow .pr .bar { height: 4px; }
+.crow:nth-of-type(-n+3) .pct { color: var(--red); }
+.more { display: block; width: 100%; min-height: 46px; border: 0; border-top: 1px solid var(--ink); background: var(--paper2); font-weight: 900; font-size: 13.5px; }
+
+/* 買い目をつくる */
+.pick { display: grid; gap: 4px; }
+.pick label { font-size: 11.5px; font-weight: 700; color: var(--ink2); }
+.pick select { width: 100%; min-height: 50px; padding: 0 40px 0 12px; border: 2px solid var(--ink); border-radius: 0; background: var(--card) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='10'><path d='M1 1l6 7 6-7' fill='none' stroke='%231b1814' stroke-width='2'/></svg>") no-repeat right 14px center; -webkit-appearance: none; appearance: none; font-weight: 900; font-size: 15px; }
+.hint { display: flex; align-items: center; gap: 8px; margin: 14px var(--pad) 0; font-family: var(--pen); font-size: 18px; line-height: 1.35; color: var(--red); }
+.hint::before { content: "✎"; font-family: var(--g); font-size: 16px; }
+.grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; margin: 10px var(--pad) 0; }
+.hb { position: relative; display: grid; grid-template-rows: 5px 1fr auto; min-height: 66px; padding: 0 0 5px; border: 2px solid var(--ink); background: var(--card); text-align: center; overflow: hidden; transition: background-color .12s, color .12s, transform .12s; }
+.hb:active { transform: scale(.95); }
+.hb .gs { display: block; border-bottom: 1px solid var(--ink); }
+.hb b { display: grid; place-items: center; font-family: var(--n); font-weight: 700; font-size: 22px; line-height: 1; }
+.hb small { font-family: var(--n); font-size: 11px; line-height: 1; color: var(--ink2); }
+.hb .tag { position: absolute; top: 7px; right: 3px; font-size: 9.5px; font-weight: 900; line-height: 1; }
+.hb.on { background: var(--ink); color: var(--paper); }
+.hb.on small { color: #d8cfbd; }
+.hb.ax { background: var(--red); color: #fff; border-color: var(--red2); }
+.hb.ax small { color: #ffd9dc; }
+.hb.pt { box-shadow: inset 0 0 0 3px var(--red); }
+.hb.pt .tag { color: var(--red); }
+.sumbar { position: sticky; bottom: calc(var(--tabh) + 10px + env(safe-area-inset-bottom, 0px)); z-index: 5; margin: 16px var(--pad) 0; border: 2px solid var(--ink); background: #fffdf7; box-shadow: 4px 4px 0 var(--ink); }
+.sb1 { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end; padding: 10px 12px 8px; }
+.sb1 small { display: block; font-size: 11.5px; font-weight: 900; line-height: 1.3; }
+.sb1 .big { position: relative; display: inline-block; font-family: var(--n); font-weight: 700; font-size: 40px; line-height: 1.05; color: var(--red); font-variant-numeric: tabular-nums; }
+.sb1 .big small { display: inline; font-size: .5em; }
+.sb1 .big .pen { inset: auto -4px -6px -2px; height: 10px; width: calc(100% + 6px); }
+.sb1 .pts { text-align: right; }
+.sb1 .pts b { font-family: var(--n); font-weight: 700; font-size: 26px; line-height: 1; }
+.sb2 { display: grid; grid-template-columns: auto minmax(0, 92px) auto minmax(0, 1fr); gap: 6px; align-items: center; padding: 8px 12px; border-top: 1px solid var(--ink); font-size: 12.5px; font-weight: 700; }
+.sb2 input { width: 100%; min-height: 40px; padding: 0 8px; border: 2px solid var(--ink); border-radius: 0; background: var(--card); font-family: var(--n); font-size: 16px; text-align: right; }
+.sb2 .per { text-align: right; font-size: 12px; line-height: 1.4; }
+.sb2 .per b { font-family: var(--n); font-size: 16px; }
+.sb2 .per.warn { color: var(--red); }
+details.tix { margin: 14px var(--pad) 0; border: 2px solid var(--ink); background: var(--card); }
+details > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 48px; padding: 6px 12px; cursor: pointer; font-weight: 900; font-size: 14px; }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::after { content: "＋"; color: var(--red); font-weight: 900; }
+details[open] > summary::after { content: "－"; }
+.clear { min-height: 44px; padding: 0 14px; border: 2px solid var(--ink); background: var(--card); font-weight: 900; font-size: 13px; }
+
+/* 成績 */
+.cal .r { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .8fr) minmax(0, 1fr) minmax(0, 1fr); align-items: center; min-height: 46px; border-top: 1px solid var(--ink); text-align: right; }
+.cal .r > * { padding: 0 10px; }
+.cal .r > :first-child { text-align: left; font-weight: 900; font-size: 13px; }
+.cal .r.h { min-height: 34px; border-top: 0; background: var(--ink); color: var(--paper); font-size: 10.5px; font-weight: 700; }
+.cal .r.h > :first-child { font-size: 10.5px; font-weight: 700; }
+.cal .r .pct { font-size: 17px; }
+.cal .r .act { color: var(--red); }
+.cal .r .cnt { font-family: var(--n); font-size: 14px; color: var(--ink2); }
+.big1 { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end; margin-top: 12px; padding: 12px; border-top: 4px solid var(--red); border-bottom: 1px solid var(--ink); }
+.big1 small { font-size: 12px; font-weight: 700; color: var(--ink2); line-height: 1.5; }
+.big1 b { font-family: var(--n); font-weight: 700; font-size: 44px; line-height: 1; color: var(--red); }
+.big1 b small { font-size: 16px; color: var(--ink); }
+details.day { border-bottom: 1px solid var(--ink); }
+details.day > summary { padding: 10px 2px; min-height: 54px; }
+details.day > summary span { display: grid; line-height: 1.4; }
+details.day > summary small { font-size: 11.5px; font-weight: 700; color: var(--ink2); }
+.drow { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 8px; align-items: center; width: 100%; min-height: 52px; padding: 6px 2px; border: 0; border-top: 1px dashed rgba(27, 24, 20, .35); background: none; text-align: left; }
+.drow:active { background: var(--paper2); }
+.drow .v { font-family: var(--n); font-size: 13px; font-weight: 700; line-height: 1.2; }
+.drow .v small { display: block; font-family: var(--g); font-size: 10px; color: var(--ink2); }
+.drow .w { min-width: 0; display: flex; align-items: center; gap: 8px; }
+.drow .w b { font-size: 13.5px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.drow .s { text-align: right; font-size: 11px; font-weight: 700; color: var(--ink2); line-height: 1.35; white-space: nowrap; }
+.drow .s .pct { display: block; font-size: 15px; color: var(--ink); }
+.drow.hit .s .pct { color: var(--red); }
+
+/* 会員 */
+.card { position: relative; margin-top: 14px; padding: 18px 16px 18px; border: 2px solid var(--ink); outline: 1px solid var(--ink); outline-offset: -7px; background: #fffdf6; }
+.card .ttl { text-align: center; font-family: var(--m); font-weight: 800; font-size: 20px; letter-spacing: .4em; padding-left: .4em; }
+.card dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0; margin: 14px 0 0; }
+.card dt, .card dd { margin: 0; padding: 10px 0; border-top: 1px solid var(--ink); }
+.card dt { padding-right: 14px; font-size: 12px; font-weight: 700; color: var(--ink2); white-space: nowrap; }
+.card dd { font-weight: 900; font-size: 15px; line-height: 1.5; }
+.card dd .pct { color: var(--red); font-size: 18px; }
+.card .sl { position: absolute; right: 16px; top: 12px; width: 52px; height: 52px; display: grid; place-items: center; border: 3px solid var(--red); border-radius: 6px; color: var(--red); font-family: var(--n); font-weight: 700; font-size: 14px; line-height: 1; transform: rotate(-8deg); opacity: .88; }
+.news details { border-bottom: 1px solid var(--ink); }
+.news summary span { display: grid; line-height: 1.45; }
+.news summary small { font-family: var(--n); font-size: 11.5px; font-weight: 500; color: var(--ink2); }
+.news p { padding: 0 2px 14px; font-family: var(--m); font-weight: 700; font-size: 14px; line-height: 1.9; color: var(--ink2); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .pen path { stroke-dashoffset: 0; }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="mast" id="mast" hidden></header>
+  <main id="view"></main>
+</div>
+<nav class="tabs" id="tabs" aria-label="紙面の切り替え" hidden>
+  <button type="button" data-tab="home"><b>一面</b><small>今週</small></button>
+  <button type="button" data-tab="races"><b>出馬表</b><small>レース</small></button>
+  <button type="button" data-tab="build"><b>買い目</b><small>つくる</small></button>
+  <button type="button" data-tab="results"><b>成績</b><small>答え合わせ</small></button>
+  <button type="button" data-tab="my"><b>会員</b><small>マイページ</small></button>
+</nav>
+
+<script>
+(() => {
+'use strict';
+/* ============================================================
+   見本データ ─ 本番では同じ形の DATA をデータベースから読み込む
+   ============================================================ */
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function makeSampleData() {
+  const R = rng(20261122);
+  const gauss = () => Math.sqrt(-2 * Math.log(R() + 1e-9)) * Math.cos(2 * Math.PI * R());
+  const pick = (a) => a[Math.floor(R() * a.length)];
+  const NA = ['アカツキ','シロガネ','ミナモ','クロフネ','サクラ','ハヤテ','ギンノ','ヨアケ','コハク','ライジン','ツキミ','アオイ','カゲロウ','ホシノ','ベニ','タイガ','ソラノ','ナギサ','イナズマ','ムラクモ','カザハナ','トキノ','ユウヅツ','ハガネ','ルリ','モミジ','シグレ','オボロ','スバル','ヒバナ'];
+  const NB = ['カゼ','ボルト','ヒカリ','ユメ','フブキ','マル','ツバサ','ウタ','ヒトミ','ブレイブ','ソウ','ホライズン','ステップ','カケラ','スズメ','イブキ','キセキ','コエ','リーフ','ダンサー','ミライ','ハート','ロード','クイーン','キング','ノワール','エース','グローリー'];
+  const JK = ['佐倉 一','高峰 亮','三輪 翔','藤代 隼','早瀬 蓮','石動 凌','柏木 湊','真壁 颯','久遠 誠','鳴海 陽','八雲 剛','東條 匠','白石 旭','御影 葵','若林 樹','桐生 駿'];
+  const SP = ['紅玉特別','白樺特別','銀杏特別','朱雀特別','青嵐特別','琥珀特別','霜月特別','木枯特別','月影特別','星屑特別','初霜特別','錦秋特別'];
+  const MAIN = ['サンプルステークス（OP）','テスト記念（G3）','見本カップ（G2）','試作ステークス（L）','架空賞（G3）','模型ステークス（OP）'];
+  const CLS = ['2歳未勝利','2歳未勝利','3歳以上1勝クラス','2歳新馬','2歳未勝利','3歳以上1勝クラス','3歳以上1勝クラス','3歳以上2勝クラス', null, null, null, '3歳以上2勝クラス'];
+  const TIMES = ['10:05','10:35','11:05','11:35','12:25','12:55','13:25','13:55','14:30','15:05','15:40','16:20'];
+  const VEN = [
+    { name: '京都', code: '08', shift: 0, turf: [1200, 1400, 1600, 1800, 2000, 2200, 2400], dirt: [1200, 1400, 1800, 1900] },
+    { name: '東京', code: '05', shift: -10, turf: [1400, 1600, 1800, 2000, 2400], dirt: [1300, 1400, 1600, 2100] },
+  ];
+  const DAYS = ['2026-10-11','2026-10-12','2026-10-18','2026-10-19','2026-10-25','2026-10-26','2026-11-01','2026-11-02','2026-11-08','2026-11-09','2026-11-15','2026-11-16','2026-11-21','2026-11-22'];
+  const shiftT = (t, m) => { const [h, mm] = t.split(':').map(Number); const v = h * 60 + mm + m; return String(Math.floor(v / 60)).padStart(2, '0') + ':' + String(v % 60).padStart(2, '0'); };
+  const races = [];
+  DAYS.forEach((date) => VEN.forEach((v) => {
+    for (let no = 1; no <= 12; no++) {
+      const isG1 = date === '2026-11-22' && v.name === '京都' && no === 11;
+      let name = CLS[no - 1];
+      if (no === 9) name = pick(SP) + '（2勝クラス）';
+      if (no === 10) name = pick(SP) + '（3勝クラス）';
+      if (no === 11) name = isG1 ? 'サンプル記念（G1）' : (date === '2026-11-22' ? 'テストステークス（G3）' : pick(MAIN));
+      const surface = isG1 ? '芝' : (R() < .55 ? '芝' : 'ダート');
+      const distance = isG1 ? 1600 : pick(surface === '芝' ? v.turf : v.dirt);
+      const status = date < '2026-11-22' ? 'done' : (no === 12 ? 'waiting' : 'ready');
+      const field = isG1 ? 18 : 8 + Math.floor(R() * 11);
+      const race = { id: date.replace(/-/g, '') + v.code + String(no).padStart(2, '0'), date, venue: v.name, no, name, start: shiftT(TIMES[no - 1], v.shift), surface, distance, field, status, horses: [] };
+      if (status !== 'waiting') {
+        const s = Array.from({ length: field }, () => Math.exp(gauss() * .82));
+        const sum = s.reduce((a, b) => a + b, 0);
+        const used = new Set();
+        const hs = s.map((x, i) => {
+          let nm; do { nm = pick(NA) + pick(NB); } while (used.has(nm)); used.add(nm);
+          const r = R();
+          return { no: i + 1, gate: gateOf(i + 1, field), name: nm, jockey: pick(JK), weight: [54, 55, 56, 57, 57, 58][Math.floor(R() * 6)], last: r < .07 ? '初出走' : `前走 ${1 + Math.floor(R() * 12)}着`, prob: x / sum, rank: 0, note: null, result: null };
+        });
+        hs.slice().sort((a, b) => b.prob - a.prob).forEach((h, i) => { h.rank = i + 1; });
+        if (R() < .1) { const h = hs.find((x) => x.rank > 3); if (h) { h.note = 'overseas'; h.last = '海外から初出走'; } }
+        if (status === 'done') {
+          const left = hs.slice(); let pos = 1;
+          while (left.length) { const tot = left.reduce((a, h) => a + h.prob, 0); let u = R() * tot, k = 0; while (k < left.length - 1 && (u -= left[k].prob) > 0) k++; left[k].result = pos++; left.splice(k, 1); }
+        }
+        race.horses = hs;
+      }
+      races.push(race);
+    }
+  }));
+  return {
+    updatedAt: '2026-11-21T21:00:00+09:00',
+    week: ['2026-11-21', '2026-11-22'],
+    today: '2026-11-22',
+    member: { name: '会員 太郎', plan: '2027年末まで 長期完全制覇プラン', until: '2027-12-31' },
+    notices: [
+      { date: '2026-11-21', title: '日曜の出馬表を計算しました', body: '京都・東京の11Rまで、22レースの計算が終わっています。12Rは出馬表が確定したあとに計算します。' },
+      { date: '2026-11-19', title: '「成績」面の集計を毎月公開します', body: 'T-AIが出した確率と、実際に勝った割合を、確率帯ごとに毎月この紙面で公開します。数字はごまかしません。' },
+      { date: '2026-11-18', title: 'T-AI新報 会員版を公開しました', body: '今週の出馬表、組み合わせの確率、買い目の計算がスマホから使えます。ご意見は公式LINEまでお寄せください。' },
+    ],
+    races,
+  };
+}
+function gateOf(no, n) { const size = Array(8).fill(1); let extra = Math.max(0, n - 8); for (let k = 7; extra > 0; k = k === 0 ? 7 : k - 1) { size[k]++; extra--; } let acc = 0; for (let k = 0; k < 8; k++) { acc += size[k]; if (no <= acc) return k + 1; } return 8; }
+
+const DATA = makeSampleData();
+
+/* ============================================================
+   計算 ─ 本番で差し替えるのはこの CALC だけ（Harville法）
+   ============================================================ */
+const CALC = (() => {
+  const cache = new Map();
+  const key = (a) => a.slice().sort((x, y) => x - y).join('-');
+  function table(race) {
+    if (cache.has(race.id)) return cache.get(race.id);
+    const p = race.horses.map((h) => h.prob), n = p.length, nos = race.horses.map((h) => h.no);
+    const uma = new Map(), wide = new Map(), fuku = new Map(), tri = [];
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+      if (i === j) continue;
+      const pij = p[i] * p[j] / (1 - p[i]);
+      const ku = key([nos[i], nos[j]]); uma.set(ku, (uma.get(ku) || 0) + pij);
+      for (let k = 0; k < n; k++) {
+        if (k === i || k === j) continue;
+        const pr = pij * p[k] / Math.max(1e-9, 1 - p[i] - p[j]);
+        tri.push([nos[i], nos[j], nos[k], pr]);
+        const kf = key([nos[i], nos[j], nos[k]]); fuku.set(kf, (fuku.get(kf) || 0) + pr);
+        [[nos[i], nos[j]], [nos[i], nos[k]], [nos[j], nos[k]]].forEach((pr2) => { const kw = key(pr2); wide.set(kw, (wide.get(kw) || 0) + pr); });
+      }
+    }
+    const t = { p: new Map(race.horses.map((h) => [String(h.no), h.prob])), uma, wide, fuku, tri };
+    cache.set(race.id, t); return t;
+  }
+  const mapOf = (t, kind) => ({ tan: t.p, uma: t.uma, wide: t.wide, fuku: t.fuku })[kind];
+  return {
+    key,
+    /** 組み合わせを確率の高い順に [{nums, prob}] */
+    combos(race, kind) { return [...mapOf(table(race), kind)].map(([k, v]) => ({ nums: k.split('-').map(Number), prob: v })).sort((a, b) => b.prob - a.prob); },
+    /** 1点の確率 */
+    one(race, kind, nums) { return mapOf(table(race), kind).get(key(nums)) || 0; },
+    /** 買い目（複数点）のどれかが当たる確率 */
+    hit(race, kind, tickets) {
+      if (!tickets.length) return 0;
+      const t = table(race), set = new Set(tickets.map(key));
+      if (kind !== 'wide') return [...set].reduce((a, k) => a + (mapOf(t, kind).get(k) || 0), 0);
+      let s = 0;
+      for (const [a, b, c, pr] of t.tri) if (set.has(key([a, b])) || set.has(key([a, c])) || set.has(key([b, c]))) s += pr;
+      return s;
+    },
+  };
+})();
+
+/* ============================================================
+   表示
+   ============================================================ */
+const $ = (s, r = document) => r.querySelector(s);
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const GATE_BG = ['', '#ecebe6', '#151517', '#c4433f', '#3c63b4', '#d8b83c', '#2f8752', '#d4772e', '#e39cb9'];
+const GATE_FG = ['', '#141414', '#f2ecdf', '#fff', '#fff', '#141414', '#fff', '#fff', '#141414'];
+const KIND = { tan: '単勝', uma: '馬連', wide: 'ワイド', fuku: '3連複' };
+const MARK = ['', '◎', '○', '▲', '△'];
+const WD = ['日', '月', '火', '水', '木', '金', '土'];
+const pct = (p, d = 1) => (p * 100).toFixed(d);
+const yen = (n) => Math.round(n).toLocaleString('ja-JP');
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+function fd(d, wd = true) { const [y, m, dd] = d.split('-').map(Number); const w = new Date(Date.UTC(y, m - 1, dd)).getUTCDay(); return `${m}月${dd}日${wd ? `（${WD[w]}）` : ''}`; }
+function fdShort(d) { const [, m, dd] = d.split('-').map(Number); const [y] = d.split('-').map(Number); const w = new Date(Date.UTC(y, m - 1, dd)).getUTCDay(); return `${m}/${dd}（${WD[w]}）`; }
+const updTxt = () => { const d = new Date(DATA.updatedAt); const j = new Date(d.getTime() + 9 * 3600e3); return `${j.getUTCMonth() + 1}月${j.getUTCDate()}日 ${j.getUTCHours()}:${String(j.getUTCMinutes()).padStart(2, '0')}`; };
+const byId = new Map(DATA.races.map((r) => [r.id, r]));
+const isG = (r) => /（G[123]）/.test(r.name);
+const top = (r) => r.horses.reduce((a, h) => (!a || h.prob > a.prob ? h : a), null);
+const hn = (h) => `<span class="hn" style="background:${GATE_BG[h.gate]};color:${GATE_FG[h.gate]}">${h.no}</span>`;
+const hnNo = (r, no) => hn(r.horses.find((h) => h.no === no));
+const ring = (cls = '') => `<svg class="pen ${cls}" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M16,27 C10,7 84,2 94,20 C102,40 34,50 10,36 C0,28 20,11 52,7"/></svg>`;
+const under = () => `<svg class="pen" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2,6 C30,2 66,9 98,4"/></svg>`;
+const rb = (r) => `<span class="rb${isG(r) ? ' g' : ''}">${r.no}<small>R</small></span>`;
+const meta = (r) => `${r.surface}${r.distance}m・${r.status === 'waiting' ? '頭数 未確定' : r.field + '頭'}`;
+const weekRaces = (d) => DATA.races.filter((r) => r.date === d);
+const store = { get(k, f) { try { return JSON.parse(localStorage.getItem('taiapp:' + k)) ?? f; } catch (e) { return f; } }, set(k, v) { try { localStorage.setItem('taiapp:' + k, JSON.stringify(v)); } catch (e) {} } };
+const seen = new Set(store.get('seen', []));
+
+let timers = [];
+const later = (fn, ms) => timers.push(setTimeout(fn, RM ? 0 : ms));
+const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+const drawSoon = (root, ms = 120) => later(() => root.querySelectorAll('[data-pen]').forEach((e) => e.classList.add('drawn')), ms);
+
+/* ─ 上部 ─ */
+function mast(opts = {}) {
+  const left = opts.back ? `<button type="button" class="back" data-back="${opts.back}">${esc(opts.backLabel || '戻る')}</button>` : `<span class="mast-t"><b>T<i>-</i>AI新報</b><small>会員版</small></span>`;
+  return `<div class="mast-r">${left}<span class="mast-chip">見本データ</span></div><div class="dbl"></div><div class="mast-sub"><span>${opts.sub || fd(DATA.today) + ' 開催'}</span><span>最終更新 ${updTxt()}</span></div>`;
+}
+const proto = '<p class="proto">※画面はプロトタイプです。数字はすべて見本です</p>';
+
+/* ─ ログイン ─ */
+function vLogin() {
+  return `<section class="login">
+    <div class="big"><b>T<i>-</i>AI新報</b><span class="seal">会員<br>専用</span></div>
+    <div class="dbl"></div>
+    <p class="lead" style="margin-top:12px">選択を科学する、会員専用の競馬新聞。<br>毎週の出馬表に、T-AIの確率を載せてお届けします。</p>
+    <form class="field" id="loginForm" novalidate>
+      <label for="mail">ご登録のメールアドレス</label>
+      <input id="mail" type="email" inputmode="email" autocomplete="email" placeholder="例）taro@example.com">
+      <div class="btns" style="margin-top:12px"><button class="btn" type="submit">ログイン用のリンクを送る<span>▶</span></button></div>
+    </form>
+    <p class="note" style="margin-top:14px">パスワードはありません。届いたメールのリンクを押すと、紙面が開きます。</p>
+    ${proto}
+  </section>`;
+}
+function vSent(mail) {
+  return `<section class="login">
+    <div class="big"><b>T<i>-</i>AI新報</b></div>
+    <div class="dbl"></div>
+    <div class="sent">
+      <p class="h2">ログイン用のリンクを<br>送りました</p>
+      <p class="mail" style="margin-top:10px">${esc(mail || 'taro@example.com')}</p>
+      <p class="note" style="margin-top:10px">メールのリンクを押すと、今週の紙面が開きます。リンクの有効期限は30分です。</p>
+    </div>
+    <div class="btns">
+      <button class="btn" type="button" data-go="#/home">（試作）リンクを押したことにして開く<span>▶</span></button>
+      <button class="btn sub" type="button" data-go="#/login">メールアドレスを入れ直す</button>
+    </div>
+    <p class="note" style="margin-top:14px">メールが届かないときは、迷惑メールのフォルダをご確認のうえ、<a href="https://lin.ee/uDgbNni" target="_blank" rel="noopener">公式LINE</a>までご連絡ください。</p>
+  </section>`;
+}
+
+/* ─ 一面 ─ */
+function vHome() {
+  const day = DATA.today, rs = weekRaces(day);
+  const ready = rs.filter((r) => r.status === 'ready'), wait = rs.filter((r) => r.status === 'waiting');
+  const venues = [...new Set(rs.map((r) => r.venue))].join('・');
+  const main = rs.find((r) => /G1/.test(r.name)) || ready[0];
+  const mh = main.horses.slice().sort((a, b) => b.prob - a.prob).slice(0, 4), mx = mh[0].prob;
+  const strong = ready.map((r) => ({ r, h: top(r) })).filter((x) => x.h.prob >= .3).sort((a, b) => b.h.prob - a.h.prob).slice(0, 5);
+  const sat = weekRaces(DATA.week[0]).filter((r) => r.status === 'done');
+  const satHit = sat.filter((r) => top(r).result === 1).length;
+  return `<section class="sec">
+    <div class="label"><b>今週の一面</b><span>${fd(day)}</span></div>
+    <h1 class="h1">当てるな。選べ。<br><em>今週も、<br>確率だけを見る。</em></h1>
+    <div class="box stats">
+      <div><small>開催</small><b class="jp">${venues}</b></div>
+      <div><small>全レース</small><b>${rs.length}</b></div>
+      <div class="red"><small>計算済み</small><b data-count="${ready.length}">${ready.length}</b></div>
+      <div><small>出馬表待ち</small><b>${wait.length}</b></div>
+    </div>
+    <p class="upd">最終更新 ${updTxt()}（出馬表の確定ごとに更新）</p>
+  </section>
+  <section class="sec">
+    <div class="label"><b>本日のメイン</b><span>${main.venue} ${main.start}発走</span></div>
+    <div class="box feat" data-pen>
+      <div class="fh">${rb(main)}<div><h2>${esc(main.name)}</h2><p>${main.venue}${main.no}R・${meta(main)}</p></div></div>
+      ${mh.map((h, i) => `<div class="mrow${i === 0 ? ' top' : ''}"><span class="mk">${MARK[i + 1]}</span>${hn(h)}<span class="nm"><b>${esc(h.name)}</b><span class="bar"><i data-w="${h.prob / mx * 100}"></i></span></span><span class="pct">${i === 0 ? `<span class="ring">${pct(h.prob)}%${ring()}</span>` : pct(h.prob) + '%'}</span></div>`).join('')}
+      <div class="btns"><button class="btn" type="button" data-go="#/race/${main.id}">出馬表を開く<span>▶</span></button><button class="btn sub" type="button" data-go="#/build/${main.id}">このレースで買い目をつくる</button></div>
+    </div>
+  </section>
+  <section class="sec">
+    <div class="label"><b>言い切る</b><span>勝つ確率30%以上</span></div>
+    <div class="list">
+      ${strong.length ? strong.map(({ r, h }) => `<button type="button" class="li" data-go="#/race/${r.id}"><span><span class="t">${r.venue}${r.no}R ${r.start}　${esc(r.name)}</span><span class="h">${hn(h)}<span>${esc(h.name)}</span></span></span><span><span class="pct">${pct(h.prob)}%</span><span class="arr">›</span></span></button>`).join('') : '<p class="note" style="padding:12px 0">今週は30%を超える馬がいません。</p>'}
+    </div>
+  </section>
+  <section class="sec">
+    <div class="label"><b>答え合わせ</b><span>${fd(DATA.week[0])}</span></div>
+    <div class="big1"><span><small>T-AIの1番手が勝ったレース</small></span><b>${satHit}<small> / ${sat.length}レース</small></b></div>
+    <div class="btns"><button class="btn sub" type="button" data-go="#/results">成績の面を開く</button></div>
+  </section>`;
+}
+
+/* ─ 出馬表の一覧 ─ */
+let listState = { d: DATA.today, v: '京都' };
+function vRaces() {
+  const { d, v } = listState;
+  const rs = DATA.races.filter((r) => r.date === d && r.venue === v);
+  const venues = [...new Set(weekRaces(d).map((r) => r.venue))];
+  return `<section class="sec">
+    <div class="ctl">
+      <div class="seg" role="group" aria-label="開催日">${DATA.week.map((x) => `<button type="button" data-day="${x}" aria-pressed="${x === d}">${fdShort(x)}</button>`).join('')}</div>
+      <div class="seg sm" role="group" aria-label="競馬場">${venues.map((x) => `<button type="button" data-ven="${x}" aria-pressed="${x === v}">${x}</button>`).join('')}</div>
+    </div>
+    <div class="list" style="margin-top:14px">
+      ${rs.map((r) => {
+        let right;
+        if (r.status === 'waiting') right = '<span class="stamp">出馬表待ち</span>';
+        else if (r.status === 'done') { const w = r.horses.find((h) => h.result === 1); right = `<span class="who">1着 ${hn(w)}</span><span class="done">T-AI ${w.rank}番手 ${pct(w.prob)}%</span>`; }
+        else { const h = top(r); right = `<span class="who">◎ ${hn(h)}</span><span class="pct">${pct(h.prob)}%</span>`; }
+        return `<button type="button" class="rrow${r.status === 'waiting' ? ' wait' : ''}" data-go="#/race/${r.id}">${rb(r)}<span class="ri"><span class="tm">${r.start}発走</span><b>${esc(r.name)}</b><small>${meta(r)}</small></span><span class="rt">${right}</span></button>`;
+      }).join('')}
+    </div>
+  </section>`;
+}
+
+/* ─ レース詳細 ─ */
+let raceState = { sort: 'no', kind: 'uma', limit: 20 };
+const ROW = 60;
+function vRace(r) {
+  const head = `<div class="rhead">${rb(r)}<div><h1>${esc(r.name)}</h1><p>${fd(r.date)} ${r.venue} ${r.start}発走・${meta(r)}</p></div></div>`;
+  if (r.status === 'waiting') return `${head}<div class="wait-box"><span class="stamp">出馬表待ち</span><p class="h2">出馬表が確定すると、<br>T-AIが計算します。</p><p class="note">確定は前日の夕方ごろです。計算が終わると、一面の「計算済み」に加わります。</p></div>`;
+  const done = r.status === 'done', over = r.horses.some((h) => h.note === 'overseas');
+  return `${head}
+  <div class="calc" id="calc"><span>${done ? 'レース終了' : 'T-AI'}</span><span class="rot"><i></i></span><b id="calcT">${done ? 'RESULT' : 'READY'}</b></div>
+  <div class="dctl"><div class="seg sm" role="group" aria-label="並び順" id="sortSeg"><button type="button" data-sort="no" aria-pressed="${raceState.sort === 'no'}">馬番順</button><button type="button" data-sort="prob" aria-pressed="${raceState.sort === 'prob'}">確率順</button></div><small>合計100%</small></div>
+  <div class="tbl box" id="tbl">
+    <div class="th"><span></span><span style="text-align:center">馬番</span><span style="text-align:center">印</span><span>馬名・騎手・斤量・前走${done ? '・着順' : ''}</span><span>勝つ確率</span></div>
+    <div class="rows" id="rows" style="height:${r.horses.length * ROW}px">
+      ${r.horses.map((h) => `<div class="row${h.prob >= .3 ? ' hi' : ''}${h.prob < .05 ? ' lo' : ''}${h.result === 1 ? ' win' : ''}" data-no="${h.no}">
+        <span class="gt" style="background:${GATE_BG[h.gate]}"></span><span class="no">${h.no}</span><span class="mk">${MARK[h.rank] || ''}</span>
+        <span class="nm"><b>${esc(h.name)}${done ? `<span class="fin">${h.result === 1 ? `<span class="ring">1着${ring()}</span>` : h.result + '着'}</span>` : ''}</b><small>${esc(h.jockey)}・${h.weight}kg・${h.note ? `<em>${esc(h.last)}</em>` : esc(h.last)}</small></span>
+        <span class="pc"><span class="rk">${h.rank}位</span><span class="pct"><span class="ring">${h.prob >= .3 ? ring() : ''}<em style="font-style:normal" data-v="${pct(h.prob)}">${pct(h.prob)}</em>%</span></span><span class="bar"><i data-w="${h.prob / top(r).prob * 100}"></i></span></span>
+      </div>`).join('')}
+    </div>
+  </div>
+  ${over ? '<p class="dnote">※海外から来た馬など、日本での出走歴がない馬は、確率が低く出ることがあります。</p>' : ''}
+  <section class="sec">
+    <div class="label"><b>組み合わせ</b><span>確率の高い順</span></div>
+    <div class="seg sm" role="group" aria-label="券種" id="kindSeg" style="margin-top:12px">${['uma', 'wide', 'fuku'].map((k) => `<button type="button" data-kind="${k}" aria-pressed="${raceState.kind === k}">${KIND[k]}</button>`).join('')}</div>
+    <div class="box" style="margin-top:8px" id="combos"></div>
+    ${done ? '' : `<div class="btns"><button class="btn" type="button" data-go="#/build/${r.id}">このレースで買い目をつくる<span>▶</span></button></div>`}
+  </section>`;
+}
+function placeRows(r, animate = true) {
+  const order = r.horses.slice().sort(raceState.sort === 'prob' ? (a, b) => b.prob - a.prob : (a, b) => a.no - b.no);
+  const rows = $('#rows'); if (!rows) return;
+  if (!animate) rows.querySelectorAll('.row').forEach((e) => { e.style.transition = 'none'; });
+  order.forEach((h, i) => { rows.querySelector(`[data-no="${h.no}"]`).style.transform = `translateY(${i * ROW}px)`; });
+  if (!animate) requestAnimationFrame(() => rows.querySelectorAll('.row').forEach((e) => { e.style.transition = ''; }));
+  document.querySelectorAll('#sortSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.sort === raceState.sort)));
+}
+function renderCombos(r) {
+  const list = CALC.combos(r, raceState.kind), mx = list[0].prob, shown = list.slice(0, raceState.limit);
+  const done = r.status === 'done', win = done ? r.horses.filter((h) => h.result <= (raceState.kind === 'uma' ? 2 : 3)).map((h) => h.no) : [];
+  const hitC = (nums) => done && (raceState.kind === 'wide' ? nums.every((n) => win.includes(n)) : nums.every((n) => win.includes(n)) && nums.length === (raceState.kind === 'uma' ? 2 : 3));
+  $('#combos').innerHTML = `<div class="cap"><span>${KIND[raceState.kind]}　全${list.length}通り</span><span>確率</span></div>` +
+    shown.map((c, i) => `<div class="crow"${hitC(c.nums) ? ' style="background:#fff"' : ''}><span class="rk">${i + 1}</span><span class="tk">${c.nums.map((n) => hnNo(r, n)).join('<i>-</i>')}${hitC(c.nums) ? '<span class="stamp" style="margin-left:6px;font-size:10.5px">的中</span>' : ''}</span><span class="pr"><span class="pct">${pct(c.prob)}%</span><span class="bar red"><i style="width:${c.prob / mx * 100}%"></i></span></span></div>`).join('') +
+    (list.length > raceState.limit ? `<button type="button" class="more" id="more">もっと見る（あと${list.length - raceState.limit}通り）</button>` : '');
+}
+function mountRace(r) {
+  if (r.status === 'waiting') return;
+  placeRows(r, false); renderCombos(r);
+  const tbl = $('#tbl'), calc = $('#calc'), first = !seen.has(r.id) && !RM && r.status === 'ready';
+  const setBars = () => tbl.querySelectorAll('.bar i[data-w]').forEach((i) => { i.style.width = i.dataset.w + '%'; });
+  if (!first) { tbl.classList.add('instant'); setBars(); tbl.classList.add('drawn'); calc.classList.add('ok'); if (r.status === 'ready') $('#calcT').textContent = '計算済み'; return; }
+  calc.classList.add('run'); $('#calcT').textContent = '計算中…';
+  const ems = [...tbl.querySelectorAll('em[data-v]')];
+  ems.forEach((e) => { e.textContent = '--.-'; });
+  const t0 = performance.now();
+  const tick = () => {
+    const t = performance.now() - t0; let live = false;
+    ems.forEach((e, i) => { const stop = 380 + (r.horses.length - +e.closest('.row').querySelector('.rk').textContent.replace('位', '')) * 0 + i * 38; if (t < stop) { live = true; e.textContent = (Math.random() * 40).toFixed(1).padStart(4, '0'); } else e.textContent = e.dataset.v; });
+    if (live) timers.push(setTimeout(tick, 45));
+  };
+  tick();
+  later(setBars, 300);
+  later(() => { tbl.classList.add('drawn'); calc.classList.remove('run'); calc.classList.add('ok'); $('#calcT').textContent = '計算済み'; seen.add(r.id); store.set('seen', [...seen]); }, 380 + ems.length * 38 + 150);
+}
+
+/* ─ 買い目をつくる ─ */
+const BS = { raceId: null, kind: 'uma', method: 'box', axis: null, sel: new Set(), budget: 3000 };
+function comb(arr, k) { const out = []; const rec = (s, acc) => { if (acc.length === k) { out.push(acc.slice()); return; } for (let i = s; i < arr.length; i++) { acc.push(arr[i]); rec(i + 1, acc); acc.pop(); } }; rec(0, []); return out; }
+function tickets() {
+  const k = BS.kind, sel = [...BS.sel].sort((a, b) => a - b);
+  if (k === 'tan') return sel.map((n) => [n]);
+  const need = k === 'fuku' ? 3 : 2;
+  if (BS.method === 'box') return comb(sel, need);
+  if (BS.axis == null) return [];
+  return comb(sel.filter((n) => n !== BS.axis), need - 1).map((c) => [BS.axis, ...c].sort((a, b) => a - b));
+}
+function vBuild() {
+  const r = byId.get(BS.raceId), ready = DATA.races.filter((x) => DATA.week.includes(x.date) && x.status === 'ready');
+  const nagashi = BS.method === 'nagashi' && BS.kind !== 'tan';
+  return `<section class="sec">
+    <div class="label"><b>買い目をつくる</b><span>選んだ瞬間に計算</span></div>
+    <div class="pick" style="margin-top:12px"><label for="raceSel">レース</label>
+      <select id="raceSel">${DATA.week.map((d) => `<optgroup label="${fd(d)}">${ready.filter((x) => x.date === d).map((x) => `<option value="${x.id}"${x.id === r.id ? ' selected' : ''}>${x.venue}${x.no}R ${x.start}　${esc(x.name)}</option>`).join('')}</optgroup>`).join('')}</select>
+    </div>
+    <div class="ctl" style="margin-top:10px">
+      <div class="seg" role="group" aria-label="券種">${Object.keys(KIND).map((k) => `<button type="button" data-bk="${k}" aria-pressed="${BS.kind === k}">${KIND[k]}</button>`).join('')}</div>
+      <div class="seg sm" role="group" aria-label="買い方"><button type="button" data-bm="box" aria-pressed="${BS.kind === 'tan' || BS.method === 'box'}">${BS.kind === 'tan' ? '選んだ馬すべて' : 'ボックス'}</button><button type="button" data-bm="nagashi" aria-pressed="${nagashi}"${BS.kind === 'tan' ? ' disabled' : ''}>流し（軸1頭）</button></div>
+    </div>
+  </section>
+  <p class="hint" id="hint"></p>
+  <div class="grid" id="grid">${r.horses.map((h) => `<button type="button" class="hb" data-h="${h.no}" aria-pressed="false" aria-label="${h.no}番 ${esc(h.name)} ${pct(h.prob)}%"><span class="gs" style="background:${GATE_BG[h.gate]}"></span><b>${h.no}</b><small>${pct(h.prob)}%</small><span class="tag"></span></button>`).join('')}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px var(--pad) 0"><span class="note">数字の下は単勝の確率です</span><button type="button" class="clear" id="clear">選び直す</button></div>
+  <details class="tix" id="tix"><summary><span id="tixT">買い目の一覧</span></summary><div id="tixB"></div></details>
+  <div class="sumbar" data-pen id="sum">
+    <div class="sb1"><span><small>この買い目が当たる確率</small><span class="big"><span id="hitV">0.0</span><small>%</small>${under()}</span></span><span class="pts"><small>点数</small><b id="ptsV">0</b> 点</span></div>
+    <div class="sb2"><label for="bud">予算</label><input id="bud" type="number" inputmode="numeric" min="100" step="100" value="${BS.budget}"><span>円</span><span class="per" id="per"></span></div>
+  </div>`;
+}
+let shownHit = 0;
+function updateBuild() {
+  const r = byId.get(BS.raceId), t = tickets(), hit = CALC.hit(r, BS.kind, t), nag = BS.method === 'nagashi' && BS.kind !== 'tan';
+  document.querySelectorAll('.hb').forEach((b) => {
+    const n = +b.dataset.h, ax = nag && BS.axis === n, pt = nag && BS.sel.has(n), on = !nag && BS.sel.has(n);
+    b.classList.toggle('ax', ax); b.classList.toggle('pt', pt); b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', String(ax || pt || on));
+    b.querySelector('.tag').textContent = ax ? '軸' : pt ? '相手' : '';
+  });
+  const need = BS.kind === 'fuku' ? 3 : BS.kind === 'tan' ? 1 : 2;
+  $('#hint').textContent = BS.kind === 'tan' ? '買いたい馬をタップ。何頭でも選べます。'
+    : !nag ? `馬番をタップ。${need}頭以上で、ボックスの買い目ができます。`
+    : BS.axis == null ? 'まず「軸」の馬を1頭タップしてください。' : `次に「相手」をタップ。${need - 1}頭以上で買い目ができます。`;
+  const from = shownHit, to = hit * 100, el = $('#hitV'), t0 = performance.now();
+  shownHit = to;
+  const f = (now) => { const k = RM ? 1 : Math.min(1, (now - t0) / 350); el.textContent = (from + (to - from) * (1 - Math.pow(1 - k, 3))).toFixed(1); if (k < 1) requestAnimationFrame(f); };
+  requestAnimationFrame(f);
+  $('#ptsV').textContent = t.length;
+  const bud = Math.max(0, +$('#bud').value || 0); BS.budget = bud;
+  const per = t.length ? Math.floor(bud / t.length / 100) * 100 : 0, perEl = $('#per');
+  perEl.classList.toggle('warn', t.length > 0 && per < 100);
+  perEl.innerHTML = !t.length ? '馬を選ぶと計算します' : per < 100 ? '予算が足りません<br>（1点100円から）' : `1点 <b>${yen(per)}</b>円<br>計 ${yen(per * t.length)}円`;
+  $('#sum').classList.toggle('drawn', t.length > 0);
+  $('#tixT').textContent = `買い目の一覧（${t.length}点）`;
+  const list = t.map((nums) => ({ nums, p: CALC.one(r, BS.kind, nums) })).sort((a, b) => b.p - a.p);
+  $('#tixB').innerHTML = list.length ? list.slice(0, 60).map((c, i) => `<div class="crow"><span class="rk">${i + 1}</span><span class="tk">${c.nums.map((n) => hnNo(r, n)).join('<i>-</i>')}</span><span class="pr"><span class="pct" style="color:var(--ink)">${pct(c.p)}%</span></span></div>`).join('') + (list.length > 60 ? `<p class="note" style="padding:8px 12px">ほか${list.length - 60}点</p>` : '') : '<p class="note" style="padding:4px 12px 12px">まだ買い目がありません。</p>';
+}
+
+/* ─ 成績 ─ */
+let resState = { m: '2026-11' };
+const BINS = [[0, .05, '5%未満'], [.05, .10, '5〜10%'], [.10, .20, '10〜20%'], [.20, .30, '20〜30%'], [.30, 1.01, '30%以上']];
+function vResults() {
+  const months = [...new Set(DATA.races.filter((r) => r.status === 'done').map((r) => r.date.slice(0, 7)))];
+  const done = DATA.races.filter((r) => r.status === 'done' && r.date.startsWith(resState.m));
+  const hs = done.flatMap((r) => r.horses);
+  const bins = BINS.map(([a, b, l]) => { const g = hs.filter((h) => h.prob >= a && h.prob < b); return { l, n: g.length, pred: g.reduce((s, h) => s + h.prob, 0) / (g.length || 1), act: g.filter((h) => h.result === 1).length / (g.length || 1) }; });
+  const t1 = done.filter((r) => top(r).result === 1).length;
+  const days = [...new Set(done.map((r) => r.date))].sort().reverse();
+  return `<section class="sec">
+    <div class="label"><b>成績</b><span>答え合わせ</span></div>
+    <h1 class="h1">言った確率は、<br><em>現実になったか。</em></h1>
+    <div class="seg" role="group" aria-label="月" style="margin-top:14px">${months.map((m) => `<button type="button" data-month="${m}" aria-pressed="${m === resState.m}">${+m.slice(5)}月</button>`).join('')}</div>
+    <div class="box cal" style="margin-top:12px">
+      <div class="cap"><span>確率帯ごとの集計</span><span>${done.length}R・${hs.length.toLocaleString('ja-JP')}頭</span></div>
+      <div class="r h"><span>確率帯</span><span>頭数</span><span>予測の平均</span><span>実際の勝率</span></div>
+      ${bins.map((b) => `<div class="r"><span>${b.l}</span><span class="cnt">${b.n}</span><span class="pct">${b.n ? pct(b.pred) + '%' : '—'}</span><span class="pct act">${b.n ? pct(b.act) + '%' : '—'}</span></div>`).join('')}
+    </div>
+    <p class="note" style="margin-top:8px">「予測の平均」と「実際の勝率」が近いほど、T-AIの確率が正しかったことになります。</p>
+    <div class="big1"><span><small>T-AIの1番手が勝ったレース</small></span><b>${t1}<small> / ${done.length}</small></b></div>
+  </section>
+  <section class="sec">
+    <div class="label"><b>日ごとの結果</b><span>1着の馬と、T-AIの確率</span></div>
+    <div style="margin-top:8px;border-top:3px solid var(--ink)">
+      ${days.map((d, di) => { const rs = done.filter((r) => r.date === d); const hit = rs.filter((r) => top(r).result === 1).length;
+        return `<details class="day"${di === 0 ? ' open' : ''}><summary><span>${fd(d)}<small>${rs.length}R・1番手の勝ち ${hit}</small></span></summary>
+          ${rs.map((r) => { const w = r.horses.find((h) => h.result === 1); return `<button type="button" class="drow${w.rank === 1 ? ' hit' : ''}" data-go="#/race/${r.id}"><span class="v">${r.no}R<small>${r.venue}</small></span><span class="w"><span class="ring" data-pen>${hn(w)}${w.rank === 1 ? ring('drawn') : ''}</span><b>${esc(w.name)}</b></span><span class="s"><span class="pct">${pct(w.prob)}%</span>T-AI ${w.rank}番手</span></button>`; }).join('')}
+        </details>`; }).join('')}
+    </div>
+  </section>`;
+}
+
+/* ─ 会員 ─ */
+function vMy() {
+  const m = DATA.member;
+  const days = Math.round((Date.parse(m.until) - Date.parse(DATA.today)) / 864e5);
+  const [y, mm, d] = m.until.split('-').map(Number);
+  return `<section class="sec">
+    <div class="label"><b>会員</b><span>マイページ</span></div>
+    <div class="card"><span class="sl">T-AI</span><p class="ttl">会員証</p>
+      <dl><dt>お名前</dt><dd>${esc(m.name)} 様</dd><dt>プラン</dt><dd>${esc(m.plan)}</dd><dt>利用期限</dt><dd>${y}年${mm}月${d}日まで<br><span class="pct">残り ${days}日</span></dd></dl>
+    </div>
+  </section>
+  <section class="sec news">
+    <div class="label"><b>お知らせ</b><span>運営より</span></div>
+    <div style="margin-top:8px;border-top:3px solid var(--ink)">
+      ${DATA.notices.map((n, i) => `<details${i === 0 ? ' open' : ''}><summary><span><small>${n.date.replace(/-/g, '.')}</small>${esc(n.title)}</span></summary><p>${esc(n.body)}</p></details>`).join('')}
+    </div>
+    <div class="btns">
+      <a class="btn" href="https://lin.ee/uDgbNni" target="_blank" rel="noopener">公式LINEで問い合わせる<span>▶</span></a>
+      <button class="btn sub" type="button" id="logout">ログアウト</button>
+    </div>
+  </section>`;
+}
+
+/* ============================================================
+   画面の切り替え（#/home  #/races  #/race/ID  #/build/ID  #/results  #/my  #/login  #/sent）
+   ============================================================ */
+let lastMail = '', curTab = 'home';
+const logged = () => store.get('login', false);
+function go(h) { if (location.hash === h) route(); else location.hash = h; }
+function route() {
+  clearTimers();
+  const [, name = 'home', arg] = (location.hash || '#/home').split('/');
+  if (!logged() && name !== 'login' && name !== 'sent') return go('#/login');
+  const app = $('#app'), view = $('#view'), mastEl = $('#mast'), tabs = $('#tabs');
+  const bare = name === 'login' || name === 'sent';
+  app.classList.toggle('bare', bare); mastEl.hidden = bare; tabs.hidden = bare;
+  let html = '', tab = name, mopts = {};
+  if (name === 'login') html = vLogin();
+  else if (name === 'sent') html = vSent(lastMail);
+  else if (name === 'races') html = vRaces();
+  else if (name === 'race') { const r = byId.get(arg) || weekRaces(DATA.today)[0]; tab = DATA.week.includes(r.date) ? 'races' : 'results'; mopts = { back: tab, backLabel: tab === 'races' ? '出馬表' : '成績', sub: `${fd(r.date)} ${r.venue}${r.no}R` }; raceState.limit = 20; html = vRace(r); view.dataset.race = r.id; }
+  else if (name === 'build') { const r = byId.get(arg); if (r && r.status === 'ready' && r.id !== BS.raceId) { BS.raceId = r.id; BS.axis = null; BS.sel.clear(); } if (!BS.raceId) BS.raceId = weekRaces(DATA.today).find((x) => /G1/.test(x.name)).id; html = vBuild(); }
+  else if (name === 'results') html = vResults();
+  else if (name === 'my') html = vMy();
+  else { tab = 'home'; html = vHome(); }
+  curTab = tab;
+  if (!bare) mastEl.innerHTML = mast(mopts);
+  view.className = 'view'; void view.offsetWidth;
+  view.innerHTML = html + (bare ? '' : proto);
+  document.querySelectorAll('.tabs button').forEach((b) => { b.classList.toggle('on', b.dataset.tab === tab); b.setAttribute('aria-current', b.dataset.tab === tab ? 'page' : 'false'); });
+  scrollTo(0, 0);
+  if (name === 'race') mountRace(byId.get(view.dataset.race));
+  if (name === 'build') { shownHit = 0; updateBuild(); }
+  if (name === 'home' || !['login', 'sent', 'race', 'build', 'races', 'results', 'my'].includes(name)) {
+    const feat = view.querySelector('.feat');
+    later(() => feat.querySelectorAll('.bar i').forEach((i) => { i.style.width = i.dataset.w + '%'; }), 120);
+    drawSoon(view, 700);
+  }
+  if (name === 'results') drawSoon(view, 200);
+}
+function rerender() { const y = scrollY; const v = $('#view'); route(); v.classList.add('still'); scrollTo(0, y); }
+
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('button, a'); if (!t) return;
+  const ds = t.dataset;
+  if (ds.go) { go(ds.go); return; }
+  if (ds.tab) { const map = { home: '#/home', races: '#/races', build: '#/build', results: '#/results', my: '#/my' }; go(map[ds.tab]); return; }
+  if (ds.back) { if (history.length > 1 && document.referrer !== undefined && sessionStorage.getItem('taiapp:nav')) history.back(); else go('#/' + ds.back); return; }
+  if (ds.day) { listState.d = ds.day; rerender(); return; }
+  if (ds.ven) { listState.v = ds.ven; rerender(); return; }
+  if (ds.sort) { raceState.sort = ds.sort; placeRows(byId.get($('#view').dataset.race)); return; }
+  if (ds.kind) { raceState.kind = ds.kind; raceState.limit = 20; document.querySelectorAll('#kindSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.kind === ds.kind))); renderCombos(byId.get($('#view').dataset.race)); return; }
+  if (t.id === 'more') { raceState.limit += 20; renderCombos(byId.get($('#view').dataset.race)); return; }
+  if (ds.bk) { BS.kind = ds.bk; if (ds.bk === 'tan') { BS.method = 'box'; } BS.axis = null; if (BS.kind !== 'tan' && BS.method === 'nagashi') BS.sel.clear(); rerender(); return; }
+  if (ds.bm) { if (t.disabled) return; BS.method = ds.bm; if (ds.bm === 'nagashi') { const s = [...BS.sel]; BS.axis = null; BS.sel = new Set(s); } rerender(); return; }
+  if (ds.h) {
+    const n = +ds.h, nag = BS.method === 'nagashi' && BS.kind !== 'tan';
+    if (!nag) { BS.sel.has(n) ? BS.sel.delete(n) : BS.sel.add(n); }
+    else if (BS.axis === n) BS.axis = null;
+    else if (BS.sel.has(n)) BS.sel.delete(n);
+    else if (BS.axis == null) BS.axis = n;
+    else BS.sel.add(n);
+    if (navigator.vibrate) navigator.vibrate(6);
+    updateBuild(); return;
+  }
+  if (t.id === 'clear') { BS.axis = null; BS.sel.clear(); updateBuild(); return; }
+  if (ds.month) { resState.m = ds.month; rerender(); return; }
+  if (t.id === 'logout') { store.set('login', false); go('#/login'); }
+});
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'raceSel') { BS.raceId = e.target.value; BS.axis = null; BS.sel.clear(); rerender(); }
+});
+document.addEventListener('input', (e) => { if (e.target.id === 'bud') updateBuild(); });
+document.addEventListener('submit', (e) => {
+  if (e.target.id !== 'loginForm') return;
+  e.preventDefault(); lastMail = $('#mail').value.trim(); store.set('login', true); go('#/sent');
+});
+addEventListener('hashchange', () => { sessionStorage.setItem('taiapp:nav', '1'); route(); });
+route();
+})();
+</script>
+</body>
+</html>
