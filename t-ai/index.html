@@ -612,7 +612,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
     { at: T('23:00'), left: 3 },
   ];
   const LAST_CALL = T('23:30');  // ここから「締切まで残り○分」
-  const CLOSE = T('24:00');      // 募集終了（申込ボタンを押せなくする）
+  const CLOSE = T('24:00');      // 表示を「募集終了」にする（申込ボタンは押せるまま）
   const TOTAL = 30;
 
   const q = new URLSearchParams(location.search).get('at');
@@ -643,13 +643,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
     });
     if (key !== last) {
       if (dockB) dockB.textContent = closed ? '募集は終了しました' : `限定30名　残り${left}名`;
-      document.querySelectorAll('a[data-cta]').forEach((a) => {
-        if (closed) {
-          if (!a.dataset.href) a.dataset.href = a.getAttribute('href');
-          a.removeAttribute('href'); a.setAttribute('aria-disabled', 'true'); a.classList.add('off');
-          a.textContent = '募集は終了しました';
-        }
-      });
+      // 申込ボタンは24:00以降もそのまま押せる（川崎さんの指定）
       last = key;
     }
   }
