@@ -55,6 +55,14 @@ GitHub リポジトリを Vercel に Import → Framework Preset「Other」、Bu
 - 共有用画像 `t-ai/ogp.png` は前の黒×金のまま（紙面に合わせるなら作り直し）
 - ルートのプロジェクトでは `/t-ai/*` をトップへ転送している
 
+## T-AI 会員サイト プロトタイプ（`t-ai-app/`）
+
+会員が使う画面のプロトタイプ（競馬新聞デザイン「T-AI新報 会員版」）。https://t-ai-app.clubkawasaki.net （Vercelプロジェクト `kawasaki-t-ai-app`、Root Directory を `t-ai-app`。DNSはCloudflareに CNAME `t-ai-app` → `2c7ad3626f115fe5.vercel-dns-016.com`（DNS only）。確認用 https://kawasaki-t-ai-app.vercel.app/ ）。依頼文 `docs/t-ai-app/design-prompt.md`、ハンドオフ `docs/t-ai-app/handoff/README.md`。
+
+- データはすべて架空の見本（`makeSampleData()`）。確率の計算は `CALC` の1か所（Harville法）。本番ではこの2か所を差し替える
+- ログインは見本（何を入れても入れる）。noindex
+- T-AI のシステム本体（川崎さんから受け取ったZIP）は非公開。このリポジトリ（公開）には入れない
+
 ## 究極2ウィーク LP（`lp2/`）
 
 スワイプ型LP（https://1week.clubkawasaki.net ・別Vercelプロジェクト。旧 https://2week.clubkawasaki.net は `lp2/vercel.json` の redirects で 1week へ転送）。Vercel では同じリポジトリを別プロジェクトとして Import し、**Root Directory を `lp2`** に設定する。ルートのプロジェクトでは `vercel.json` の redirects で `/lp2/*` をトップへ転送している（`.vercelignore` に `lp2` を書くと lp2 プロジェクト側でも除外されて404になるので不可）。
