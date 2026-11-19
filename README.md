@@ -43,9 +43,13 @@ GitHub リポジトリを Vercel に Import → Framework Preset「Other」、Bu
 
 ステップメールから開いてもらう、川崎の「独自指数＆投票システム」の体験デモ（数字はすべて架空のサンプル）。デザインは Claude Design のハンドオフ v4（依頼文 `docs/demo/design-prompt.md`、仕様 `docs/demo/handoff/README.md`）。本番は https://tai.clubkawasaki.net （Vercelプロジェクト `kawasaki-tai`、Root Directory を `demo`、`main` へのプッシュで自動デプロイ。DNSはCloudflareに CNAME `tai` → `b60feeb9f3202246.vercel-dns-016.com`（DNS only）。確認用 https://kawasaki-tai.vercel.app/ ）。ルートのプロジェクトでは `/demo/*` をトップへ転送している。現状と残り作業は `docs/demo/README.md`。
 
-## T-AI 販売LP（`t-ai/`・制作中）
+## T-AI 販売LP（`t-ai/`）
 
-川崎の新商品「T-AI」の販売LP。公開予定 https://t-ai.clubkawasaki.net （縦スクロール）。Claude Design に依頼中（依頼文と原稿全文 `docs/t-ai-lp/design-prompt.md`、返金保証の条件案 `docs/t-ai-lp/refund-terms.md`）。ルートのプロジェクトでは `/t-ai/*` をトップへ転送している。
+川崎の新商品「T-AI」の販売LP（縦スクロール）。https://t-ai.clubkawasaki.net （Vercelプロジェクト `kawasaki-t-ai`、Root Directory を `t-ai`。DNSはCloudflareに CNAME `t-ai` → `cb0c0e3743ddf069.vercel-dns-016.com`（DNS only）。確認用 https://kawasaki-t-ai.vercel.app/ ）。デザインは Claude Design のハンドオフ v3（`docs/t-ai-lp/handoff/README.md`）、依頼文と原稿全文 `docs/t-ai-lp/design-prompt.md`、返金保証の条件 `docs/t-ai-lp/refund-terms.md`（11/19 川崎さん確認済み、`t-ai/tokushoho.html` にも同じ文）。
+
+- 申込URL：`t-ai/index.html` の `a[data-cta="member" | "plan-2027" | "plan-6m" | "plan-4m" | "final"]`。いまは `#`（川崎さんからURLが届いたら差し替え）
+- 公開時：`t-ai/index.html` の `<meta name="robots" content="noindex">` を外す
+- ルートのプロジェクトでは `/t-ai/*` をトップへ転送している
 
 ## 究極2ウィーク LP（`lp2/`）
 
