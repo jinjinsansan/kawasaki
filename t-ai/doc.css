@@ -1,0 +1,26 @@
+/* 特商法・プライバシーポリシー（LP本体と同じ黒×金。index.html の :root と色をそろえている） */
+:root{--bg:#0c0a09;--pt:#f4ede4;--pt2:#d8cdc0;--pt3:#b9aea2;--g:#e2b857;--gh:#f5dc92;--rule:#3a2a16;--rule2:#4a3519;color-scheme:dark;}
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--bg);color:var(--pt);font-family:"IBM Plex Sans JP","Hiragino Sans","Yu Gothic",sans-serif;}
+a{color:var(--gh);}
+.doc-head{max-width:44em;margin:0 auto;padding:22px max(22px,env(safe-area-inset-right)) 0 max(22px,env(safe-area-inset-left));}
+.doc-head a{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px;letter-spacing:.3em;color:var(--g);text-decoration:none;}
+.doc{max-width:44em;margin:0 auto;padding:28px max(22px,env(safe-area-inset-right)) 56px max(22px,env(safe-area-inset-left));font-size:15px;line-height:1.95;letter-spacing:.02em;color:var(--pt2);}
+.doc h1{margin:0 0 24px;font-size:22px;font-weight:700;letter-spacing:.04em;color:var(--pt);}
+.doc h2{margin:36px 0 10px;font-size:17px;font-weight:700;color:var(--pt);}
+.doc h3{margin:18px 0 4px;font-size:14px;font-weight:700;color:var(--pt);}
+.doc p{margin:0 0 12px;}
+.doc ul,.doc ol{margin:0 0 12px;padding-left:1.4em;}
+.doc table{width:100%;border-collapse:collapse;border-top:3px double var(--rule2);border-bottom:1px solid var(--rule2);}
+.doc th,.doc td{padding:14px 0;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top;}
+.doc th{width:11em;padding-right:16px;font-size:13px;font-weight:700;color:var(--g);}
+.doc td{overflow-wrap:anywhere;}
+@media (max-width:600px){
+  .doc th,.doc td{display:block;width:auto;padding:0;border:0;}
+  .doc th{padding-top:14px;}
+  .doc td{padding:2px 0 14px;border-bottom:1px solid var(--rule);}
+}
+.doc-back{display:inline-flex;align-items:center;min-height:44px;margin-top:28px;font-size:14px;}
+.doc-foot{padding:18px 24px 28px;border-top:1px solid var(--rule);text-align:center;}
+.doc-foot p{margin:0;font-size:11px;letter-spacing:.1em;color:var(--pt3);}
