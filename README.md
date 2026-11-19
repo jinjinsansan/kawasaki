@@ -49,6 +49,8 @@ GitHub リポジトリを Vercel に Import → Framework Preset「Other」、Bu
 
 - 申込URL：`t-ai/index.html` の `a[data-cta="member" | "plan-2027" | "plan-6m" | "plan-4m" | "final"]`。いまは `#`（川崎さんからURLが届いたら差し替え）
 - 公開時：`t-ai/index.html` の `<meta name="robots" content="noindex">` を外す
+- **文言を直したら**：`python -X utf8 docs/t-ai-lp/tools/add_wbr.py` を実行する（日本語の文節の切れ目に `<wbr>` を入れ直す。ページは `word-break: keep-all` なので、これがないと長い行が折り返せない）
+- 11/19 依頼者の指摘で直したこと：画面を固定してスクロールで動かす3か所（確率エンジン・検証の数字・壊す側／壊される側）と横スワイプの2か所をやめて普通に流れる形にした。日本語の本文・見出しはWebフォントをやめて端末のゴシック体に（文字の読み込みで行が変わり、iPhoneで画面が上下にずれるのを防ぐ）。単語の途中で切れる改行と、大きい文字の「」のずれを直した
 - ルートのプロジェクトでは `/t-ai/*` をトップへ転送している
 
 ## 究極2ウィーク LP（`lp2/`）
