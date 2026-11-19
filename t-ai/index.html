@@ -277,6 +277,26 @@ html.js [data-rv].in { opacity: 1; transform: none; }
   .mk { text-decoration-color: var(--red); }
   .pen path { stroke-dashoffset: 0; } .tbl .verdict { opacity: 1; } .race .bar i { width: var(--w); }
 }
+
+/* 募集状況（限定30名のカウンター）。表示は下の script の SEAT_PLAN で時刻ごとに切り替わる */
+.seat { border: 2px solid var(--ink); background: #fbf7ee; padding: 10px 12px 12px; font-family: var(--g); text-align: left; }
+.seat-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-weight: 700; font-size: 12px; color: var(--ink2); }
+.seat-h b { font-family: var(--n); font-weight: 700; font-size: 15px; color: var(--ink); margin: 0 1px; }
+.seat-k { padding: 1px 7px; background: var(--red); color: #fff; font-weight: 900; letter-spacing: .08em; }
+.seat-d { margin-left: auto; }
+.seat-n { margin: 4px 0 8px; display: flex; align-items: baseline; gap: 4px; font-weight: 900; font-size: 18px; color: var(--ink); line-height: 1.2; }
+.seat-n b { font-family: var(--n); font-weight: 700; font-size: 44px; line-height: 1; color: var(--red); font-variant-numeric: tabular-nums; }
+.seat-n.pop b { animation: seatPop .6s var(--ease); }
+@keyframes seatPop { 0% { transform: scale(1.35); } 100% { transform: none; } }
+.seat-grid { display: grid; grid-template-columns: repeat(15, minmax(0, 1fr)); gap: 3px; }
+.seat-grid i { aspect-ratio: 1; border: 1px solid var(--ink); background: var(--paper); }
+.seat-grid i.x { background: var(--ink); }
+.seat-c { margin-top: 8px; padding: 6px 10px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 14px; text-align: center; }
+.seat-c b { font-family: var(--n); font-weight: 700; font-size: 22px; color: #ff6b73; letter-spacing: .04em; font-variant-numeric: tabular-nums; margin-left: 4px; }
+.seat.closed .seat-n { color: var(--red); font-size: 26px; }
+.cta-row .seat, .ad-in .seat { margin-bottom: 6px; }
+.ad-in .seat { margin-bottom: 18px; }
+.btn.off { background: #bdb5a6; color: var(--paper); box-shadow: none; transform: none; pointer-events: none; }
 </style>
 <script>document.documentElement.classList.add('js');</script>
 </head>
@@ -305,6 +325,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
     </div>
     <p class="band" data-rv>当てるな。<br>選ぶのもやめろ。<small>感覚と<wbr>経験の<wbr>時代は、<wbr>終わった。</small></p>
     <div class="cta-row">
+      <div class="seat" data-seat><p class="seat-h"><span class="seat-k">募集状況</span><span>限定<b>30</b>名</span><span class="seat-d" data-seat-d>締切 11/19（木）<wbr>24:00</span></p><p class="seat-n" data-seat-n>残り<b>30</b>名</p><span class="seat-grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><p class="seat-c" data-seat-c hidden>締切まで <b>30:00</b></p></div>
       <a class="btn" href="#plans">プランを<wbr>見る<span>▶</span></a>
       <small>2027年末まで 149,800円（税抜）<wbr>／返金保証つき</small>
     </div>
@@ -452,6 +473,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
     <div class="ad-in">
       <p class="ad-top"><span>全面広告</span><span>募集要項</span></p>
       <h2 class="ad-h">募集プラン・料金・<br>前代未聞の<em>「返金保証」</em>について</h2>
+      <div class="seat" data-seat><p class="seat-h"><span class="seat-k">募集状況</span><span>限定<b>30</b>名</span><span class="seat-d" data-seat-d>締切 11/19（木）<wbr>24:00</span></p><p class="seat-n" data-seat-n>残り<b>30</b>名</p><span class="seat-grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><p class="seat-c" data-seat-c hidden>締切まで <b>30:00</b></p></div>
       <div class="plan member" data-rv>
         <p class="ptag"><b>現会員様</b><span>返金保証 対象外</span></p>
         <h3>■ 現会員様・特別アップグレード枠</h3>
@@ -543,6 +565,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
 
   <section class="final" id="final" data-screen-label="11 申込" data-nodock>
     <p class="ft">市場を<wbr>壊す側になるのか、<br><em>壊される<wbr>側になるのか。</em></p>
+    <div class="seat" data-seat><p class="seat-h"><span class="seat-k">募集状況</span><span>限定<b>30</b>名</span><span class="seat-d" data-seat-d>締切 11/19（木）<wbr>24:00</span></p><p class="seat-n" data-seat-n>残り<b>30</b>名</p><span class="seat-grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><p class="seat-c" data-seat-c hidden>締切まで <b>30:00</b></p></div>
     <a class="btn" href="#" data-cta="final"><span class="nb">T-AI</span>に<wbr>申し込む<span>▶</span></a>
     <small>2027年末まで 149,800円（税抜）<wbr>／税込 164,780円</small>
   </section>
@@ -554,7 +577,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
 </div>
 
 <div class="dock" id="dock" aria-hidden="true">
-  <div class="dock-in"><div><b>2027年末まで 149,800円</b><span>税抜／返金保証＋特約</span></div><a class="btn" href="#plans" tabindex="-1">プランを<wbr>見る</a></div>
+  <div class="dock-in"><div><b>限定30名　残り<wbr>30名</b><span>2027年末まで 149,800円（税抜）<wbr>返金保証＋特約</span></div><a class="btn" href="#plans" tabindex="-1">プランを<wbr>見る</a></div>
 </div>
 
 <script>
@@ -572,6 +595,66 @@ html.js [data-rv].in { opacity: 1; transform: none; }
   const nodock = [...document.querySelectorAll('[data-nodock]')], dock = document.getElementById('dock');
   const onS = () => { const on = innerHeight > 0 && !nodock.some((s) => { const r = s.getBoundingClientRect(); return r.top < innerHeight * .9 && r.bottom > innerHeight * .2; }); dock.classList.toggle('on', on); dock.setAttribute('aria-hidden', String(!on)); dock.querySelector('a').tabIndex = on ? 0 : -1; };
   addEventListener('scroll', onS, { passive: true }); addEventListener('resize', onS); addEventListener('load', onS); onS(); requestAnimationFrame(onS);
+})();
+</script>
+
+<script>
+// 募集状況（限定30名）。川崎さんの指定で、今日 11/19（木）の時刻ごとに表示を切り替える。
+//   確認用：?at=2026-11-19T22:10 のように付けると、その時刻の表示になる
+(() => {
+  'use strict';
+  const T = (hm) => Date.parse(`2026-11-19T${hm}:00+09:00`);
+  const SEAT_PLAN = [            // この時刻から、残りは何名か
+    { at: 0, left: 30 },
+    { at: T('21:00'), left: 17 },
+    { at: T('22:00'), left: 10 },
+    { at: T('22:30'), left: 6 },
+    { at: T('23:00'), left: 3 },
+  ];
+  const LAST_CALL = T('23:30');  // ここから「締切まで残り○分」
+  const CLOSE = T('24:00');      // 募集終了（申込ボタンを押せなくする）
+  const TOTAL = 30;
+
+  const q = new URLSearchParams(location.search).get('at');
+  const offset = q && !isNaN(Date.parse(q + '+09:00')) ? Date.parse(q + '+09:00') - Date.now() : 0;
+  const now = () => Date.now() + offset;
+  const seats = [...document.querySelectorAll('[data-seat]')];
+  const dockB = document.querySelector('#dock .dock-in b');
+  let last = null;
+
+  function render() {
+    const t = now();
+    const closed = t >= CLOSE;
+    const left = closed ? 0 : SEAT_PLAN.filter((p) => t >= p.at).pop().left;
+    const key = closed ? 'closed' : String(left);
+    seats.forEach((el) => {
+      const c = el.querySelector('[data-seat-c]');
+      if (!closed && t >= LAST_CALL) {
+        const sec = Math.max(0, Math.ceil((CLOSE - t) / 1000));
+        c.hidden = false;
+        c.querySelector('b').textContent = `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+      } else c.hidden = true;
+      if (key === last) return;
+      const n = el.querySelector('[data-seat-n]');
+      el.classList.toggle('closed', closed);
+      n.innerHTML = closed ? '募集終了' : `残り<b>${left}</b>名`;
+      if (last !== null && !closed) { n.classList.remove('pop'); void n.offsetWidth; n.classList.add('pop'); }
+      el.querySelectorAll('.seat-grid i').forEach((i, k) => i.classList.toggle('x', k < TOTAL - left));
+    });
+    if (key !== last) {
+      if (dockB) dockB.textContent = closed ? '募集は終了しました' : `限定30名　残り${left}名`;
+      document.querySelectorAll('a[data-cta]').forEach((a) => {
+        if (closed) {
+          if (!a.dataset.href) a.dataset.href = a.getAttribute('href');
+          a.removeAttribute('href'); a.setAttribute('aria-disabled', 'true'); a.classList.add('off');
+          a.textContent = '募集は終了しました';
+        }
+      });
+      last = key;
+    }
+  }
+  render();
+  setInterval(render, 1000);
 })();
 </script>
 </body>
