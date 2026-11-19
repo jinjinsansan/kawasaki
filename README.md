@@ -45,12 +45,13 @@ GitHub リポジトリを Vercel に Import → Framework Preset「Other」、Bu
 
 ## T-AI 販売LP（`t-ai/`）
 
-川崎の新商品「T-AI」の販売LP（縦スクロール）。https://t-ai.clubkawasaki.net （Vercelプロジェクト `kawasaki-t-ai`、Root Directory を `t-ai`。DNSはCloudflareに CNAME `t-ai` → `cb0c0e3743ddf069.vercel-dns-016.com`（DNS only）。確認用 https://kawasaki-t-ai.vercel.app/ ）。デザインは Claude Design のハンドオフ v3（`docs/t-ai-lp/handoff/README.md`）、依頼文と原稿全文 `docs/t-ai-lp/design-prompt.md`、返金保証の条件 `docs/t-ai-lp/refund-terms.md`（11/19 川崎さん確認済み、`t-ai/tokushoho.html` にも同じ文）。
+川崎の新商品「T-AI」の販売LP（縦スクロール）。https://t-ai.clubkawasaki.net （Vercelプロジェクト `kawasaki-t-ai`、Root Directory を `t-ai`。DNSはCloudflareに CNAME `t-ai` → `cb0c0e3743ddf069.vercel-dns-016.com`（DNS only）。確認用 https://kawasaki-t-ai.vercel.app/ ）。デザインは Claude Design のハンドオフ v4「競馬新聞版（T-AI新報）」（`docs/t-ai-lp/handoff/README.md`）、依頼文と原稿全文 `docs/t-ai-lp/design-prompt.md`、返金保証の条件 `docs/t-ai-lp/refund-terms.md`（11/19 川崎さん確認済み、`t-ai/tokushoho.html` にも同じ文）。
 
 - 申込URL：`t-ai/index.html` の `a[data-cta="member" | "plan-2027" | "plan-6m" | "plan-4m" | "final"]`。いまは `#`（川崎さんからURLが届いたら差し替え）
 - 公開時：`t-ai/index.html` の `<meta name="robots" content="noindex">` を外す
 - **文言を直したら**：`python -X utf8 docs/t-ai-lp/tools/add_wbr.py` を実行する（日本語の文節の切れ目に `<wbr>` を入れ直す。ページは `word-break: keep-all` なので、これがないと長い行が折り返せない）
-- 11/19 依頼者の指摘で直したこと：画面を固定してスクロールで動かす3か所（確率エンジン・検証の数字・壊す側／壊される側）と横スワイプの2か所をやめて普通に流れる形にした。日本語の本文・見出しはWebフォントをやめて端末のゴシック体に（文字の読み込みで行が変わり、iPhoneで画面が上下にずれるのを防ぐ）。単語の途中で切れる改行と、大きい文字の「」のずれを直した
+- 11/19 直したこと：指が不安定になる原因（画面を固定するスクロール演出・横スワイプ・長押しの文字選択・本文の日本語Webフォント）を避けている。本文の明朝体は端末の明朝体（ヒラギノ・游明朝）を先に使い、ない端末（Android）だけ Webフォント。見出しは文節の切れ目でだけ折り返し、本文は新聞どおり両端そろえ。「T-AI」はハイフンで割らない
+- 共有用画像 `t-ai/ogp.png` は前の黒×金のまま（紙面に合わせるなら作り直し）
 - ルートのプロジェクトでは `/t-ai/*` をトップへ転送している
 
 ## 究極2ウィーク LP（`lp2/`）

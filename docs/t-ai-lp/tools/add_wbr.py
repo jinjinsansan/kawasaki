@@ -1,6 +1,6 @@
 """t-ai/index.html の日本語に、文節の切れ目の折り返し位置（<wbr>）を入れる。
 
-ページは `word-break: keep-all` なので、日本語は <wbr> と句読点の位置でしか折り返さない。
+見出し・大きい文字は `word-break: keep-all` なので、日本語は <wbr> と句読点の位置でしか折り返さない（本文はふつうに折り返す）。
 これで「持ちませ／ん。」のような、単語の途中で切れる改行を防ぐ。
 
 区切りの決め方（簡易版の文節分け）：
@@ -34,17 +34,17 @@ def _phrase(m: re.Match) -> str:
 
 
 def add(text: str) -> str:
-    if not re.search(r'[぀-ヿ一-鿿]', text):
-        return text
-    text = AFTER_PUNCT.sub(r'\1<wbr>', text)
-    text = PHRASE.sub(_phrase, text)
-    return text
+    if re.search(r'[぀-ヿ一-鿿]', text):
+        text = AFTER_PUNCT.sub(r'\1<wbr>', text)
+        text = PHRASE.sub(_phrase, text)
+    # 「T-AI」はハイフンの所で2行に割れないようにする（CSS の .nb { white-space: nowrap }）
+    return text.replace('T-AI', '<span class="nb">T-AI</span>')
 
 
 src = open(PATH, encoding='utf-8').read()
 head_end = src.index('<body')
 head, body = src[:head_end], src[head_end:]
-body = body.replace('<wbr>', '')
+body = body.replace('<wbr>', '').replace('<span class="nb">T-AI</span>', 'T-AI')
 
 out = []
 skip = None  # script / style の中は触らない
