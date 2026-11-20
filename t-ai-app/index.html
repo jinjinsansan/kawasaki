@@ -946,7 +946,7 @@ function vMy() {
   return `<section class="sec">
     <div class="label"><b>会員</b><span>マイページ</span></div>
     <div class="card"><span class="sl">T-AI</span><p class="ttl">会員証</p>
-      <dl><dt>お名前</dt><dd>${esc(m.name)} 様</dd><dt>プラン</dt><dd>${esc(m.plan)}</dd><dt>利用期限</dt><dd>${m.admin ? '期限なし（管理者）' : `${y}年${mm}月${d}日まで<br><span class="pct">残り ${days}日</span>`}</dd></dl>
+      <dl><dt>ご登録</dt><dd style="word-break:break-all">${esc((session && session.user && session.user.email) || m.name)}</dd><dt>プラン</dt><dd>${esc(m.plan)}</dd><dt>利用期限</dt><dd>${m.admin ? '期限なし（管理者）' : `${y}年${mm}月${d}日まで<br><span class="pct">残り ${days}日</span>`}</dd></dl>
     </div>
   </section>
   <section class="sec">
