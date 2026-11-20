@@ -824,7 +824,7 @@ function vHome() {
     ${unnum ? `<p class="note" style="margin-top:6px">※${unnum}レースは枠順の確定待ちです。勝つ確率は計算済みです。馬番と組み合わせは、前日の午前10時30分ごろの枠順確定のあとに載ります。</p>` : ''}
   </section>
   <section class="sec">
-    <div class="label"><b>${day === jstToday() ? '本日' : fd(day, false)}のメイン</b><span>${main.venue} ${main.start}発走</span></div>
+    <div class="label"><b>${day === jstToday() ? '本日' : fd(day, false)}の${FREE ? '午前の注目レース' : 'メイン'}</b><span>${main.venue} ${main.start}発走</span></div>
     <div class="box feat" data-pen>
       <div class="fh">${rb(main)}<div><h2>${esc(main.name)}</h2><p>${main.venue}${main.no}R・${meta(main)}</p></div></div>
       ${mh.map((h, i) => `<div class="mrow${i === 0 ? ' top' : ''}"><span class="mk">${mk(main, i + 1)}</span>${hn(h)}<span class="nm"><b>${esc(h.name)}</b><span class="bar"><i data-w="${h.prob / mx * 100}"></i></span></span><span class="pct">${i === 0 ? `<span class="ring">${pct(h.prob)}%${ring()}</span>` : pct(h.prob) + '%'}</span></div>`).join('')}
