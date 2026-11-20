@@ -260,10 +260,11 @@ body.lock { overflow: hidden; }
 .seg.k4 button:nth-child(4n) { border-right: 0; }
 .seg.k4 button:nth-child(n+5) { border-top: 1px solid var(--ink); }
 .seg.k6 button { font-size: 12.5px; padding: 0 2px; }
-.crow.wo { grid-template-columns: 28px minmax(0, 1fr) 62px 60px; }
+.crow.wo { grid-template-columns: 28px minmax(0, 1fr) 70px 60px; }
 .crow .od { text-align: right; font-family: var(--n); font-size: 13px; font-weight: 700; line-height: 1.2; white-space: nowrap; }
 .crow .od small { margin-left: 1px; font-size: 10px; font-weight: 700; color: var(--ink3); }
 .crow .od.ev { color: var(--red); }
+.crow .od small.ta { display: block; margin: 1px 0 0; font-size: 9.5px; color: var(--ink2); font-weight: 700; }
 .cmp { margin-top: 8px; }
 .cmp .cr { display: grid; grid-template-columns: minmax(0, 1fr) 50px 58px 44px; gap: 6px; align-items: center; min-height: 48px; padding: 4px 10px; border-top: 1px solid var(--ink); }
 .cmp .cr:first-of-type { border-top: 0; }
@@ -282,6 +283,7 @@ body.lock { overflow: hidden; }
 .sb3 { display: flex; justify-content: space-between; gap: 8px; padding: 6px 12px 8px; border-top: 1px solid var(--ink); font-size: 12.5px; font-weight: 700; white-space: nowrap; }
 .sb3 b { font-family: var(--n); font-size: 16px; }
 .sb3 .ev { color: var(--red); }
+.sb3 small.ta { margin-left: 6px; font-size: 11px; color: var(--ink2); }
 .sb3:empty { display: none; }
 .hb.gk b { font-size: 18px; }
 .hb.gk small { font-size: 10px; }
@@ -573,13 +575,19 @@ const CALC = (() => {
         add(wide, ukey([nos[i], nos[j]]), pr); add(wide, ukey([nos[i], nos[k]]), pr); add(wide, ukey([nos[j], nos[k]]), pr);
       }
     }
-    const t = { tan: new Map(hs.map((h) => [String(h.no), h.prob])), uma, umatan, waku, wide, fuku, tierce, tri };
+    // 複勝率（仕様書§5）：8頭以上は3着以内（3連単の確率から）、7頭以下は2着以内（power 0.85 の2頭の着順確率から）
+    const place = new Map(nos.map((no) => [no, 0]));
+    if (n >= 8) for (const [a, b, c, pr] of tri) { place.set(a, place.get(a) + pr); place.set(b, place.get(b) + pr); place.set(c, place.get(c) + pr); }
+    else for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { if (i === j) continue; const v = q3[i] * q3[j] / Math.max(1e-12, 1 - q3[i]); place.set(nos[i], place.get(nos[i]) + v); place.set(nos[j], place.get(nos[j]) + v); }
+    const t = { tan: new Map(hs.map((h) => [String(h.no), h.prob])), uma, umatan, waku, wide, fuku, tierce, tri, place };
     cache.set(race, t); return t;
   }
   return {
     keyOf,
     /** 組み合わせを確率の高い順に [{nums, prob}] */
     combos(race, kind) { return [...table(race)[kind]].map(([k, v]) => ({ nums: k.split('-').map(Number), prob: v })).sort((a, b) => b.prob - a.prob); },
+    /** 複勝率（馬番→確率） */
+    place(race, no) { return table(race).place.get(no) || 0; },
     /** 1点の確率 */
     one(race, kind, nums) { return table(race)[kind].get(kind === 'tan' ? String(nums[0]) : keyOf(kind, nums)) || 0; },
     /** 買い目（複数点）のどれかが当たる確率 */
@@ -805,7 +813,7 @@ function vRaces() {
 }
 
 /* ─ レース詳細 ─ */
-let raceState = { sort: 'no', kind: 'uma', limit: 20 };
+let raceState = { sort: 'no', kind: 'uma', limit: 20, ck: 'tan' };
 const ROW = 60;
 function rnav(r) {
   const sib = DATA.races.filter((x) => x.date === r.date && x.venue === r.venue).sort((a, b) => a.no - b.no), i = sib.indexOf(r);
@@ -838,20 +846,29 @@ function vRace(r) {
     ${done ? '' : `<div class="btns"><button class="btn" type="button" data-go="#/build/${r.id}">このレースで買い目をつくる<span>▶</span></button></div>`}
   </section>`}${rnav(r)}`;
 }
+const fair = (p) => (p > 0 ? (1 / p >= 100 ? (1 / p).toFixed(0) : (1 / p).toFixed(1)) : '-');  // T-AIオッズ＝1÷確率
 function vCompare(r) {
-  const w = r.odds && r.odds.win; if (!w || r.numbered === false) return '';
-  const hs = r.horses.filter((h) => w[String(h.no)]), inv = hs.reduce((a, h) => a + 1 / w[String(h.no)][0], 0);
-  if (!hs.length) return '';
-  const rows = hs.slice().sort((a, b) => b.prob - a.prob).map((h) => {
-    const [o, pop] = w[String(h.no)], ev = h.prob * o, mk = (1 / o) / inv;
-    return `<div class="cr${ev >= 1 ? ' ev' : ''}"><span class="n">${hn(h)}<span><b>${esc(h.name)}</b><small>オッズの確率 ${pct(mk)}%</small></span></span><span class="v">${pct(h.prob)}%</span><span class="v">${o1(o)}倍${pop ? `<small>${pop}番人気</small>` : ''}</span><span class="e">${ev.toFixed(2)}</span></div>`;
-  }).join('');
+  if (!(r.odds && r.odds.win) || r.numbered === false) return '';
   return `<section class="sec">
-    <div class="label"><b>オッズと見比べる</b><span>単勝</span></div>
-    <p class="otime">${oddsWhen(r)}・netkeibaより</p>
-    <div class="box cmp"><div class="cap4"><span>馬名</span><span>T-AI</span><span>単勝</span><span>期待値</span></div>${rows}</div>
-    <p class="dnote">期待値＝T-AIの勝つ確率×単勝オッズ。1を超える馬は、T-AIの評価に比べて人気がない馬です（白い行）。「オッズの確率」は、単勝オッズから逆算した世の中の見立てです。</p>
+    <div class="label"><b>オッズと見比べる</b><span>T-AIの確率とオッズ</span></div>
+    <div class="seg sm" role="group" aria-label="単勝・複勝" id="cmpSeg" style="margin-top:12px">${['tan', 'place'].map((k) => `<button type="button" data-ck="${k}" aria-pressed="${raceState.ck === k}">${k === 'tan' ? '単勝' : '複勝'}</button>`).join('')}</div>
+    <p class="otime">オッズ ${oddsWhen(r)}・netkeibaより</p>
+    <div id="cmpBox"></div>
   </section>`;
+}
+function renderCompare(r) {
+  const box = $('#cmpBox'); if (!box) return;
+  const tanK = raceState.ck !== 'place', tbl = tanK ? r.odds.win : r.odds.place;
+  if (!tbl) { box.innerHTML = '<p class="note" style="padding:12px 0">複勝のオッズは、まだ発売前です。</p>'; return; }
+  const hs = r.horses.filter((h) => tbl[String(h.no)]), inv = tanK ? hs.reduce((a, h) => a + 1 / tbl[String(h.no)][0], 0) : 0;
+  const pr = (h) => (tanK ? h.prob : CALC.place(r, h.no));
+  const rows = hs.slice().sort((a, b) => pr(b) - pr(a)).map((h) => {
+    const v = tbl[String(h.no)], p = pr(h), o = v[0], ev = p * o;
+    const odd = tanK ? `${o1(o)}倍${v[1] ? `<small>${v[1]}番人気</small>` : ''}` : `<span style="font-size:12.5px">${o1(v[0])}-${o1(v[1])}倍</span><small>複勝</small>`;
+    return `<div class="cr${ev >= 1 ? ' ev' : ''}"><span class="n">${hn(h)}<span><b>${esc(h.name)}</b><small>${tanK ? `オッズの確率 ${pct((1 / o) / inv)}%` : `勝つ確率 ${pct(h.prob)}%`}</small></span></span><span class="v">${pct(p)}%<small>T-AI ${fair(p)}倍</small></span><span class="v">${odd}</span><span class="e">${ev.toFixed(2)}</span></div>`;
+  }).join('');
+  box.innerHTML = `<div class="box cmp"><div class="cap4"><span>馬名</span><span>T-AI</span><span>${tanK ? '単勝' : '複勝'}</span><span>期待値</span></div>${rows}</div>
+    <p class="dnote">${tanK ? 'T-AIの欄は勝つ確率と、それをオッズに直した「T-AIオッズ」（1÷確率）です。実際の単勝オッズがT-AIオッズより高いと、期待値（確率×オッズ）が1を超えます（白い行）。「オッズの確率」は、単勝オッズから逆算した世の中の見立てです。' : 'T-AIの欄は3着以内に入る確率（7頭立て以下は2着以内）と、それをオッズに直した「T-AIオッズ」です。期待値は、複勝オッズの低い方で計算しています。'}</p>`;
 }
 function placeRows(r, animate = true) {
   const order = r.horses.slice().sort(raceState.sort === 'prob' ? (a, b) => b.prob - a.prob : (a, b) => a.no - b.no);
@@ -873,7 +890,7 @@ const chip = (r, kind, n) => (kind === 'waku' ? `<span class="hn" style="backgro
 function oddsCell(r, kind, nums, p) {
   const v = oddsOne(r, kind, nums); if (v == null) return '<span class="od"></span>';
   const lo = Array.isArray(v) ? v[0] : v;
-  return `<span class="od${p * lo >= 1 ? ' ev' : ''}">${oTxt(v)}<small>倍</small></span>`;
+  return `<span class="od${p * lo >= 1 ? ' ev' : ''}">${oTxt(v)}<small>倍</small><small class="ta">T-AI ${fair(p)}</small></span>`;
 }
 function renderCombos(r) {
   if (!$('#combos')) return;
@@ -881,14 +898,14 @@ function renderCombos(r) {
   needOdds(r, raceState.kind);
   const list = CALC.combos(r, raceState.kind), mx = list[0].prob, shown = list.slice(0, raceState.limit);
   const done = r.status === 'done' && r.horses.some((h) => h.result === 1), wo = !!oddsTbl(r, raceState.kind);
-  $('#combos').innerHTML = `<div class="cap"><span>${KIND[raceState.kind]}　全${list.length}通り</span><span>確率${wo ? '・オッズ' : ''}</span></div>` +
+  $('#combos').innerHTML = `<div class="cap"><span>${KIND[raceState.kind]}　全${list.length}通り</span><span>${wo ? 'オッズ（T-AI）・確率' : '確率'}</span></div>` +
     shown.map((c, i) => { const h = done && hitOf(r, raceState.kind, c.nums); return `<div class="crow${wo ? ' wo' : ''}"${h ? ' style="background:#fff"' : ''}><span class="rk">${i + 1}</span><span class="tk">${c.nums.map((n) => chip(r, raceState.kind, n)).join(`<i>${ORD[raceState.kind] ? '→' : '-'}</i>`)}${h ? '<span class="stamp" style="margin-left:6px;font-size:10.5px">的中</span>' : ''}</span>${wo ? oddsCell(r, raceState.kind, c.nums, c.prob) : ''}<span class="pr"><span class="pct">${pct(c.prob, c.prob < .001 ? 2 : 1)}%</span><span class="bar red"><i style="width:${c.prob / mx * 100}%"></i></span></span></div>`; }).join('') +
     (list.length > raceState.limit ? `<button type="button" class="more" id="more">もっと見る（あと${list.length - raceState.limit}通り）</button>` : '') +
-    (wo ? `<p class="note" style="padding:6px 10px;border-top:1px solid var(--ink)">オッズ ${oddsWhen(r)}。赤いオッズは、確率×オッズが1を超える組み合わせです。</p>` : '');
+    (wo ? `<p class="note" style="padding:6px 10px;border-top:1px solid var(--ink)">オッズ ${oddsWhen(r)}。「T-AI」はT-AIの確率をオッズに直したもの（1÷確率）。実際のオッズがそれより高い組み合わせは、赤い字になります。</p>` : '');
 }
 function mountRace(r) {
   if (r.status === 'waiting') return;
-  placeRows(r, false); renderCombos(r);
+  placeRows(r, false); renderCombos(r); renderCompare(r);
   const tbl = $('#tbl'), calc = $('#calc'), first = !seen.has(r.id) && !RM && r.status === 'ready';
   const setBars = () => tbl.querySelectorAll('.bar i[data-w]').forEach((i) => { i.style.width = i.dataset.w + '%'; });
   if (!first) { tbl.classList.add('instant'); setBars(); tbl.classList.add('drawn'); calc.classList.add('ok'); if (r.status === 'ready') $('#calcT').textContent = '計算済み'; return; }
@@ -1009,7 +1026,7 @@ function updateBuild() {
   else if (!wo) oL.innerHTML = r.odds ? '<span>オッズを読み込んでいます…</span>' : '<span>オッズはまだ発売前です</span>';
   else if (!all) oL.innerHTML = '<span>オッズの無い買い目があります（取消など）</span>';
   else { const lo = syn(0), hi = BS.kind === 'wide' ? syn(1) : lo, f = (v) => (v >= 100 ? v.toFixed(0) : v.toFixed(1)), e = (v) => (hit * v).toFixed(2);
-    oL.innerHTML = `<span>合成オッズ <b>${f(lo)}${hi !== lo ? `〜${f(hi)}` : ''}</b>倍</span><span class="${hit * lo >= 1 ? 'ev' : ''}">期待値 <b>${e(lo)}${hi !== lo ? `〜${e(hi)}` : ''}</b></span>`; }
+    oL.innerHTML = `<span>合成オッズ <b>${f(lo)}${hi !== lo ? `〜${f(hi)}` : ''}</b>倍<small class="ta">T-AI ${hit > 0 ? f(1 / hit) : '-'}倍</small></span><span class="${hit * lo >= 1 ? 'ev' : ''}">期待値 <b>${e(lo)}${hi !== lo ? `〜${e(hi)}` : ''}</b></span>`; }
   $('#tixB').innerHTML = list.length ? list.slice(0, 60).map((c, i) => `<div class="crow${wo ? ' wo' : ''}"><span class="rk">${i + 1}</span><span class="tk">${c.nums.map((n) => chip(r, BS.kind, n)).join(`<i>${ORD[BS.kind] ? '→' : '-'}</i>`)}</span>${wo ? oddsCell(r, BS.kind, c.nums, c.p) : ''}<span class="pr"><span class="pct" style="color:var(--ink)">${pct(c.p, c.p < .001 ? 2 : 1)}%</span></span></div>`).join('') + (list.length > 60 ? `<p class="note" style="padding:8px 12px">ほか${list.length - 60}点</p>` : '') : '<p class="note" style="padding:4px 12px 12px">まだ買い目がありません。</p>';
 }
 
@@ -1076,7 +1093,7 @@ function vMy() {
       <details><summary>◎○▲△ の印</summary><p>勝つ確率の高い順に、1番手から4番手の馬に付けています。</p></details>
       <details><summary>組み合わせの確率</summary><p>出馬表の面の下に、馬連・ワイド・3連複が当たる確率を、高い順に載せています。</p></details>
       <details><summary>買い目をつくる</summary><p>券種と買い方を選び、馬番をタップすると、その買い目のどれかが当たる確率と点数が、すぐに出ます。予算を入れると、1点あたりの金額も出ます。</p></details>
-      <details><summary>オッズと期待値</summary><p>netkeibaのJRAオッズを、発売中は数分おきに取り込みます（発走30分前からは5分ごと）。発走後は、最終オッズに切り替わります。期待値は「T-AIの確率×オッズ」で、1を超えると、T-AIの評価に比べてオッズが高い（人気がない）ことを示します。買い目の「合成オッズ」は、選んだ買い目全体を1つの馬券と見たときのオッズです。</p></details>
+      <details><summary>オッズと期待値</summary><p>netkeibaのJRAオッズを、発売中は数分おきに取り込みます（発走30分前からは5分ごと）。発走後は、最終オッズに切り替わります。期待値は「T-AIの確率×オッズ」で、1を超えると、T-AIの評価に比べてオッズが高い（人気がない）ことを示します。買い目の「合成オッズ」は、選んだ買い目全体を1つの馬券と見たときのオッズです。「T-AIオッズ」は、T-AIの確率をオッズに直したもの（1÷確率）で、実際のオッズと同じ「倍」で見比べられます。</p></details>
       <details><summary>いつ更新されるか</summary><p>JRAの枠順が確定する前日の午前10時30分ごろのあと、自動で計算して載せます。当日の朝に出走取消・競走除外があれば、計算し直します。レースの結果は、発走のおよそ15〜20分後に、出馬表と「成績」の面に載ります。</p></details>
     </div>
   </section>
@@ -1164,6 +1181,7 @@ document.addEventListener('click', (e) => {
   if (ds.hday) { homeDay = ds.hday; listState.d = ds.hday; const vs = [...new Set(weekRaces(ds.hday).map((r) => r.venue))]; if (!vs.includes(listState.v)) listState.v = vs[0] || ''; rerender(); return; }
   if (ds.ven) { listState.v = ds.ven; rerender(); return; }
   if (ds.sort) { raceState.sort = ds.sort; placeRows(byId.get($('#view').dataset.race)); return; }
+  if (ds.ck) { raceState.ck = ds.ck; document.querySelectorAll('#cmpSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.ck === ds.ck))); renderCompare(byId.get($('#view').dataset.race)); return; }
   if (ds.kind) { raceState.kind = ds.kind; raceState.limit = 20; document.querySelectorAll('#kindSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.kind === ds.kind))); renderCombos(byId.get($('#view').dataset.race)); return; }
   if (t.id === 'more') { raceState.limit += 20; renderCombos(byId.get($('#view').dataset.race)); return; }
   if (ds.bk) { if (t.disabled) return; if ((ds.bk === 'waku') !== (BS.kind === 'waku')) { BS.sel.clear(); } BS.kind = ds.bk; if (ds.bk === 'tan') { BS.method = 'box'; } BS.axis = null; if (BS.kind !== 'tan' && BS.method === 'nagashi') BS.sel.clear(); rerender(); return; }
