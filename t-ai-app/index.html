@@ -790,7 +790,7 @@ const under = () => `<svg class="pen" viewBox="0 0 100 10" preserveAspectRatio="
 const rb = (r) => `<span class="rb${isG(r) ? ' g' : ''}">${r.no}<small>R</small></span>`;
 const meta = (r) => `${r.surface}${r.distance}m${r.going ? `（${r.going}）` : ''}・${r.status === 'waiting' ? '頭数 未確定' : r.field + '頭'}`;
 // 勝つ確率を、JRA発表の馬場（稍重・重・不良）で計算し直したレースの注記
-const goingNote = (r) => (r.goingUsed && r.goingUsed !== '良' ? `<p class="dnote">馬場は<b>${esc(r.goingUsed)}</b>（JRA発表）。勝つ確率・印・組み合わせは、${esc(r.goingUsed)}の馬場で計算し直しています。馬場が変わると、発走前のレースは自動で計算し直します。</p>` : '');
+const goingNote = (r) => (r.goingUsed && r.goingUsed !== '良' ? `<p class="dnote">馬場は<b>${esc(r.goingUsed)}</b>（JRA発表）。勝つ確率・印・組み合わせは、${esc(r.goingUsed)}の馬場で計算し直しています。</p>` : '');
 const weekRaces = (d) => DATA.races.filter((r) => r.date === d);
 const store = { get(k, f) { try { return JSON.parse(localStorage.getItem('taiapp:' + k)) ?? f; } catch (e) { return f; } }, set(k, v) { try { localStorage.setItem('taiapp:' + k, JSON.stringify(v)); } catch (e) {} } };
 const seen = new Set(store.get('seen', []));
@@ -990,7 +990,7 @@ function vCompare(r) {
 // 数字は紙面のデータ（predictions.going）に入っているので、レースを開くたびの問い合わせはしない
 function renderGoing(r) {
   const sec = $('#goingSec'); if (!sec) return;
-  if (raceState.gvFor !== r.id) { raceState.gvFor = r.id; if (['稍重', '重', '不良'].includes(r.goingUsed)) raceState.gv = r.goingUsed; }
+  if (raceState.gvFor !== r.id) { raceState.gvFor = r.id; const ag = r.goingUsed || r.going; if (['稍重', '重', '不良'].includes(ag)) raceState.gv = ag; }
   const g = raceState.gv, hs = r.horses.filter((h) => h.going && h.going[g] != null && h.going['良'] != null);
   if (!hs.length) { sec.innerHTML = ''; return; }
   const v = (h, k) => h.going[k];
@@ -1004,7 +1004,7 @@ function renderGoing(r) {
     <div class="label"><b>馬場が変わったら</b><span>馬場状態別の勝率</span></div>
     <div class="seg sm" role="group" aria-label="馬場" id="goSeg" style="margin-top:12px">${['稍重', '重', '不良'].map((k) => `<button type="button" data-gv="${k}" aria-pressed="${g === k}">${k}</button>`).join('')}</div>
     <div class="box cmp"><div class="cap4"><span>馬（順位：良→${g}）</span><span>良</span><span>${g}</span><span>差</span></div>${rows}</div>
-    <p class="note" style="margin-top:6px">馬場の状態ごとに計算し直した勝率です（馬場の4区分を入れたT-AIのモデル）。JRAの発表が稍重・重・不良のときは、上の「勝つ確率」も、この比でその馬場に合わせています。差が1ポイント以上の馬を、上がるものは赤、下がるものは灰色にしています。</p>
+    <p class="note" style="margin-top:6px">馬場の状態ごとに計算し直した勝率です（馬場の4区分を入れたT-AIのモデル）。上の「勝つ確率」とは別の計算なので、良の数字も少し違います。差が1ポイント以上の馬を、上がるものは赤、下がるものは灰色にしています。</p>
   </section>`;
 }
 function renderCompare(r) {
@@ -1482,7 +1482,7 @@ function vMy() {
       <details><summary>組み合わせの確率</summary><p>出馬表の面の下に、馬連・ワイド・3連複が当たる確率を、高い順に載せています。</p></details>
       <details><summary>買い目をつくる</summary><p>券種と買い方を選び、馬番をタップすると、その買い目のどれかが当たる確率と点数が、すぐに出ます。予算を入れると、1点あたりの金額も出ます。</p></details>
       <details><summary>自動買い目生成（会員限定）</summary><p>「買い目をつくる」で、券種を選んでからモードを押すと、T-AIの確率とオッズから買い目を自動で作ります。的中モード：確率の高い順に5・10・20点。的中率指定：指定した確率に届く最少の点数。期待値モード：期待値（確率×オッズ）が1を超える組み合わせ。期待値指定：指定した期待値以上の組み合わせ。</p></details>
-      <details><summary>馬場が変わったら</summary><p>当日の馬場がJRAから稍重・重・不良と発表されると、発走前のレースの勝つ確率・印・組み合わせを、その馬場で自動で計算し直します（メインの確率に、馬場別モデルの「その馬場÷良」の比を掛けて、合計100%に割り直します）。発走後は変えません。レースのページの「馬場が変わったら」では、馬場が稍重・重・不良になったときの各馬の勝率を、良のときと見比べられます。馬場の状態を4つに分けて入れたT-AIの別のモデルによる参考値で、道悪の得意・不得意、同じ馬場での過去の成績、騎手の道悪の成績、枠と馬場の関係などで動きます。データが届いたレースだけ出ます。</p></details>
+      <details><summary>馬場が変わったら</summary><p>レースのページの「馬場が変わったら」では、馬場が稍重・重・不良になったときの各馬の勝率を、良のときと見比べられます。馬場の状態を4つに分けて入れたT-AIの別のモデルによる参考値で、道悪の得意・不得意、同じ馬場での過去の成績、騎手の道悪の成績、枠と馬場の関係などで動きます。データが届いたレースだけ出ます。</p></details>
       <details><summary>指数カード</summary><p>出馬表で馬の行をタップすると、その馬の指数の内訳（スピード指数・ペースと末脚・脚質・成績・騎手と厩舎・今回の条件）が開きます。各項目には、このレースの出走馬の中での順位を付けています。</p></details>
       <details><summary>オッズと期待値</summary><p>netkeibaのJRAオッズを、発売中は数分おきに取り込みます（発走30分前からは5分ごと、10分前からは1分ごと。開いている画面も1分ごとに新しくなります）。発走後は、最終オッズに切り替わります。期待値は「T-AIの確率×オッズ」で、1を超えると、T-AIの評価に比べてオッズが高い（人気がない）ことを示します。買い目の「合成オッズ」は、選んだ買い目全体を1つの馬券と見たときのオッズです。「T-AIオッズ」は、T-AIの確率をオッズに直したもの（1÷確率）で、実際のオッズと同じ「倍」で見比べられます。</p></details>
       <details><summary>いつ更新されるか</summary><p>JRAの枠順が確定する前日の午前10時30分ごろのあと、自動で計算して載せます。当日の朝に出走取消・競走除外があれば、計算し直します。レースの結果は、発走のおよそ15〜20分後に、出馬表と「成績」の面に載ります。</p></details>
