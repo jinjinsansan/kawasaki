@@ -49,6 +49,7 @@ p, h1, h2, h3 { margin: 0; }
 .mast-sub span:last-child { overflow: hidden; text-overflow: ellipsis; }
 
 /* タブ */
+[hidden] { display: none !important; }
 .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; max-width: 480px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding-bottom: env(safe-area-inset-bottom, 0px); background: rgba(242, 236, 223, .97); border-top: 2px solid var(--ink); }
 .tabs button { position: relative; display: grid; place-content: center; gap: 0; min-height: var(--tabh); border: 0; background: none; text-align: center; line-height: 1.25; transition: background-color .2s; }
 .tabs button + button { border-left: 1px solid rgba(27, 24, 20, .18); }
@@ -393,7 +394,7 @@ const SAMPLE = new URLSearchParams(location.search).has('sample');
 const SB_URL = 'https://tpawwkbqwfyohqhvbtui.supabase.co';
 const SB_KEY = 'sb_publishable_Ws8k7nsbcxG-9SCbXtzrGQ_lchgKHiZ';  // Publishable key（公開してよい。読める範囲はデータベース側の RLS で制限）
 const sb = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit' } }) : null;
-let session = null, memberOk = false;
+let session = null, memberOk = false, memberStatus = 'none', loadedAt = 0;
 let DATA = { updatedAt: new Date().toISOString(), week: [], today: '', member: { name: '', plan: '', until: '2099-12-31' }, notices: [], races: [] };
 const jstToday = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
 const normName = (n) => String(n || '').replace(/\((G[123]|L|OP|Jpn[123])\)/g, '（$1）');
@@ -405,7 +406,11 @@ async function loadData() {
     sb.from('notices').select('*').order('published_at', { ascending: false }).limit(10),
     sb.from('runs').select('generated_at').order('generated_at', { ascending: false }).limit(1),
   ]);
-  memberOk = !!mem.data;
+  const t = jstToday();
+  memberStatus = !mem.data ? 'none' : (mem.data.is_admin || mem.data.valid_until >= t) ? 'ok' : 'expired';
+  memberOk = memberStatus === 'ok';
+  if (rs.error && memberOk) throw rs.error;
+  loadedAt = Date.now();
   if (!memberOk) return;
   const races = (rs.data || []).map((r) => {
     const ps = (r.predictions || []).slice().sort((a, b) => (a.horse_no ?? 99) - (b.horse_no ?? 99) || a.rank - b.rank);
@@ -420,7 +425,6 @@ async function loadData() {
   const dates = [...new Set(races.map((r) => r.date))].sort();
   const up = dates.filter((d) => races.some((r) => r.date === d && r.status !== 'done'));
   const week = up.length ? up : dates.slice(-2);
-  const t = jstToday();
   const m = mem.data;
   DATA = {
     updatedAt: (rn.data && rn.data[0] && rn.data[0].generated_at) || new Date().toISOString(),
@@ -495,11 +499,16 @@ const updTxt = () => { const d = new Date(DATA.updatedAt); const j = new Date(d.
 let byId = new Map();
 function afterLoad() { byId = new Map(DATA.races.map((r) => [r.id, r])); listState.d = DATA.today; listState.v = [...new Set(weekRaces(DATA.today).map((r) => r.venue))][0] || ''; const ms = [...new Set(DATA.races.filter((r) => r.status === 'done').map((r) => r.date.slice(0, 7)))]; resState.m = ms[ms.length - 1] || ''; BS.raceId = null; }
 // 買い目に使えるレース：今週の計算済み。無ければ直近の終了したレース
-const buildable = () => { const w = DATA.races.filter((x) => DATA.week.includes(x.date) && x.status === 'ready' && x.numbered !== false); return w.length ? w : DATA.races.filter((x) => DATA.week.includes(x.date) && x.horses.length); };
+const buildable = () => { const ok = (x) => DATA.week.includes(x.date) && x.horses.length && x.numbered !== false; const w = DATA.races.filter((x) => ok(x) && x.status === 'ready'); return w.length ? w : DATA.races.filter(ok); };
+function vBuildWait() {
+  return `<section class="sec"><div class="label"><b>買い目をつくる</b><span>選んだ瞬間に計算</span></div><div class="wait-box"><span class="stamp">枠順待ち</span><p class="h2">買い目は、枠順が<br>確定してから使えます。</p><p class="note">JRAの枠順は、前日の午前10時30分ごろに確定します。各馬の勝つ確率は、「出馬表」の面で先に見られます。</p></div></section>`;
+}
 const isG = (r) => /（G[123]）/.test(r.name);
 const top = (r) => r.horses.reduce((a, h) => (!a || h.prob > a.prob ? h : a), null);
+const winner = (r) => r.horses.find((h) => h.result === 1);
+const finTxt = (h) => (h.result == null ? '取消・中止' : h.result + '着');
 const dno = (h) => (h.known === false ? '－' : h.no);
-const hn = (h) => `<span class="hn" style="background:${GATE_BG[h.gate] || '#fbf7ee'};color:${GATE_FG[h.gate] || '#1b1814'}">${dno(h)}</span>`;
+const hn = (h) => !h ? '' : `<span class="hn" style="background:${GATE_BG[h.gate] || '#fbf7ee'};color:${GATE_FG[h.gate] || '#1b1814'}">${dno(h)}</span>`;
 const hnNo = (r, no) => hn(r.horses.find((h) => h.no === no));
 const ring = (cls = '') => `<svg class="pen ${cls}" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M16,27 C10,7 84,2 94,20 C102,40 34,50 10,36 C0,28 20,11 52,7"/></svg>`;
 const under = () => `<svg class="pen" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2,6 C30,2 66,9 98,4"/></svg>`;
@@ -531,9 +540,9 @@ function vLogin() {
       <label for="mail">ご登録のメールアドレス</label>
       <input id="mail" type="email" inputmode="email" autocomplete="email" placeholder="例）taro@example.com">
       <p class="note" id="loginErr" role="alert" style="margin-top:8px;color:var(--red)" hidden></p>
-      <div class="btns" style="margin-top:12px"><button class="btn" type="submit" id="loginBtn">ログイン用のリンクを送る<span>▶</span></button></div>
+      <div class="btns" style="margin-top:12px"><button class="btn" type="submit" id="loginBtn">ログイン用の番号を送る<span>▶</span></button></div>
     </form>
-    <p class="note" style="margin-top:14px">パスワードはありません。届いたメールのボタンを押すか、メールに書かれた6桁の番号を入れると、紙面が開きます。</p>
+    <p class="note" style="margin-top:14px">パスワードはありません。ご登録のメールアドレスに6桁の番号が届きます。その番号を入れると、紙面が開きます。</p>
     ${proto}
   </section>`;
 }
@@ -542,15 +551,15 @@ function vSent(mail) {
     <div class="big"><b>T<i>-</i>AI新報</b></div>
     <div class="dbl"></div>
     <div class="sent">
-      <p class="h2">ログイン用のリンクを<br>送りました</p>
-      <p class="mail" style="margin-top:10px">${esc(mail || 'taro@example.com')}</p>
-      <p class="note" style="margin-top:10px">メールのボタンを押すと、今週の紙面が開きます。有効期限は30分です。</p>
+      <p class="h2">6桁の番号を<br>送りました</p>
+      <p class="mail" style="margin-top:10px">${esc(mail || '')}</p>
+      <p class="note" style="margin-top:10px">メールに書かれた6桁の番号を、下に入れてください。有効期限は30分です。メールのボタンを押しても開きます。</p>
     </div>
     <form class="field" id="codeForm" novalidate style="margin-top:14px">
-      <label for="code">ボタンが開かないときは、メールの6桁の番号</label>
-      <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="例）123456">
+      <label for="code">メールの6桁の番号</label>
+      <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="例）123456" style="font-size:22px;letter-spacing:.2em">
       <p class="note" id="codeErr" role="alert" style="margin-top:8px;color:var(--red)" hidden></p>
-      <div class="btns" style="margin-top:12px"><button class="btn" type="submit">番号で開く<span>▶</span></button></div>
+      <div class="btns" style="margin-top:12px"><button class="btn" type="submit" id="codeBtn">紙面を開く<span>▶</span></button></div>
     </form>
     <div class="btns">
       <button class="btn sub" type="button" data-go="#/login">メールアドレスを入れ直す</button>
@@ -567,8 +576,8 @@ function vNoMember() {
   return `<section class="login">
     <div class="big"><b>T<i>-</i>AI新報</b></div>
     <div class="dbl"></div>
-    <div class="sent"><p class="h2">会員登録が<br>見つかりませんでした</p>
-      <p class="note" style="margin-top:10px">ご登録のメールアドレスでログインしているか、ご利用期限をご確認ください。わからないときは、<a href="https://lin.ee/uDgbNni" target="_blank" rel="noopener">公式LINE</a>までご連絡ください。</p></div>
+    ${memberStatus === 'error' ? '<div class="sent"><p class="h2">紙面を<br>読み込めませんでした</p><p class="note" style="margin-top:10px">通信が不安定なようです。電波の良いところで、もう一度お試しください。</p></div><div class="btns"><button class="btn" type="button" onclick="location.reload()">もう一度読み込む<span>▶</span></button></div>' : `<div class="sent">${memberStatus === 'expired' ? '<p class="h2">ご利用期限が<br>終わっています</p>' : '<p class="h2">会員登録が<br>見つかりませんでした</p>'}
+      <p class="note" style="margin-top:10px">${memberStatus === 'expired' ? 'このメールアドレスの利用期限が過ぎています。' : 'ご登録のメールアドレスでログインしているかご確認ください。'}わからないときは、<a href="https://lin.ee/uDgbNni" target="_blank" rel="noopener">公式LINE</a>までご連絡ください。</p></div>`}
     <div class="btns"><button class="btn sub" type="button" id="logout">ログアウト</button></div>
   </section>`;
 }
@@ -580,10 +589,12 @@ function vHome() {
   const venues = [...new Set(rs.map((r) => r.venue))].join('・');
   const grade = (r) => (/G1/.test(r.name) ? 50 : /G2/.test(r.name) ? 40 : /G3/.test(r.name) ? 30 : /（L）/.test(r.name) ? 20 : /OP/.test(r.name) ? 10 : 0) + (r.no === 11 ? 5 : 0) + r.no / 100;
   const main = rs.filter((r) => r.horses.length).sort((a, b) => grade(b) - grade(a))[0];
+  if (!main) return vEmpty();
+  const unnum = rs.filter((r) => r.status === 'ready' && r.numbered === false).length;
   const mh = main.horses.slice().sort((a, b) => b.prob - a.prob).slice(0, 4), mx = mh[0].prob;
   const strong = (ready.length ? ready : rs.filter((r) => r.horses.length)).map((r) => ({ r, h: top(r) })).filter((x) => x.h.prob >= .3).sort((a, b) => b.h.prob - a.h.prob).slice(0, 5);
   const doneDays = [...new Set(DATA.races.filter((r) => r.status === 'done').map((r) => r.date))].sort(), aDay = doneDays[doneDays.length - 1] || DATA.week[0];
-  const sat = weekRaces(aDay).filter((r) => r.status === 'done');
+  const sat = weekRaces(aDay).filter((r) => r.status === 'done' && winner(r));
   const satHit = sat.filter((r) => top(r).result === 1).length;
   return `<section class="sec">
     <div class="label"><b>今週の一面</b><span>${fd(day)}</span></div>
@@ -595,9 +606,10 @@ function vHome() {
       <div><small>出馬表待ち</small><b>${wait.length}</b></div>
     </div>
     <p class="upd">最終更新 ${updTxt()}（出馬表の確定ごとに更新）</p>
+    ${unnum ? `<p class="note" style="margin-top:6px">※${unnum}レースは枠順の確定待ちです。勝つ確率は計算済みです。馬番と組み合わせは、前日の午前10時30分ごろの枠順確定のあとに載ります。</p>` : ''}
   </section>
   <section class="sec">
-    <div class="label"><b>本日のメイン</b><span>${main.venue} ${main.start}発走</span></div>
+    <div class="label"><b>${day === jstToday() ? '本日' : fd(day, false)}のメイン</b><span>${main.venue} ${main.start}発走</span></div>
     <div class="box feat" data-pen>
       <div class="fh">${rb(main)}<div><h2>${esc(main.name)}</h2><p>${main.venue}${main.no}R・${meta(main)}</p></div></div>
       ${mh.map((h, i) => `<div class="mrow${i === 0 ? ' top' : ''}"><span class="mk">${MARK[i + 1]}</span>${hn(h)}<span class="nm"><b>${esc(h.name)}</b><span class="bar"><i data-w="${h.prob / mx * 100}"></i></span></span><span class="pct">${i === 0 ? `<span class="ring">${pct(h.prob)}%${ring()}</span>` : pct(h.prob) + '%'}</span></div>`).join('')}
@@ -611,9 +623,9 @@ function vHome() {
     </div>
   </section>
   <section class="sec">
-    <div class="label"><b>答え合わせ</b><span>${fd(aDay)}</span></div>
-    <div class="big1"><span><small>T-AIの1番手が勝ったレース</small></span><b>${satHit}<small> / ${sat.length}レース</small></b></div>
-    <div class="btns"><button class="btn sub" type="button" data-go="#/results">成績の面を開く</button></div>
+    <div class="label"><b>答え合わせ</b><span>${sat.length ? fd(aDay) : ''}</span></div>
+    ${sat.length ? `<div class="big1"><span><small>T-AIの1番手が勝ったレース</small></span><b>${satHit}<small> / ${sat.length}レース</small></b></div>
+    <div class="btns"><button class="btn sub" type="button" data-go="#/results">成績の面を開く</button></div>` : '<p class="note" style="padding:12px 0">レースが終わると、その日の夕方に答え合わせが載ります。</p>'}
   </section>`;
 }
 
@@ -632,7 +644,7 @@ function vRaces() {
       ${rs.map((r) => {
         let right;
         if (r.status === 'waiting') right = '<span class="stamp">出馬表待ち</span>';
-        else if (r.status === 'done') { const w = r.horses.find((h) => h.result === 1); right = `<span class="who">1着 ${hn(w)}</span><span class="done">T-AI ${w.rank}番手 ${pct(w.prob)}%</span>`; }
+        else if (r.status === 'done') { const w = winner(r); right = w ? `<span class="who">1着 ${hn(w)}</span><span class="done">T-AI ${w.rank}番手 ${pct(w.prob)}%</span>` : '<span class="done">結果確認中</span>'; }
         else { const h = top(r); right = `<span class="who">◎ ${hn(h)}</span><span class="pct">${pct(h.prob)}%</span>`; }
         return `<button type="button" class="rrow${r.status === 'waiting' ? ' wait' : ''}" data-go="#/race/${r.id}">${rb(r)}<span class="ri"><span class="tm">${r.start}発走</span><b>${esc(r.name)}</b><small>${meta(r)}</small></span><span class="rt">${right}</span></button>`;
       }).join('')}
@@ -645,7 +657,7 @@ let raceState = { sort: 'no', kind: 'uma', limit: 20 };
 const ROW = 60;
 function vRace(r) {
   const head = `<div class="rhead">${rb(r)}<div><h1>${esc(r.name)}</h1><p>${fd(r.date)} ${r.venue} ${r.start}発走・${meta(r)}</p></div></div>`;
-  if (r.status === 'waiting') return `${head}<div class="wait-box"><span class="stamp">出馬表待ち</span><p class="h2">出馬表が確定すると、<br>T-AIが計算します。</p><p class="note">確定は前日の夕方ごろです。計算が終わると、一面の「計算済み」に加わります。</p></div>`;
+  if (r.status === 'waiting') return `${head}<div class="wait-box"><span class="stamp">出馬表待ち</span><p class="h2">出馬表が確定すると、<br>T-AIが計算します。</p><p class="note">JRAの枠順は、前日の午前10時30分ごろに確定します。計算が終わると、一面の「計算済み」に加わります。</p></div>`;
   const done = r.status === 'done', over = r.horses.some((h) => h.note === 'overseas');
   return `${head}
   <div class="calc" id="calc"><span>${done ? 'レース終了' : 'T-AI'}</span><span class="rot"><i></i></span><b id="calcT">${done ? 'RESULT' : 'READY'}</b></div>
@@ -655,7 +667,7 @@ function vRace(r) {
     <div class="rows" id="rows" style="height:${r.horses.length * ROW}px">
       ${r.horses.map((h) => `<div class="row${h.prob >= .3 ? ' hi' : ''}${h.prob < .05 ? ' lo' : ''}${h.result === 1 ? ' win' : ''}" data-no="${h.no}">
         <span class="gt" style="background:${GATE_BG[h.gate]}"></span><span class="no">${dno(h)}</span><span class="mk">${MARK[h.rank] || ''}</span>
-        <span class="nm"><b>${esc(h.name)}${done ? `<span class="fin">${h.result === 1 ? `<span class="ring">1着${ring()}</span>` : h.result + '着'}</span>` : ''}</b><small>${esc(h.jockey)}・${h.weight}kg・${h.note ? `<em>${esc(h.last)}</em>` : esc(h.last)}</small></span>
+        <span class="nm"><b>${esc(h.name)}${done ? `<span class="fin">${h.result === 1 ? `<span class="ring">1着${ring()}</span>` : finTxt(h)}</span>` : ''}</b><small>${esc(h.jockey)}・${h.weight}kg・${h.note ? `<em>${esc(h.last)}</em>` : esc(h.last)}</small></span>
         <span class="pc"><span class="rk">${h.rank}位</span><span class="pct"><span class="ring">${h.prob >= .3 ? ring() : ''}<em style="font-style:normal" data-v="${pct(h.prob)}">${pct(h.prob)}</em>%</span></span><span class="bar"><i data-w="${h.prob / top(r).prob * 100}"></i></span></span>
       </div>`).join('')}
     </div>
@@ -722,7 +734,7 @@ function vBuild() {
   return `<section class="sec">
     <div class="label"><b>買い目をつくる</b><span>選んだ瞬間に計算</span></div>
     <div class="pick" style="margin-top:12px"><label for="raceSel">レース</label>
-      <select id="raceSel">${DATA.week.map((d) => `<optgroup label="${fd(d)}">${ready.filter((x) => x.date === d).map((x) => `<option value="${x.id}"${x.id === r.id ? ' selected' : ''}>${x.venue}${x.no}R ${x.start}　${esc(x.name)}</option>`).join('')}</optgroup>`).join('')}</select>
+      <select id="raceSel">${DATA.week.filter((d) => ready.some((x) => x.date === d)).map((d) => `<optgroup label="${fd(d)}">${ready.filter((x) => x.date === d).map((x) => `<option value="${x.id}"${x.id === r.id ? ' selected' : ''}>${x.venue}${x.no}R ${x.start}　${esc(x.name)}</option>`).join('')}</optgroup>`).join('')}</select>
     </div>
     <div class="ctl" style="margin-top:10px">
       <div class="seg" role="group" aria-label="券種">${Object.keys(KIND).map((k) => `<button type="button" data-bk="${k}" aria-pressed="${BS.kind === k}">${KIND[k]}</button>`).join('')}</div>
@@ -775,6 +787,7 @@ function vResults() {
   const hs = done.flatMap((r) => r.horses);
   const bins = BINS.map(([a, b, l]) => { const g = hs.filter((h) => h.prob >= a && h.prob < b); return { l, n: g.length, pred: g.reduce((s, h) => s + h.prob, 0) / (g.length || 1), act: g.filter((h) => h.result === 1).length / (g.length || 1) }; });
   const t1 = done.filter((r) => top(r).result === 1).length;
+  if (!done.length) return `<section class="sec"><div class="label"><b>成績</b><span>答え合わせ</span></div><div class="wait-box"><span class="stamp">集計待ち</span><p class="h2">レースが終わると、<br>ここに答え合わせが載ります。</p><p class="note">結果は、開催日の夕方に自動で取り込みます。</p></div></section>`;
   const days = [...new Set(done.map((r) => r.date))].sort().reverse();
   return `<section class="sec">
     <div class="label"><b>成績</b><span>答え合わせ</span></div>
@@ -793,7 +806,7 @@ function vResults() {
     <div style="margin-top:8px;border-top:3px solid var(--ink)">
       ${days.map((d, di) => { const rs = done.filter((r) => r.date === d); const hit = rs.filter((r) => top(r).result === 1).length;
         return `<details class="day"${di === 0 ? ' open' : ''}><summary><span>${fd(d)}<small>${rs.length}R・1番手の勝ち ${hit}</small></span></summary>
-          ${rs.map((r) => { const w = r.horses.find((h) => h.result === 1); return `<button type="button" class="drow${w.rank === 1 ? ' hit' : ''}" data-go="#/race/${r.id}"><span class="v">${r.no}R<small>${r.venue}</small></span><span class="w"><span class="ring" data-pen>${hn(w)}${w.rank === 1 ? ring('drawn') : ''}</span><b>${esc(w.name)}</b></span><span class="s"><span class="pct">${pct(w.prob)}%</span>T-AI ${w.rank}番手</span></button>`; }).join('')}
+          ${rs.filter(winner).map((r) => { const w = winner(r); return `<button type="button" class="drow${w.rank === 1 ? ' hit' : ''}" data-go="#/race/${r.id}"><span class="v">${r.no}R<small>${r.venue}</small></span><span class="w"><span class="ring" data-pen>${hn(w)}${w.rank === 1 ? ring('drawn') : ''}</span><b>${esc(w.name)}</b></span><span class="s"><span class="pct">${pct(w.prob)}%</span>T-AI ${w.rank}番手</span></button>`; }).join('')}
         </details>`; }).join('')}
     </div>
   </section>`;
@@ -802,7 +815,7 @@ function vResults() {
 /* ─ 会員 ─ */
 function vMy() {
   const m = DATA.member;
-  const days = Math.round((Date.parse(m.until) - Date.parse(DATA.today)) / 864e5);
+  const days = Math.round((Date.parse(m.until) - Date.parse(jstToday())) / 864e5);
   const [y, mm, d] = m.until.split('-').map(Number);
   return `<section class="sec">
     <div class="label"><b>会員</b><span>マイページ</span></div>
@@ -813,7 +826,7 @@ function vMy() {
   <section class="sec news">
     <div class="label"><b>お知らせ</b><span>運営より</span></div>
     <div style="margin-top:8px;border-top:3px solid var(--ink)">
-      ${DATA.notices.map((n, i) => `<details${i === 0 ? ' open' : ''}><summary><span><small>${n.date.replace(/-/g, '.')}</small>${esc(n.title)}</span></summary><p>${esc(n.body)}</p></details>`).join('')}
+      ${DATA.notices.length ? '' : '<p class="note" style="padding:12px 0">お知らせはありません。</p>'}${DATA.notices.map((n, i) => `<details${i === 0 ? ' open' : ''}><summary><span><small>${n.date.replace(/-/g, '.')}</small>${esc(n.title)}</span></summary><p>${esc(n.body)}</p></details>`).join('')}
     </div>
     <div class="btns">
       <a class="btn" href="https://lin.ee/uDgbNni" target="_blank" rel="noopener">公式LINEで問い合わせる<span>▶</span></a>
@@ -825,7 +838,7 @@ function vMy() {
 /* ============================================================
    画面の切り替え（#/home  #/races  #/race/ID  #/build/ID  #/results  #/my  #/login  #/sent）
    ============================================================ */
-let lastMail = '', curTab = 'home';
+let lastMail = (() => { try { return sessionStorage.getItem('taiapp:mail') || ''; } catch (e) { return ''; } })(), curTab = 'home';
 const logged = () => SAMPLE || !!session;
 function go(h) { if (location.hash === h) route(); else location.hash = h; }
 function route() {
@@ -844,7 +857,7 @@ function route() {
   else if (name === 'sent') html = vSent(lastMail);
   else if (name === 'races') html = vRaces();
   else if (name === 'race') { const r = byId.get(arg) || weekRaces(DATA.today)[0]; tab = DATA.week.includes(r.date) ? 'races' : 'results'; mopts = { back: tab, backLabel: tab === 'races' ? '出馬表' : '成績', sub: `${fd(r.date)} ${r.venue}${r.no}R` }; raceState.limit = 20; html = vRace(r); view.dataset.race = r.id; }
-  else if (name === 'build') { const r = byId.get(arg); const bl = buildable(); if (r && bl.includes(r) && r.id !== BS.raceId) { BS.raceId = r.id; BS.axis = null; BS.sel.clear(); } if (!BS.raceId || !byId.has(BS.raceId)) BS.raceId = (bl.find((x) => /G1/.test(x.name)) || bl[0] || {}).id; html = BS.raceId ? vBuild() : vEmpty(); }
+  else if (name === 'build') { const r = byId.get(arg); const bl = buildable(); if (r && bl.includes(r) && r.id !== BS.raceId) { BS.raceId = r.id; BS.axis = null; BS.sel.clear(); } if (!BS.raceId || !byId.has(BS.raceId)) BS.raceId = (bl.find((x) => /G1/.test(x.name)) || bl[0] || {}).id; html = BS.raceId ? vBuild() : (DATA.races.length ? vBuildWait() : vEmpty()); }
   else if (name === 'results') html = vResults();
   else if (name === 'my') html = vMy();
   else { tab = 'home'; html = vHome(); }
@@ -871,7 +884,7 @@ document.addEventListener('click', (e) => {
   const ds = t.dataset;
   if (ds.go) { go(ds.go); return; }
   if (ds.tab) { const map = { home: '#/home', races: '#/races', build: '#/build', results: '#/results', my: '#/my' }; go(map[ds.tab]); return; }
-  if (ds.back) { if (history.length > 1 && document.referrer !== undefined && sessionStorage.getItem('taiapp:nav')) history.back(); else go('#/' + ds.back); return; }
+  if (ds.back) { let nav = false; try { nav = !!sessionStorage.getItem('taiapp:nav'); } catch (e) {} if (history.length > 1 && nav) history.back(); else go('#/' + ds.back); return; }
   if (ds.day) { listState.d = ds.day; rerender(); return; }
   if (ds.ven) { listState.v = ds.ven; rerender(); return; }
   if (ds.sort) { raceState.sort = ds.sort; placeRows(byId.get($('#view').dataset.race)); return; }
@@ -891,7 +904,7 @@ document.addEventListener('click', (e) => {
   }
   if (t.id === 'clear') { BS.axis = null; BS.sel.clear(); updateBuild(); return; }
   if (ds.month) { resState.m = ds.month; rerender(); return; }
-  if (t.id === 'logout') { if (SAMPLE) { location.href = location.pathname; return; } sb.auth.signOut().finally(() => { session = null; memberOk = false; go('#/login'); }); }
+  if (t.id === 'logout') { if (SAMPLE) { location.href = location.pathname; return; } sb.auth.signOut().finally(() => { session = null; memberOk = false; memberStatus = 'none'; go('#/login'); }); }
 });
 document.addEventListener('change', (e) => {
   if (e.target.id === 'raceSel') { BS.raceId = e.target.value; BS.axis = null; BS.sel.clear(); rerender(); }
@@ -901,11 +914,14 @@ document.addEventListener('submit', (e) => {
   if (e.target.id === 'codeForm') {
     e.preventDefault();
     const code = $('#code').value.replace(/\D/g, ''), err = $('#codeErr');
-    if (code.length < 6 || code.length > 8) { err.textContent = 'メールに書かれた番号を入れてください。'; err.hidden = false; return; }
+    if (code.length < 6 || code.length > 8) { err.textContent = 'メールに書かれた6桁の番号を入れてください。'; err.hidden = false; return; }
+    if (!lastMail) { err.textContent = 'もう一度、メールアドレスから入れ直してください。'; err.hidden = false; return; }
+    const cb = $('#codeBtn'); cb.disabled = true;
     sb.auth.verifyOtp({ email: lastMail, token: code, type: 'email' }).then(({ data, error }) => {
-      if (error) { err.textContent = '番号が違うか、期限が切れています。もう一度メールを送ってください。'; err.hidden = false; return; }
+      cb.disabled = false;
+      if (error) { err.textContent = /expired|invalid/i.test(String(error.message)) ? '番号が違うか、期限が切れています。番号を確かめるか、もう一度メールを送ってください。' : '開けませんでした。時間をおいてもう一度お試しください。'; err.hidden = false; return; }
       session = data.session; boot();
-    });
+    }).catch(() => { cb.disabled = false; err.textContent = '通信に失敗しました。電波の良いところでもう一度お試しください。'; err.hidden = false; });
     return;
   }
   if (e.target.id !== 'loginForm') return;
@@ -921,16 +937,31 @@ document.addEventListener('submit', (e) => {
       err.textContent = /signup|not allowed|not found/i.test(m) ? 'このメールアドレスは会員として登録されていません。' : /rate|seconds|security/i.test(m) ? '短い時間に何度も送ったため、少し待ってからもう一度お試しください。' : 'メールを送れませんでした。時間をおいてもう一度お試しください。';
       err.hidden = false; return;
     }
-    lastMail = mail; go('#/sent');
-  });
+    lastMail = mail; try { sessionStorage.setItem('taiapp:mail', mail); } catch (e) {} go('#/sent');
+  }).catch(() => { btn.disabled = false; err.textContent = '通信に失敗しました。電波の良いところでもう一度お試しください。'; err.hidden = false; });
 });
-addEventListener('hashchange', () => { sessionStorage.setItem('taiapp:nav', '1'); route(); });
+addEventListener('hashchange', () => { try { sessionStorage.setItem('taiapp:nav', '1'); } catch (e) {} route(); });
+// 開いたままの画面も、戻ってきたとき（前の読み込みから10分たっていれば）新しい予想に入れ替える
+async function refresh() {
+  if (SAMPLE || !session || !memberOk || document.hidden || Date.now() - loadedAt < 10 * 60e3) return;
+  if (location.hash.startsWith('#/build') && BS.sel.size) return;  // 買い目を選んでいる途中は入れ替えない
+  try {
+    const keep = { d: listState.d, v: listState.v, m: resState.m, b: BS.raceId };
+    await loadData(); afterLoad();
+    if (DATA.week.includes(keep.d)) { listState.d = keep.d; listState.v = keep.v; }
+    if (keep.m) resState.m = keep.m;
+    if (byId.has(keep.b)) BS.raceId = keep.b;
+    rerender();
+  } catch (e) {}
+}
+document.addEventListener('visibilitychange', refresh);
+setInterval(refresh, 60e3);
 async function boot() {
   if (SAMPLE || !sb) { useSample(); afterLoad(); route(); return; }
   if (!session) { const { data } = await sb.auth.getSession(); session = data.session; }
   // メールのリンクから戻ったとき、URL に残ったログイン情報を消す
   if (/access_token|error_description/.test(location.hash)) history.replaceState(null, '', location.pathname + '#/home');
-  if (session) { $('#view').innerHTML = '<section class="sec"><p class="note" style="padding:40px 0;text-align:center">紙面を組んでいます…</p></section>'; try { await loadData(); } catch (e) { memberOk = false; } afterLoad(); }
+  if (session) { $('#view').innerHTML = '<section class="sec"><p class="note" style="padding:40px 0;text-align:center">紙面を組んでいます…</p></section>'; try { await loadData(); } catch (e) { memberOk = false; memberStatus = 'error'; } afterLoad(); }
   route();
 }
 if (sb) sb.auth.onAuthStateChange((ev, s) => { if (ev === 'SIGNED_IN' && !session) { session = s; boot(); } if (ev === 'SIGNED_OUT') session = null; });
