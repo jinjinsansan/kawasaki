@@ -217,6 +217,27 @@ p, h1, h2, h3 { margin: 0; }
 /* 買い目をつくる */
 .pick { display: grid; gap: 4px; }
 .pick label { font-size: 11.5px; font-weight: 700; color: var(--ink2); }
+.pick .lbl { font-size: 11.5px; font-weight: 700; color: var(--ink2); }
+.pickbtn { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; padding: 8px 12px 8px 8px; border: 2px solid var(--ink); background: var(--card); text-align: left; box-shadow: 3px 3px 0 var(--ink); transition: transform .1s, box-shadow .1s; }
+.pickbtn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+.pickbtn .pt { min-width: 0; display: grid; gap: 1px; }
+.pickbtn .pt small { font-family: var(--n); font-size: 12px; color: var(--ink2); line-height: 1.3; }
+.pickbtn .pt b { font-weight: 900; font-size: 15px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pickbtn .chg { padding: 3px 8px; border: 2px solid var(--red); color: var(--red); font-weight: 900; font-size: 12px; white-space: nowrap; transform: rotate(-3deg); }
+.sheet-bg { position: fixed; inset: 0; z-index: 40; background: rgba(27, 24, 20, .55); opacity: 0; transition: opacity .2s; }
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 41; max-width: 480px; max-height: 86dvh; margin: 0 auto; display: flex; flex-direction: column; background: var(--paper); border-top: 3px solid var(--ink); box-shadow: 0 -8px 30px rgba(27, 24, 20, .3); transform: translateY(100%); transition: transform .26s cubic-bezier(.2, .8, .2, 1); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.sheet.open { transform: none; }
+.sheet-bg.open { opacity: 1; }
+.sheet .sh-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px var(--pad) 0; }
+.sheet .sh-h b { font-family: var(--m, inherit); font-weight: 900; font-size: 20px; letter-spacing: .04em; }
+.sheet .sh-x { width: 40px; height: 40px; border: 2px solid var(--ink); background: var(--card); font-size: 20px; font-weight: 900; line-height: 1; }
+.sheet .sh-x:active { background: var(--paper2); }
+.sheet .sh-top { padding: 0 var(--pad) 10px; }
+.sheet .sh-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 0 var(--pad) 16px; border-top: 2px solid var(--ink); }
+.sheet .rrow.cur { background: var(--card); box-shadow: inset 4px 0 0 var(--red); }
+.sheet .rrow .cur-t { font-size: 10.5px; font-weight: 900; color: var(--red); }
+body.lock { overflow: hidden; }
+@media (prefers-reduced-motion: reduce) { .sheet, .sheet-bg { transition: none; } }
 .pick select { width: 100%; min-height: 50px; padding: 0 40px 0 12px; border: 2px solid var(--ink); border-radius: 0; background: var(--card) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='10'><path d='M1 1l6 7 6-7' fill='none' stroke='%231b1814' stroke-width='2'/></svg>") no-repeat right 14px center; -webkit-appearance: none; appearance: none; font-weight: 900; font-size: 15px; }
 .hint { display: flex; align-items: center; gap: 8px; margin: 14px var(--pad) 0; font-family: var(--pen); font-size: 18px; line-height: 1.35; color: var(--red); }
 .hint::before { content: "✎"; font-family: var(--g); font-size: 16px; }
@@ -772,8 +793,8 @@ function vBuild() {
   const nagashi = BS.method === 'nagashi' && BS.kind !== 'tan';
   return `<section class="sec">
     <div class="label"><b>買い目をつくる</b><span>選んだ瞬間に計算</span></div>
-    <div class="pick" style="margin-top:12px"><label for="raceSel">レース</label>
-      <select id="raceSel">${DATA.week.filter((d) => ready.some((x) => x.date === d)).map((d) => `<optgroup label="${fd(d)}">${ready.filter((x) => x.date === d).map((x) => `<option value="${x.id}"${x.id === r.id ? ' selected' : ''}>${x.venue}${x.no}R ${x.start}　${esc(x.name)}</option>`).join('')}</optgroup>`).join('')}</select>
+    <div class="pick" style="margin-top:12px"><span class="lbl">レース</span>
+      <button type="button" class="pickbtn" id="raceOpen" aria-haspopup="dialog">${rb(r)}<span class="pt"><small>${fdShort(r.date)} ${r.venue} ${r.start}発走</small><b>${esc(r.name)}</b></span><span class="chg">変える</span></button>
     </div>
     <div class="ctl" style="margin-top:10px">
       <div class="seg" role="group" aria-label="券種">${Object.keys(KIND).map((k) => `<button type="button" data-bk="${k}" aria-pressed="${BS.kind === k}">${KIND[k]}</button>`).join('')}</div>
@@ -790,6 +811,36 @@ function vBuild() {
   </div>`;
 }
 let shownHit = 0;
+const sheetState = { d: '', v: '' };
+function sheetBody() {
+  const ready = buildable(), days = DATA.week.filter((d) => ready.some((x) => x.date === d));
+  if (!days.includes(sheetState.d)) sheetState.d = days[0];
+  const vens = [...new Set(ready.filter((x) => x.date === sheetState.d).map((x) => x.venue))];
+  if (!vens.includes(sheetState.v)) sheetState.v = vens[0];
+  const rows = ready.filter((x) => x.date === sheetState.d && x.venue === sheetState.v);
+  return `<div class="sh-top ctl">
+      ${days.length > 1 ? `<div class="seg" role="group" aria-label="開催日">${days.map((x) => `<button type="button" data-sday="${x}" aria-pressed="${x === sheetState.d}">${fdShort(x)}</button>`).join('')}</div>` : ''}
+      <div class="seg sm" role="group" aria-label="競馬場">${vens.map((x) => `<button type="button" data-sven="${x}" aria-pressed="${x === sheetState.v}">${x}</button>`).join('')}</div>
+    </div>
+    <div class="sh-list" id="shList">${rows.map((x) => { const h = top(x), cur = x.id === BS.raceId;
+      return `<button type="button" class="rrow${cur ? ' cur' : ''}" data-pickrace="${x.id}"${cur ? ' aria-current="true"' : ''}>${rb(x)}<span class="ri"><span class="tm">${x.start}発走${cur ? '　<span class="cur-t">選んでいるレース</span>' : ''}</span><b>${esc(x.name)}</b><small>${meta(x)}</small></span><span class="rt"><span class="who">◎ ${hn(h)}</span><span class="pct">${pct(h.prob)}%</span></span></button>`; }).join('')}</div>`;
+}
+function openSheet() {
+  const r = byId.get(BS.raceId); sheetState.d = r.date; sheetState.v = r.venue;
+  closeSheet(true);
+  document.body.insertAdjacentHTML('beforeend', `<div class="sheet-bg" id="sheetBg"></div><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetT"><div class="sh-h"><b id="sheetT">レースを選ぶ</b><button type="button" class="sh-x" id="sheetX" aria-label="閉じる">×</button></div><div class="dbl" style="margin:8px var(--pad) 10px"></div><div id="sheetB" style="display:flex;flex-direction:column;min-height:0;flex:1 1 auto">${sheetBody()}</div></div>`);
+  document.body.classList.add('lock');
+  requestAnimationFrame(() => { $('#sheetBg').classList.add('open'); $('#sheet').classList.add('open'); const c = $('#shList .cur'); if (c) c.scrollIntoView({ block: 'center' }); $('#sheetX').focus(); });
+}
+function closeSheet(now) {
+  const sh = $('#sheet'), bg = $('#sheetBg'); if (!sh) return;
+  document.body.classList.remove('lock');
+  if (now || RM) { sh.remove(); bg.remove(); return; }
+  sh.classList.remove('open'); bg.classList.remove('open');
+  setTimeout(() => { sh.remove(); bg.remove(); }, 260);
+  const b = $('#raceOpen'); if (b) b.focus();
+}
+const sheetRedraw = () => { $('#sheetB').innerHTML = sheetBody(); };
 function updateBuild() {
   const r = byId.get(BS.raceId), t = tickets(), hit = CALC.hit(r, BS.kind, t), nag = BS.method === 'nagashi' && BS.kind !== 'tan';
   document.querySelectorAll('.hb').forEach((b) => {
@@ -892,7 +943,7 @@ let lastMail = (() => { try { return sessionStorage.getItem('taiapp:mail') || ''
 const logged = () => SAMPLE || !!session;
 function go(h) { if (location.hash === h) route(); else location.hash = h; }
 function route() {
-  clearTimers();
+  clearTimers(); closeSheet(true);
   const [, name = 'home', arg] = (location.hash || '#/home').split('/');
   if (!logged() && name !== 'login' && name !== 'sent') return go('#/login');
   if (logged() && (name === 'login' || name === 'sent')) return go('#/home');
@@ -930,8 +981,14 @@ function route() {
 function rerender() { const y = scrollY; const v = $('#view'); route(); v.classList.add('still'); scrollTo(0, y); }
 
 document.addEventListener('click', (e) => {
+  if (e.target.id === 'sheetBg') { closeSheet(); return; }
   const t = e.target.closest('button, a'); if (!t) return;
   const ds = t.dataset;
+  if (t.id === 'raceOpen') { openSheet(); return; }
+  if (t.id === 'sheetX') { closeSheet(); return; }
+  if (ds.sday) { sheetState.d = ds.sday; sheetState.v = ''; sheetRedraw(); return; }
+  if (ds.sven) { sheetState.v = ds.sven; sheetRedraw(); return; }
+  if (ds.pickrace) { if (ds.pickrace !== BS.raceId) { BS.raceId = ds.pickrace; BS.axis = null; BS.sel.clear(); } closeSheet(true); rerender(); return; }
   if (ds.go) { go(ds.go); return; }
   if (ds.tab) { const map = { home: '#/home', races: '#/races', build: '#/build', results: '#/results', my: '#/my' }; go(map[ds.tab]); return; }
   if (ds.back) { let nav = false; try { nav = !!sessionStorage.getItem('taiapp:nav'); } catch (e) {} if (history.length > 1 && nav) history.back(); else go('#/' + ds.back); return; }
@@ -956,9 +1013,7 @@ document.addEventListener('click', (e) => {
   if (ds.month) { resState.m = ds.month; rerender(); return; }
   if (t.id === 'logout') { if (SAMPLE) { location.href = location.pathname; return; } dropCache(); sb.auth.signOut().finally(() => { session = null; memberOk = false; memberStatus = 'none'; go('#/login'); }); }
 });
-document.addEventListener('change', (e) => {
-  if (e.target.id === 'raceSel') { BS.raceId = e.target.value; BS.axis = null; BS.sel.clear(); rerender(); }
-});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#sheet')) closeSheet(); });
 document.addEventListener('input', (e) => { if (e.target.id === 'bud') updateBuild(); });
 document.addEventListener('submit', (e) => {
   if (e.target.id === 'codeForm') {
