@@ -897,8 +897,9 @@ const IDXF = [
   ['スピード指数', [['sf_last', '前走', 1], ['sf_prev', '2走前', 1], ['sf_mean3', '近3走の平均', 1], ['sf_mean5', '近5走の平均', 1], ['sf_best3', '近3走の最高', 1], ['sf_best_dist', '同じ距離帯での最高', 1], ['sf_best_classge', '今回以上のクラスでの最高', 1], ['sf_last_surf', '同じ馬場（芝・ダート）での前走', 1], ['sf_trend', '近走の伸び（＋は上向き）', 1, 'sg'], ['sf_rel_field', 'このレースの他馬との差（近3走）', 1, 'sg']]],
   ['ペースと末脚', [['pf_mean3', 'ペース指数（前半の速さ）近3走', 1], ['pf_last', 'ペース指数 前走', 1], ['lf_mean3', '上がり指数（末脚）近3走', 1], ['lf_last', '上がり指数 前走', 1], ['pf_rel_field', '前半の速さ 他馬との差', 1, 'sg'], ['lf_rel_field', '末脚 他馬との差', 1, 'sg']]],
   ['脚質', [['style_front5', '近5走で前に行った割合', 1, 'pc'], ['early_pos_mean5', '近5走の序盤の位置（前から）', -1, 'pc'], ['pace_pressure', 'このレースの他馬の先行力', 0, 'pc']]],
-  ['成績', [['n_runs_log', '通算出走数', 0, 'runs'], ['career_win_rate', '通算勝率', 1, 'pc'], ['career_top3_rate', '通算複勝率', 1, 'pc'], ['win_rate_at_class', '同じクラスでの勝率', 1, 'pc'], ['top3_rate_at_class', '同じクラスでの複勝率', 1, 'pc'], ['last_fin_pct', '前走の着順（上位から）', -1, 'pc'], ['avg_fin_pct_5', '近5走の着順の平均（上位から）', -1, 'pc']]],
-  ['騎手・厩舎', [['jockey_win_rate', '騎手の勝率', 1, 'pc'], ['trainer_win_rate', '調教師の勝率', 1, 'pc'], ['jt_win_rate', 'この騎手と調教師のコンビの勝率', 1, 'pc']]],
+  // 成績は「生の成績」の列（川崎さんの追加版）だけを出す。career_win_rate などはモデル用の調整済みの推定値なので出さない
+  ['成績', [['career_starts', '通算出走数', 0, 'cnt'], ['n_runs_log', '通算出走数', 0, 'runs', 'career_starts'], ['career_wins', '通算勝利数', 0, 'cnt'], ['career_win_rate_raw', '通算勝率', 1, 'pc'], ['career_top3_rate_raw', '通算複勝率', 1, 'pc'], ['class_win_rate_raw', '同じクラスでの勝率', 1, 'pc'], ['class_top3_rate_raw', '同じクラスでの複勝率', 1, 'pc'], ['last_finish', '前走の着順', 0, 'fin'], ['last_fin_pct', '前走の着順（上位から）', -1, 'pc'], ['avg_fin_pct_5', '近5走の着順の平均（上位から）', -1, 'pc']]],
+  ['騎手・厩舎（モデルの推定値）', [['jockey_win_rate', '騎手の勝率', 1, 'pc'], ['trainer_win_rate', '調教師の勝率', 1, 'pc'], ['jt_win_rate', 'この騎手と調教師のコンビの勝率', 1, 'pc']]],
   ['今回の条件', [['carried_weight', '斤量', 0, 'kg'], ['carry_diff_last', '前走からの斤量', 0, 'kgd'], ['age', '年齢', 0, 'age'], ['dist_change', '前走からの距離', 0, 'm'], ['surface_switch', '芝・ダートの替わり', 0, 'sw']]],
 ];
 const IDX = new Map();  // レース → Map(馬番 → 指数)。開いたときだけ取りに行く
@@ -915,6 +916,7 @@ function ixFmt(v, f) {
   if (f === 'pc') return pct(v, 0) + '%';
   if (f === 'sg') return (v > 0 ? '+' : '') + v.toFixed(1);
   if (f === 'runs') return Math.round(Math.exp(v) - 1) + '回';
+  if (f === 'cnt') return Math.round(v) + '回';
   if (f === 'kg') return v + 'kg';
   if (f === 'kgd') return (v > 0 ? '+' : v < 0 ? '－' : '±') + Math.abs(v) + 'kg';
   if (f === 'age') return v + '歳';
@@ -932,7 +934,10 @@ function cardBody(r, no) {
   if (!x) return top + '<div class="ixs"><p class="note" style="padding:16px 0">このレースの指数の内訳は、まだ届いていません。</p></div>';
   const all = [...m.values()];
   const rank = (k, d, v) => { if (!d || v == null) return ''; const vs = all.map((y) => y[k]).filter((y) => y != null); const n = 1 + vs.filter((y) => (d > 0 ? y > v : y < v)).length; return `<span class="rk${n <= 3 ? ' top' : ''}">${n}位／${vs.length}頭</span>`; };
-  return top + `<div class="ixs">${IDXF.map(([t, fs]) => `<h3>${t}</h3>${fs.map(([k, label, d, f]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? '<span class="v na">データなし</span><span></span>' : `<span class="v">${ixFmt(v, f)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}`).join('')}
+  const has = (k) => all.some((y) => y[k] != null);
+  const fieldOf = (y) => y.last_field_size ?? y.last_field ?? y.last_n_runners;
+  const val = (k, f, v) => (f === 'fin' ? `${Math.round(v)}着${fieldOf(x) != null ? `／${Math.round(fieldOf(x))}頭` : ''}` : ixFmt(v, f));
+  return top + `<div class="ixs">${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? '<span class="v na">データなし</span><span></span>' : `<span class="v">${val(k, f, v)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}` : ''; }).join('')}
     <p class="note" style="margin-top:12px">指数は、T-AIが勝つ確率を計算するときの材料の一部です。順位は、このレースの出走馬の中での順位です。「データなし」は、過去の走りが無いなどで計算できない項目です。</p></div>`;
 }
 function openCard(r, no) {
