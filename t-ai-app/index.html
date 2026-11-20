@@ -541,7 +541,7 @@ async function loadData() {
   const [mem, rs, nt, rn] = await Promise.all([
     GUEST ? Promise.resolve({ data: { name: 'ゲスト', plan: '無料公開（午前のレース）', valid_until: FREE_UNTIL, is_admin: false, tier: 'free' }, error: null }) : sb.from('members').select('name,plan,valid_until,is_admin,tier').maybeSingle(),
     sb.from('races').select(`${RACE_COLS}, predictions(${HORSE_FULL}), ${ODDS_LITE}`).gte('date', jstDay(9)).order('date').order('venue').order('race_no'),
-    sb.from('notices').select('*').order('published_at', { ascending: false }).limit(10),
+    GUEST ? Promise.resolve({ data: [] }) : sb.from('notices').select('*').order('published_at', { ascending: false }).limit(10),
     sb.from('runs').select('generated_at').order('generated_at', { ascending: false }).limit(1),
   ]);
   const t = jstToday();
@@ -570,11 +570,12 @@ async function loadData() {
 }
 // 前回の紙面を端末に残しておき、次に開いたときはまずそれを出す（そのあと新しいものに入れ替える）
 const CACHE_KEY = 'taiapp:paper';
-function saveCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ v: 1, uid: session && session.user && session.user.id, at: Date.now(), DATA })); } catch (e) {} }
+function saveCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ v: 1, uid: cacheOwner(), at: Date.now(), DATA })); } catch (e) {} }
+const cacheOwner = () => (session && session.user ? session.user.id : GUEST ? 'guest' : null);
 function readCache() {
   try {
     const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
-    if (!c || c.v !== 1 || !session || c.uid !== session.user.id || Date.now() - c.at > 8 * 864e5) return null;
+    if (!c || c.v !== 1 || !cacheOwner() || c.uid !== cacheOwner() || Date.now() - c.at > 8 * 864e5) return null;
     if (!c.DATA.member.admin && c.DATA.member.until < jstToday()) return null;
     return c.DATA;
   } catch (e) { return null; }
@@ -1394,7 +1395,7 @@ async function boot() {
   // メールのリンクから戻ったとき、URL に残ったログイン情報を消す
   if (/access_token|error_description/.test(location.hash)) history.replaceState(null, '', location.pathname + '#/home');
   if (session || GUEST) {
-    const cached = session ? readCache() : null;
+    const cached = readCache();
     if (cached) {  // 前回の紙面をすぐ出し、裏で新しいものを取る
       DATA = cached; memberOk = true; memberStatus = 'ok'; FREE = !!(DATA.member && DATA.member.free); loadedAt = 0; afterLoad(); route();
       refresh(true); return;
