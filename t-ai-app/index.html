@@ -980,7 +980,7 @@ const IDXF = [
   // 騎手・調教師は生の列（*_raw）があればそちら、無ければ推定値に「推定」と付ける。コンビは生の列が無いので推定値のまま
   ['騎手・厩舎', [['jockey_win_rate_raw', '騎手の勝率', 1, 'pcn', null, 'jockey'], ['jockey_win_rate', '騎手の勝率（モデルの推定値）', 1, 'pc', 'jockey_win_rate_raw'], ['trainer_win_rate_raw', '調教師の勝率', 1, 'pcn', null, 'trainer'], ['trainer_win_rate', '調教師の勝率（モデルの推定値）', 1, 'pc', 'trainer_win_rate_raw'], ['jt_win_rate', 'コンビの勝率（モデルの推定値）', 1, 'pc']]],
   // 外厩（JRDB由来・今回のレースの外厩）。列が届いた日だけ出る（どの馬にも無い列の行は出さない）。外厩の名前が空の馬は「利用なし」
-  ['外厩', [['gaikyu_name', '今回の外厩', 0, 'txt'], ['gaikyu_return_days', '帰厩からレースまで', 0, 'day'], ['farm_score', '牧場スコア（1.0が市場並み）', 1, 'sc'], ['farm_trainer_score', 'この外厩×厩舎のスコア', 1, 'sc'], ['farm_interval_score', 'この外厩×間隔のスコア', 1, 'sc'], ['farm_jockey_score', 'この外厩×騎手のスコア', 1, 'sc'], ['layoff_starts', '放牧明け初戦の成績', 0, 'lay']]],
+  ['外厩', [['gaikyu_name', '今回の外厩', 0, 'txt'], ['gaikyu_return_days', '帰厩からレースまで', 0, 'day'], ['farm_score', '牧場スコア（1.0が市場並み）', 1, 'sc'], ['farm_interval_score', 'この外厩×間隔のスコア', 1, 'sc'], ['layoff_starts', '放牧明け初戦の成績', 0, 'lay']]],
   ['今回の条件', [['carried_weight', '斤量', 0, 'kg'], ['carry_diff_last', '前走からの斤量', 0, 'kgd'], ['age', '年齢', 0, 'age'], ['dist_change', '前走からの距離', 0, 'm'], ['surface_switch', '芝・ダートの替わり', 0, 'sw']]],
 ];
 const IDX = new Map();  // レース → Map(馬番 → 指数)。開いたときだけ取りに行く
@@ -1048,11 +1048,9 @@ function farmBlock(x, h, redraw) {
   const sc = (v) => `<span class="v${v >= 1.2 ? ' up' : v < 0.85 ? ' dn' : ''}">${Number(v).toFixed(3)}</span>`;
   const line = (label, row, who) => `<div class="ixr"><span class="k">${label}</span>${row && row.flag ? `${sc(row.score)}<span class="rk">${row.starts}走・勝率${pct(row.win_rate, 0)}%</span>` : `<span class="v na">${row ? `出走${row.starts}（少ないため省略）` : who ? '実績なし' : 'データなし'}</span><span></span>`}</div>`;
   const iv = rows.filter((y) => y.kind === 'interval').sort((a, b) => a.item.localeCompare(b.item, 'ja'));
-  const tr = rows.find((y) => y.kind === 'trainer' && y.item === x._trainer), jk = rows.find((y) => y.kind === 'jockey' && y.item === h.jockey);
-  return `${headH}
-    ${line(`×この厩舎（${esc(x._trainer || '－')}）`, tr, x._trainer)}
-    ${line(`×この騎手（${esc(h.jockey || '－')}）`, jk, h.jockey)}
-    ${iv.map((y) => line(`前走間隔：${esc(y.item)}`, y, true)).join('')}`;
+  // ×厩舎・×騎手は、牧場名が拾えた分（全体の約22%）だけの集計で件数が少ないため、当面は出さない。間隔別も出走30以上だけ
+  const ivs = iv.filter((y) => y.flag);
+  return ivs.length ? `${headH}${ivs.map((y) => line(`前走間隔：${esc(y.item)}`, y, true)).join('')}` : '';
 }
 // 外厩の名前を、集計表の名前に寄せる（川崎さんの正規名の列があればそれを使う）
 const farmKey = (x) => x.gaikyu_name_norm || x.cur_farm_name_norm || String(x.gaikyu_name || '').normalize('NFKC').replace(/[−‐－ー]/g, (c) => (c === 'ー' ? c : '-')).trim();
@@ -1283,6 +1281,7 @@ function vGaikyu(farm) {
     const iv = by('interval'), tr = by('trainer'), jk = by('jockey');
     return `${head}${pick}</section>
       <section class="sec"><div class="label"><b>${esc(farm)}</b><span>前走間隔別</span></div>${iv.length ? gkTable(iv, '前走間隔') : '<p class="note" style="padding:10px 0">出走30以上の区分がありません。</p>'}</section>
+      <p class="dnote">下の×厩舎・×騎手の表は、外厩の名前が記録から拾えた分（全体の約22%）だけの集計です。実際の数よりかなり少ないため、参考程度にご覧ください（集計し直した版に置き換える予定です）。</p>
       <section class="sec"><div class="label"><b>${esc(farm)}</b><span>×厩舎</span></div>${tr.length ? gkTable(tr, '調教師') : '<p class="note" style="padding:10px 0">出走30以上の組み合わせがありません。</p>'}</section>
       <section class="sec"><div class="label"><b>${esc(farm)}</b><span>×騎手</span></div>${jk.length ? gkTable(jk, '騎手') : '<p class="note" style="padding:10px 0">出走30以上の組み合わせがありません。</p>'}</section>
       ${!iv.length && !tr.length && !jk.length && !farms.includes(farm) ? '<p class="dnote">この外厩の名前は、集計表に見つかりませんでした（表記の違いの場合があります）。上の一覧から選んでください。</p>' : ''}`;
@@ -1293,6 +1292,7 @@ function vGaikyu(farm) {
     <section class="sec"><div class="label"><b>外厩明け vs 連戦</b><span>全体の比較</span></div>
       <p class="note" style="margin-top:8px">帰厩後1走目の馬（外厩明け）と、外厩を使わず続けて走っている馬（連戦）の比較です。馬の質が違う群どうしの比較なので、原因までは言えません。</p>
       ${gkTable(vs('外厩明け'), '外厩明け')}${gkTable(vs('連戦'), '連戦')}</section>
+    <p class="dnote">下の×厩舎・×騎手の表は、外厩の名前が記録から拾えた分（全体の約22%）だけの集計です。実際の数よりかなり少ないため、参考程度にご覧ください（集計し直した版に置き換える予定です）。</p>
     <section class="sec"><div class="label"><b>外厩×厩舎</b><span>スコアの高い10組</span></div>${gkTable(top('trainer'), '組み合わせ')}</section>
     <section class="sec"><div class="label"><b>外厩×騎手</b><span>スコアの高い10組</span></div>${gkTable(top('jockey'), '組み合わせ')}</section>
     <section class="sec"><div class="label"><b>外厩×厩舎</b><span>スコアの低い10組</span></div>${gkTable(top('trainer', true), '組み合わせ')}</section>`;
