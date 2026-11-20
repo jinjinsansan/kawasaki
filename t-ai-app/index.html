@@ -702,9 +702,9 @@ function vHome() {
     </div>
   </section>
   <section class="sec">
-    <div class="label"><b>答え合わせ</b><span>${sat.length ? fd(aDay) : ''}</span></div>
+    <div class="label"><b>答え合わせ</b><span>${sat.length ? fd(aDay) + (weekRaces(aDay).some((r) => r.status !== 'done') ? '・速報' : '') : ''}</span></div>
     ${sat.length ? `<div class="big1"><span><small>T-AIの1番手が勝ったレース</small></span><b>${satHit}<small> / ${sat.length}レース</small></b></div>
-    <div class="btns"><button class="btn sub" type="button" data-go="#/results">成績の面を開く</button></div>` : '<p class="note" style="padding:12px 0">レースが終わると、その日の夕方に答え合わせが載ります。</p>'}
+    <div class="btns"><button class="btn sub" type="button" data-go="#/results">成績の面を開く</button></div>` : '<p class="note" style="padding:12px 0">各レースの結果は、発走のおよそ15〜20分後に載ります。</p>'}
   </section>`;
 }
 
@@ -912,7 +912,7 @@ function vResults() {
   });
   const nh = bins.reduce((s, b) => s + b.n, 0);
   const t1 = done.filter(topWon).length;
-  if (!done.length) return `<section class="sec"><div class="label"><b>成績</b><span>答え合わせ</span></div>${histState === 'loading' ? '<p class="note" style="margin-top:8px">過去の成績を読み込んでいます…</p>' : ''}<div class="wait-box"><span class="stamp">集計待ち</span><p class="h2">レースが終わると、<br>ここに答え合わせが載ります。</p><p class="note">結果は、開催日の夕方に自動で取り込みます。</p></div></section>`;
+  if (!done.length) return `<section class="sec"><div class="label"><b>成績</b><span>答え合わせ</span></div>${histState === 'loading' ? '<p class="note" style="margin-top:8px">過去の成績を読み込んでいます…</p>' : ''}<div class="wait-box"><span class="stamp">集計待ち</span><p class="h2">レースが終わると、<br>ここに答え合わせが載ります。</p><p class="note">各レースの結果は、発走のおよそ15〜20分後に、自動で載ります。</p></div></section>`;
   const days = [...new Set(done.map((r) => r.date))].sort().reverse();
   return `<section class="sec">
     <div class="label"><b>成績</b><span>答え合わせ</span></div>
@@ -956,7 +956,7 @@ function vMy() {
       <details><summary>◎○▲△ の印</summary><p>勝つ確率の高い順に、1番手から4番手の馬に付けています。</p></details>
       <details><summary>組み合わせの確率</summary><p>出馬表の面の下に、馬連・ワイド・3連複が当たる確率を、高い順に載せています。</p></details>
       <details><summary>買い目をつくる</summary><p>券種と買い方を選び、馬番をタップすると、その買い目のどれかが当たる確率と点数が、すぐに出ます。予算を入れると、1点あたりの金額も出ます。</p></details>
-      <details><summary>いつ更新されるか</summary><p>JRAの枠順が確定する前日の午前10時30分ごろのあと、自動で計算して載せます。当日の朝に出走取消・競走除外があれば、計算し直します。レースの結果は、開催日の夕方に「成績」の面に載ります。</p></details>
+      <details><summary>いつ更新されるか</summary><p>JRAの枠順が確定する前日の午前10時30分ごろのあと、自動で計算して載せます。当日の朝に出走取消・競走除外があれば、計算し直します。レースの結果は、発走のおよそ15〜20分後に、出馬表と「成績」の面に載ります。</p></details>
     </div>
   </section>
   <section class="sec news">
@@ -1101,7 +1101,7 @@ addEventListener('hashchange', () => { try { sessionStorage.setItem('taiapp:nav'
 // 開いたままの画面も、戻ってきたとき（前の読み込みから10分たっていれば）新しい予想に入れ替える
 async function refresh(force) {
   if (SAMPLE || !session || !memberOk) return;
-  if (!force && (document.hidden || Date.now() - loadedAt < 10 * 60e3)) return;
+  if (!force && (document.hidden || Date.now() - loadedAt < 5 * 60e3)) return;  // 開催中は結果が5分ごとに入るので、5分たったら入れ替える
   if (location.hash.startsWith('#/build') && BS.sel.size) { loadedAt = 0; return; }  // 買い目を選んでいる途中は入れ替えない（次の機会に）
   const keep = { d: listState.d, v: listState.v, m: resState.m, b: BS.raceId, sel: [...BS.sel], ax: BS.axis, hist: histState === 'ok' };
   try { await loadData(); } catch (e) { loadedAt = Date.now() - 9 * 60e3; return; }  // 失敗したら1分後にもう一度
