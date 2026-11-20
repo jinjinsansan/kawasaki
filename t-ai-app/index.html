@@ -338,6 +338,8 @@ body.lock { overflow: hidden; }
 .gkr.up .sc { color: var(--red); }
 .gkr.dn { color: var(--ink3); }
 .gkt + .gkt { margin-top: 10px; }
+.gkmore { margin-top: 6px; }
+.gkmore summary { min-height: 44px; display: flex; align-items: center; font-weight: 900; font-size: 13px; cursor: pointer; }
 .budbox { margin: 12px var(--pad) 0; border: 2px solid var(--ink); background: var(--card); }
 .budbox.sb2 { border-top: 2px solid var(--ink); }
 .sb1 .pts .perS { display: block; margin-top: 3px; font-size: 11px; font-weight: 700; color: var(--ink2); white-space: nowrap; }
@@ -980,7 +982,7 @@ const IDXF = [
   // 騎手・調教師は生の列（*_raw）があればそちら、無ければ推定値に「推定」と付ける。コンビは生の列が無いので推定値のまま
   ['騎手・厩舎', [['jockey_win_rate_raw', '騎手の勝率', 1, 'pcn', null, 'jockey'], ['jockey_win_rate', '騎手の勝率（モデルの推定値）', 1, 'pc', 'jockey_win_rate_raw'], ['trainer_win_rate_raw', '調教師の勝率', 1, 'pcn', null, 'trainer'], ['trainer_win_rate', '調教師の勝率（モデルの推定値）', 1, 'pc', 'trainer_win_rate_raw'], ['jt_win_rate', 'コンビの勝率（モデルの推定値）', 1, 'pc']]],
   // 外厩（JRDB由来・今回のレースの外厩）。列が届いた日だけ出る（どの馬にも無い列の行は出さない）。外厩の名前が空の馬は「利用なし」
-  ['外厩', [['gaikyu_name', '今回の外厩', 0, 'txt'], ['gaikyu_return_days', '帰厩からレースまで', 0, 'day'], ['farm_score', '牧場スコア（1.0が市場並み）', 1, 'sc'], ['farm_interval_score', 'この外厩×間隔のスコア', 1, 'sc'], ['layoff_starts', '放牧明け初戦の成績', 0, 'lay']]],
+  ['外厩', [['gaikyu_name', '今回の外厩', 0, 'txt'], ['gaikyu_return_days', '帰厩からレースまで', 0, 'day'], ['farm_score', '牧場スコア（1.0が市場並み）', 1, 'sc'], ['farm_interval_score', 'この外厩×前走間隔', 1, 'sc'], ['farm_trainer_score', 'この外厩×この厩舎（全騎乗）', 1, 'sc'], ['farm_trainer_score_first', 'この外厩×この厩舎（直行）', 1, 'sc'], ['farm_jockey_score', 'この外厩×この騎手（全騎乗）', 1, 'sc'], ['farm_jockey_score_first', 'この外厩×この騎手（直行）', 1, 'sc'], ['layoff_starts', '放牧明け初戦の成績', 0, 'lay']]],
   ['今回の条件', [['carried_weight', '斤量', 0, 'kg'], ['carry_diff_last', '前走からの斤量', 0, 'kgd'], ['age', '年齢', 0, 'age'], ['dist_change', '前走からの距離', 0, 'm'], ['surface_switch', '芝・ダートの替わり', 0, 'sw']]],
 ];
 const IDX = new Map();  // レース → Map(馬番 → 指数)。開いたときだけ取りに行く
@@ -1024,33 +1026,51 @@ function cardBody(r, no) {
   const lay = () => `${Math.round(x.layoff_starts)}戦${x.layoff_wins != null ? Math.round(x.layoff_wins) + '勝' : ''}${x.layoff_top3 != null ? `・3着内${Math.round(x.layoff_top3)}回` : ''}`;
   const val = (k, f, v, pre) => (f === 'lay' ? lay() : f === 'pcn' ? pct(v, 0) + '%' + cnt(pre) : f === 'fin' ? `${Math.round(v)}着${fieldOf(x) != null ? `／${Math.round(fieldOf(x))}頭` : ''}` : ixFmt(v, f));
   const redraw = () => { const sh = $('#sheet'); if (sh && sh.dataset.race === r.id && +sh.dataset.no === no) { const sc = $('.ixs') && $('.ixs').scrollTop; $('#sheetB').innerHTML = cardBody(r, no); if ($('.ixs') && sc) $('.ixs').scrollTop = sc; } };
-  const naTxt = (k) => (k === 'gaikyu_name' || k === 'gaikyu_return_days' ? '利用なし' : k === 'layoff_starts' ? '該当なし' : 'データなし');
-  return top + `<div class="ixs">${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}${t === '外厩' ? farmBlock(x, h, redraw) : ''}` : ''; }).join('')}
+  const naTxt = (k) => (k === 'gaikyu_name' || k === 'gaikyu_return_days' ? '利用なし' : k === 'layoff_starts' ? '該当なし' : /^farm_/.test(k) ? (x.gaikyu_name ? '出走30未満のため省略' : '－') : 'データなし');
+  return top + `<div class="ixs">${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}${t === '外厩' ? farmBlock(r, x, h, redraw) : ''}` : ''; }).join('')}
     ${x.gaikyu_name ? `<div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-go="#/gaikyu/${encodeURIComponent(farmKey(x))}">この外厩の集計を見る<span>▶</span></button></div>` : ''}
-    <p class="note" style="margin-top:12px">指数は、T-AIが勝つ確率を計算するときの材料の一部です。順位は、このレースの出走馬の中での順位です。「データなし」は、過去の走りが無いなどで計算できない項目です。</p></div>`;
+    <p class="note" style="margin-top:12px">指数は、T-AIが勝つ確率を計算するときの材料の一部です。順位は、このレースの出走馬の中での順位です。「データなし」は、過去の走りが無いなどで計算できない項目です。${x.gaikyu_name ? '外厩のスコアは参考の集計で、勝つ確率の計算には入っていません。全騎乗＝その外厩から帰ってきた後の全部の出走、直行＝帰ってきて最初のレースだけ。' : ''}</p></div>`;
 }
-const GKF = new Map();  // 外厩の名前 → その外厩の集計の行 | 'loading' | 'err'
+const GKF = new Map();  // 外厩の名前 → その外厩の集計の行（牧場別・間隔・クラス・人気帯） | 'loading' | 'err'
 function needFarm(farm, redraw) {
   if (FREE || !farm || GKF.has(farm)) return;
   GKF.set(farm, 'loading');
-  sb.from('gaikyu_ref').select('kind,item,starts,score,win_rate,flag').eq('farm', farm).neq('kind', 'vs').then(({ data, error }) => { GKF.set(farm, error ? 'err' : data || []); redraw(); });
+  sb.from('gaikyu_ref').select('kind,item,starts,score,win_rate,flag').eq('farm', farm).in('kind', ['farm', 'interval', 'class', 'popularity'])
+    .then(({ data, error }) => { GKF.set(farm, error ? 'err' : data || []); redraw(); });
 }
-// 指数カードの外厩欄に入れる、その馬の外厩の集計（2025年・出走30以上だけ）
-function farmBlock(x, h, redraw) {
+// レース名から、集計表のクラスの区分へ（2019年以前の旧表記も）
+function classOf(name) {
+  const n = String(name || '').normalize('NFKC');
+  return /新馬/.test(n) ? '新馬' : /未勝利/.test(n) ? '未勝利' : /1勝|500万/.test(n) ? '1勝クラス' : /2勝|1000万/.test(n) ? '2勝クラス' : /3勝|1600万/.test(n) ? '3勝クラス' : 'オープン・重賞';
+}
+const popBand = (n) => (n == null ? null : n === 1 ? '1番人気' : n <= 3 ? '2-3番人気' : n <= 5 ? '4-5番人気' : n <= 9 ? '6-9番人気' : '10番人気以下');
+// 1行：スコア（1.2以上は赤・0.85未満は灰色）と出走数。出走30未満は数字を出さない
+function gkLine(label, row) {
+  const sc = (v) => `<span class="v${v >= 1.2 ? ' up' : v < 0.85 ? ' dn' : ''}">${Number(v).toFixed(3)}</span>`;
+  if (!row) return `<div class="ixr"><span class="k">${label}</span><span class="v na">実績なし</span><span></span></div>`;
+  if (!row.flag) return `<div class="ixr"><span class="k">${label}</span><span class="v na">${row.starts != null ? `出走${row.starts}・` : ''}少ないため省略</span><span></span></div>`;
+  return `<div class="ixr"><span class="k">${label}</span>${sc(row.score)}<span class="rk">${row.starts != null ? `${row.starts}走${row.win_rate != null ? `・勝率${pct(row.win_rate, 0)}%` : ''}` : ''}</span></div>`;
+}
+// 指数カードの外厩欄に入れる、その馬の外厩の「今回の条件」の集計
+function farmBlock(r, x, h, redraw) {
   const farm = farmKey(x);
   if (!x.gaikyu_name || !farm) return '';
-  const headH = `<h3 style="font-size:13px;margin-top:10px">この外厩の集計<span style="font-weight:700;color:var(--ink2);font-size:11px">（2025年の実績・1.0が市場並み）</span></h3>`;
+  const headH = `<h3 style="font-size:13px;margin-top:10px">この外厩の、今回の条件での集計<span style="font-weight:700;color:var(--ink2);font-size:11px">（2016〜2026年・1.0が市場並み）</span></h3>`;
   if (FREE) return `${headH}<div class="lockmini" style="margin-top:6px"><b style="color:var(--red)">外厩の集計は会員限定です。</b><br>${LIMIT_NOTE}<br><a href="${JOIN_URL}" target="_blank" rel="noopener">T-AIの詳しいご案内を見る ›</a></div>`;
   const rows = GKF.get(farm);
   if (rows === undefined || rows === 'loading') { needFarm(farm, redraw); return `${headH}<p class="note">読み込んでいます…</p>`; }
   if (rows === 'err') return `${headH}<p class="note">読み込めませんでした。</p>`;
   if (!rows.length) return `${headH}<p class="note">この外厩（${esc(farm)}）の集計はありません。</p>`;
-  const sc = (v) => `<span class="v${v >= 1.2 ? ' up' : v < 0.85 ? ' dn' : ''}">${Number(v).toFixed(3)}</span>`;
-  const line = (label, row, who) => `<div class="ixr"><span class="k">${label}</span>${row && row.flag ? `${sc(row.score)}<span class="rk">${row.starts}走・勝率${pct(row.win_rate, 0)}%</span>` : `<span class="v na">${row ? `出走${row.starts}（少ないため省略）` : who ? '実績なし' : 'データなし'}</span><span></span>`}</div>`;
-  const iv = rows.filter((y) => y.kind === 'interval').sort((a, b) => a.item.localeCompare(b.item, 'ja'));
-  // ×厩舎・×騎手は、牧場名が拾えた分（全体の約22%）だけの集計で件数が少ないため、当面は出さない。間隔別も出走30以上だけ
-  const ivs = iv.filter((y) => y.flag);
-  return ivs.length ? `${headH}${ivs.map((y) => line(`前走間隔：${esc(y.item)}`, y, true)).join('')}` : '';
+  const get = (k, it) => rows.find((y) => y.kind === k && y.item === it);
+  const surf = r.surface === '芝' ? '芝' : r.surface === 'ダート' ? 'ダート' : null;
+  const cls = classOf(r.name), w = r.odds && r.odds.win && r.odds.win[String(h.no)], pop = w && w[1] ? +w[1] : null, pb = popBand(pop);
+  const iv = rows.filter((y) => y.kind === 'interval' && y.flag).sort((a, b) => a.item.localeCompare(b.item, 'ja'));
+  return `${headH}
+    ${surf ? gkLine(`${surf}のレース`, get('farm', surf)) : ''}
+    ${gkLine('帰厩後1走目（直行）', get('farm', '帰厩後1走目'))}
+    ${gkLine(`クラス：${esc(cls)}`, get('class', cls))}
+    ${pb ? gkLine(`今の人気（${pop}番人気）：${esc(pb)}`, get('popularity', pb)) : ''}
+    ${iv.map((y) => gkLine(`前走間隔：${esc(y.item)}`, y)).join('')}`;
 }
 // 外厩の名前を、集計表の名前に寄せる（川崎さんの正規名の列があればそれを使う）
 const farmKey = (x) => x.gaikyu_name_norm || x.cur_farm_name_norm || String(x.gaikyu_name || '').normalize('NFKC').replace(/[−‐－ー]/g, (c) => (c === 'ー' ? c : '-')).trim();
@@ -1258,44 +1278,80 @@ function updateBuild() {
 }
 
 /* ─ 外厩データ（川崎さんの集計表。会員限定） ─ */
-let GK = null;  // null → 'loading' → [行] / 'err'
+const GK_COLS = 'kind,farm,item,starts,wins,top3,win_rate,top3_rate,score,flag';
+let GK = null;  // 一覧：null → 'loading' → { farms, vs, top } / 'err'
+const GKD = new Map();  // 牧場 → { kind: [行] } | 'loading' | 'err'
+const gkRe = () => { if (/^#\/gaikyu/.test(location.hash)) rerender(); };
 function loadGK() {
   if (GK) return; GK = 'loading';
-  sb.from('gaikyu_ref').select('kind,farm,item,starts,wins,top3,win_rate,top3_rate,score,flag').or('flag.eq.true,kind.eq.vs').then(({ data, error }) => {
-    GK = error ? 'err' : data || []; if (/^#\/gaikyu/.test(location.hash)) rerender();
+  const q = () => sb.from('gaikyu_ref').select(GK_COLS);
+  const best = (k, asc) => q().eq('kind', k).eq('flag', true).order('score', { ascending: !!asc }).limit(10);
+  Promise.all([q().eq('kind', 'farm').eq('item', '全体'), q().eq('kind', 'vs'), best('trainer'), best('trainer', true), best('jockey'), best('trainer_first'), best('jockey_first')]).then((rs) => {
+    if (rs.some((x) => x.error)) { GK = 'err'; gkRe(); return; }
+    const [farms, vs, tH, tL, jH, tfH, jfH] = rs.map((x) => x.data || []);
+    GK = { farms, vs, top: { tH, tL, jH, tfH, jfH } }; gkRe();
+  });
+}
+const GK_KINDS = ['farm', 'interval', 'class', 'popularity', 'trainer', 'trainer_first', 'jockey', 'jockey_first'];
+function loadGKD(farm) {
+  if (GKD.has(farm)) return; GKD.set(farm, 'loading');
+  // 厩舎・騎手は出走30以上だけ（それでも1つの牧場で数百組あるので、表ごとに分けて読む）
+  Promise.all(GK_KINDS.map((k) => { const x = sb.from('gaikyu_ref').select(GK_COLS).eq('farm', farm).eq('kind', k); return /trainer|jockey/.test(k) ? x.eq('flag', true).order('score', { ascending: false }) : x; })).then((rs) => {
+    if (rs.some((x) => x.error)) { GKD.set(farm, 'err'); gkRe(); return; }
+    GKD.set(farm, Object.fromEntries(GK_KINDS.map((k, i) => [k, rs[i].data || []]))); gkRe();
   });
 }
 function gkTable(rows, head) {
-  return `<div class="box gkt"><div class="gkr gkh"><span>${head}</span><span>出走</span><span>勝率</span><span>複勝率</span><span>スコア</span></div>${rows.map((x) => `<div class="gkr${x.score >= 1.2 ? ' up' : x.score < 0.85 ? ' dn' : ''}"><span>${esc(x.item.split('|').pop())}</span><span>${x.starts}</span><span>${pct(x.win_rate)}%</span><span>${pct(x.top3_rate)}%</span><span class="sc">${Number(x.score).toFixed(3)}</span></div>`).join('')}</div>`;
+  const n = (v) => (v == null ? '－' : v);
+  return `<div class="box gkt"><div class="gkr gkh"><span>${head}</span><span>出走</span><span>勝率</span><span>複勝率</span><span>スコア</span></div>${rows.map((x) => `<div class="gkr${x.score >= 1.2 ? ' up' : x.score < 0.85 ? ' dn' : ''}"><span>${esc(x.item.split('|').pop())}</span><span>${n(x.starts)}</span><span>${x.win_rate == null ? '－' : pct(x.win_rate) + '%'}</span><span>${x.top3_rate == null ? '－' : pct(x.top3_rate) + '%'}</span><span class="sc">${Number(x.score).toFixed(3)}</span></div>`).join('')}</div>`;
 }
+// 長い表は、先頭だけ出して残りはたたむ
+function gkLong(rows, head, first) {
+  const k = first || 15;
+  return rows.length <= k + 5 ? gkTable(rows, head) : `${gkTable(rows.slice(0, k), head)}<details class="gkmore"><summary>残りの${rows.length - k}組を見る</summary>${gkTable(rows.slice(k), head)}</details>`;
+}
+const GK_ORDER = { farm: ['全体', '芝', 'ダート', '帰厩後1走目', '帰厩後2走目', '帰厩後3走目以降'], interval: ['短期（28日未満）', '中間隔（28-69日）', '休養明け（70日以上）'], class: ['新馬', '未勝利', '1勝クラス', '2勝クラス', '3勝クラス', 'オープン・重賞'], popularity: ['1番人気', '2-3番人気', '4-5番人気', '6-9番人気', '10番人気以下'] };
+const gkSort = (k, rows) => rows.slice().sort((a, b) => GK_ORDER[k].indexOf(a.item) - GK_ORDER[k].indexOf(b.item));
 function vGaikyu(farm) {
-  const head = `<section class="sec"><div class="label"><b>外厩データ</b><span>2025年の実績集計</span></div>
-    <p class="note" style="margin-top:10px">T-AIの勝つ確率の計算には入っていない、参考の集計です。スコアは「市場の期待（単勝オッズ）に対してどれだけ勝っているか」で、<b>1.0が市場並み</b>。1.2以上は赤、0.85未満は灰色にしています。組み合わせは、出走30以上のものだけ載せています。</p>`;
+  const head = `<section class="sec"><div class="label"><b>外厩データ</b><span>2016〜2026年の集計</span></div>
+    <p class="note" style="margin-top:10px">T-AIの勝つ確率の計算には入っていない、参考の集計です。スコアは「市場の期待（単勝オッズ）に対してどれだけ勝っているか」で、<b>1.0が市場並み</b>。出走が少ないほど1.0に寄る式です。1.2以上は赤、0.85未満は灰色にしています。表は出走30以上のものだけ載せています。</p>
+    <p class="note" style="margin-top:6px"><b>全騎乗</b>＝その外厩から帰ってきた後の全部の出走（2走目・3走目以降も含む）。<b>直行</b>＝帰ってきて最初のレースだけ。</p>`;
+  const cover = '<p class="dnote">外厩の記録から牧場の名前が分かった出走だけの集計です（放牧の記録のうち約54%。名前の手がかりが無い分は、推測で入れていません）。</p>';
   if (FREE) return `${head}</section><section class="sec">${joinBox('外厩データは<br>会員限定です')}</section>`;
   if (!GK || GK === 'loading') { loadGK(); return `${head}<p class="note" style="padding:30px 0;text-align:center">読み込んでいます…</p></section>`; }
   if (GK === 'err') return `${head}<p class="note" style="padding:20px 0">読み込めませんでした。時間をおいて、もう一度お試しください。</p></section>`;
-  const farms = [...new Set(GK.filter((x) => x.kind !== 'vs').map((x) => x.farm))].sort((a, b) => a.localeCompare(b, 'ja'));
-  const pick = `<div class="pick" style="margin-top:12px"><label class="lbl" for="gkFarm">外厩を選ぶ</label><select id="gkFarm"><option value="">（外厩を選んでください）</option>${farms.map((f) => `<option value="${esc(f)}"${f === farm ? ' selected' : ''}>${esc(f)}</option>`).join('')}</select></div>`;
-  const by = (k) => GK.filter((x) => x.kind === k && x.farm === farm).sort((a, b) => b.score - a.score);
+  const names = GK.farms.map((x) => x.farm).sort((a, b) => a.localeCompare(b, 'ja'));
+  const pick = `<div class="pick" style="margin-top:12px"><label class="lbl" for="gkFarm">外厩を選ぶ</label><select id="gkFarm"><option value="">（外厩を選んでください）</option>${names.map((f) => `<option value="${esc(f)}"${f === farm ? ' selected' : ''}>${esc(f)}</option>`).join('')}</select></div>`;
+  const sec = (title, sub, body) => `<section class="sec"><div class="label"><b>${title}</b><span>${sub}</span></div>${body}</section>`;
+  const none = '<p class="note" style="padding:10px 0">出走30以上のものがありません。</p>';
   if (farm) {
-    const iv = by('interval'), tr = by('trainer'), jk = by('jockey');
-    return `${head}${pick}</section>
-      <section class="sec"><div class="label"><b>${esc(farm)}</b><span>前走間隔別</span></div>${iv.length ? gkTable(iv, '前走間隔') : '<p class="note" style="padding:10px 0">出走30以上の区分がありません。</p>'}</section>
-      <p class="dnote">下の×厩舎・×騎手の表は、外厩の名前が記録から拾えた分（全体の約22%）だけの集計です。実際の数よりかなり少ないため、参考程度にご覧ください（集計し直した版に置き換える予定です）。</p>
-      <section class="sec"><div class="label"><b>${esc(farm)}</b><span>×厩舎</span></div>${tr.length ? gkTable(tr, '調教師') : '<p class="note" style="padding:10px 0">出走30以上の組み合わせがありません。</p>'}</section>
-      <section class="sec"><div class="label"><b>${esc(farm)}</b><span>×騎手</span></div>${jk.length ? gkTable(jk, '騎手') : '<p class="note" style="padding:10px 0">出走30以上の組み合わせがありません。</p>'}</section>
-      ${!iv.length && !tr.length && !jk.length && !farms.includes(farm) ? '<p class="dnote">この外厩の名前は、集計表に見つかりませんでした（表記の違いの場合があります）。上の一覧から選んでください。</p>' : ''}`;
+    const d = GKD.get(farm);
+    if (d === undefined || d === 'loading') { loadGKD(farm); return `${head}${pick}</section><p class="note" style="padding:30px 0;text-align:center">読み込んでいます…</p>`; }
+    if (d === 'err') return `${head}${pick}</section><p class="note" style="padding:20px var(--pad)">読み込めませんでした。時間をおいて、もう一度お試しください。</p>`;
+    const f = (k) => gkSort(k, d[k].filter((x) => x.flag)), F = esc(farm);
+    const any = GK_KINDS.some((k) => d[k].length);
+    if (!any) return `${head}${pick}</section><p class="dnote">この外厩の名前は、集計表に見つかりませんでした（表記の違いの場合があります）。上の一覧から選んでください。</p>`;
+    return `${head}${pick}</section>${cover}
+      ${sec(F, '牧場全体・芝ダート・帰厩後の走数', f('farm').length ? gkTable(f('farm'), '区分') : none)}
+      ${sec(F, '前走間隔別', f('interval').length ? gkTable(f('interval'), '前走間隔') : none)}
+      ${sec(F, 'クラス別', f('class').length ? gkTable(f('class'), 'クラス') : none)}
+      ${sec(F, '人気別', f('popularity').length ? gkTable(f('popularity'), '人気') : none)}
+      ${sec(F, '×厩舎（全騎乗）', d.trainer.length ? gkLong(d.trainer, '調教師') : none)}
+      ${sec(F, '×厩舎（直行）', d.trainer_first.length ? gkLong(d.trainer_first, '調教師') : none)}
+      ${sec(F, '×騎手（全騎乗）', d.jockey.length ? gkLong(d.jockey, '騎手') : none)}
+      ${sec(F, '×騎手（直行）', d.jockey_first.length ? gkLong(d.jockey_first, '騎手') : none)}`;
   }
-  const vs = (g) => GK.filter((x) => x.kind === 'vs' && x.farm === g);
-  const top = (k, asc) => GK.filter((x) => x.kind === k).sort((a, b) => (asc ? a.score - b.score : b.score - a.score)).slice(0, 10).map((x) => ({ ...x, item: `${x.farm}×${x.item}` }));
-  return `${head}${pick}</section>
-    <section class="sec"><div class="label"><b>外厩明け vs 連戦</b><span>全体の比較</span></div>
-      <p class="note" style="margin-top:8px">帰厩後1走目の馬（外厩明け）と、外厩を使わず続けて走っている馬（連戦）の比較です。馬の質が違う群どうしの比較なので、原因までは言えません。</p>
-      ${gkTable(vs('外厩明け'), '外厩明け')}${gkTable(vs('連戦'), '連戦')}</section>
-    <p class="dnote">下の×厩舎・×騎手の表は、外厩の名前が記録から拾えた分（全体の約22%）だけの集計です。実際の数よりかなり少ないため、参考程度にご覧ください（集計し直した版に置き換える予定です）。</p>
-    <section class="sec"><div class="label"><b>外厩×厩舎</b><span>スコアの高い10組</span></div>${gkTable(top('trainer'), '組み合わせ')}</section>
-    <section class="sec"><div class="label"><b>外厩×騎手</b><span>スコアの高い10組</span></div>${gkTable(top('jockey'), '組み合わせ')}</section>
-    <section class="sec"><div class="label"><b>外厩×厩舎</b><span>スコアの低い10組</span></div>${gkTable(top('trainer', true), '組み合わせ')}</section>`;
+  const vs = (g) => GK.vs.filter((x) => x.farm === g);
+  const pair = (rows) => rows.map((x) => ({ ...x, item: `${x.farm}×${x.item}` }));
+  const farmsBy = GK.farms.filter((x) => x.flag).sort((a, b) => b.score - a.score).map((x) => ({ ...x, item: x.farm }));
+  return `${head}${pick}</section>${cover}
+    ${sec('牧場別', 'スコアの高い順', gkLong(farmsBy, '外厩', 20))}
+    ${sec('外厩明け vs 連戦', '全体の比較', `<p class="note" style="margin-top:8px">帰厩後1走目の馬（外厩明け）と、外厩を使わず続けて走っている馬（連戦）の比較です。馬の質が違う群どうしの比較なので、原因までは言えません。</p>${gkTable(vs('外厩明け'), '外厩明け')}${gkTable(vs('連戦'), '連戦')}`)}
+    ${sec('外厩×厩舎', 'スコアの高い10組（全騎乗）', gkTable(pair(GK.top.tH), '組み合わせ'))}
+    ${sec('外厩×厩舎', 'スコアの高い10組（直行）', gkTable(pair(GK.top.tfH), '組み合わせ'))}
+    ${sec('外厩×騎手', 'スコアの高い10組（全騎乗）', gkTable(pair(GK.top.jH), '組み合わせ'))}
+    ${sec('外厩×騎手', 'スコアの高い10組（直行）', gkTable(pair(GK.top.jfH), '組み合わせ'))}
+    ${sec('外厩×厩舎', 'スコアの低い10組（全騎乗）', gkTable(pair(GK.top.tL), '組み合わせ'))}`;
 }
 
 /* ─ 成績 ─ */
