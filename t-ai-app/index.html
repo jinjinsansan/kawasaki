@@ -67,8 +67,9 @@ p, h1, h2, h3 { margin: 0; }
 .sec { padding: 22px var(--pad) 0; }
 .label { display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 13px; letter-spacing: .1em; }
 .label b { padding: 2px 9px; background: var(--red); color: #fff; white-space: nowrap; }
-.label span { color: var(--ink2); font-weight: 700; white-space: nowrap; }
+.label span { min-width: 0; color: var(--ink2); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .label::after { content: ""; flex: 1; height: 1px; background: var(--ink); }
+@media (max-width: 360px) { .label { gap: 8px; letter-spacing: .03em; } .mrow { gap: 6px; padding: 4px 10px; } }
 .h1 { margin-top: 12px; font-weight: 900; font-size: clamp(24px, 7.4vw, 32px); line-height: 1.32; text-wrap: balance; }
 .h1 em { font-style: normal; color: var(--red); }
 .h2 { font-weight: 900; font-size: clamp(20px, 6vw, 25px); line-height: 1.35; text-wrap: balance; }
@@ -102,7 +103,7 @@ p, h1, h2, h3 { margin: 0; }
 .pen path { fill: none; stroke: var(--red); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
 .drawn .pen path { transition: stroke-dashoffset .8s var(--ease); stroke-dashoffset: 0; }
 .ring { position: relative; display: inline-block; }
-.ring .pen { inset: -9px -11px -8px -9px; width: calc(100% + 20px); height: calc(100% + 17px); }
+.ring .pen { inset: -9px -10px -8px -15px; width: calc(100% + 25px); height: calc(100% + 17px); }
 
 /* ログイン */
 .login { min-height: 100dvh; display: grid; align-content: center; gap: 0; padding: calc(24px + env(safe-area-inset-top, 0px)) var(--pad) 24px; }
@@ -130,10 +131,10 @@ p, h1, h2, h3 { margin: 0; }
 .fh { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; align-items: center; padding: 12px 12px 10px; }
 .fh h2 { font-weight: 900; font-size: 19px; line-height: 1.35; }
 .fh p { font-size: 12px; color: var(--ink2); line-height: 1.5; }
-.mrow { display: grid; grid-template-columns: 22px 26px minmax(0, 1fr) 70px; gap: 8px; align-items: center; min-height: 44px; padding: 4px 12px; border-top: 1px solid var(--ink); }
+.mrow { display: grid; grid-template-columns: 22px 26px minmax(0, 1fr) 72px; gap: 8px; align-items: center; min-height: 44px; padding: 4px 12px; border-top: 1px solid var(--ink); }
 .mrow .mk { text-align: center; font-weight: 900; color: var(--red); }
 .mrow .nm { min-width: 0; display: grid; gap: 3px; }
-.mrow .nm b { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.mrow .nm b { font-size: 14px; font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
 .bar { position: relative; height: 6px; background: var(--paper2); }
 .bar i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--ink); transition: width 1s var(--ease); }
 .bar.red i, .top .bar i { background: var(--red); }
@@ -155,7 +156,7 @@ p, h1, h2, h3 { margin: 0; }
 .rrow:active { background: var(--paper2); }
 .rrow .ri { min-width: 0; display: grid; gap: 1px; }
 .rrow .ri .tm { font-family: var(--n); font-size: 12px; color: var(--ink2); line-height: 1.3; }
-.rrow .ri b { font-weight: 900; font-size: 15px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rrow .ri b { font-weight: 900; font-size: 15px; line-height: 1.35; overflow-wrap: anywhere; }
 .rrow .ri small { font-size: 11.5px; color: var(--ink2); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rrow .rt { display: grid; justify-items: end; gap: 2px; min-width: 84px; }
 .rrow .rt .who { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: var(--ink2); white-space: nowrap; }
@@ -178,10 +179,10 @@ p, h1, h2, h3 { margin: 0; }
 .dctl .seg { flex: 0 1 220px; }
 .dctl small { font-size: 11px; color: var(--ink2); }
 .tbl { margin: 10px var(--pad) 0; }
-.th { display: grid; grid-template-columns: 6px 30px 22px minmax(0, 1fr) 72px; align-items: center; padding: 4px 0; background: var(--ink); color: var(--paper); font-size: 10.5px; font-weight: 700; }
+.th { display: grid; grid-template-columns: 6px 30px 22px minmax(0, 1fr) 78px; align-items: center; padding: 4px 0; background: var(--ink); color: var(--paper); font-size: 10.5px; font-weight: 700; }
 .th span:nth-child(5) { text-align: right; padding-right: 10px; }
 .rows { position: relative; }
-.row { position: absolute; left: 0; right: 0; height: 60px; display: grid; grid-template-columns: 6px 30px 22px minmax(0, 1fr) 72px; align-items: center; border-bottom: 1px solid var(--ink); background: var(--card); transition: transform .45s var(--ease); }
+.row { position: absolute; left: 0; right: 0; height: 60px; display: grid; grid-template-columns: 6px 30px 22px minmax(0, 1fr) 78px; align-items: center; border-bottom: 1px solid var(--ink); background: var(--card); transition: transform .45s var(--ease); }
 .row .gt { align-self: stretch; }
 .row .no { align-self: stretch; display: grid; place-items: center; font-family: var(--n); font-weight: 700; font-size: 18px; border-right: 1px solid var(--ink); }
 .row .mk { text-align: center; font-weight: 900; font-size: 16px; color: var(--red); }
@@ -189,7 +190,7 @@ p, h1, h2, h3 { margin: 0; }
 .row .nm b { font-size: 14.5px; font-weight: 900; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .row .nm small { font-size: 11px; color: var(--ink2); line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .row .nm small em { font-style: normal; font-weight: 700; color: var(--red); }
-.row .pc { position: relative; display: grid; gap: 3px; padding-right: 10px; text-align: right; }
+.row .pc { position: relative; display: grid; gap: 3px; padding-right: 9px; text-align: right; }
 .row .pc .pct { font-size: 19px; line-height: 1; }
 .row .pc .bar { height: 5px; }
 .row .rk { font-size: 9.5px; font-weight: 700; line-height: 1; color: var(--ink3); }
@@ -270,7 +271,7 @@ body.lock { overflow: hidden; }
 .cmp .cr:first-of-type { border-top: 0; }
 .cmp .cr .n { min-width: 0; display: flex; align-items: center; gap: 6px; }
 .cmp .cr .n span:last-child { min-width: 0; display: grid; gap: 1px; }
-.cmp .cr .n b { font-size: 13.5px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.cmp .cr .n b { font-size: 13.5px; font-weight: 900; line-height: 1.25; overflow-wrap: anywhere; }
 .cmp .cr .n small { font-size: 10.5px; color: var(--ink2); white-space: nowrap; line-height: 1.3; }
 .cmp .cr .v { text-align: right; font-family: var(--n); font-weight: 700; font-size: 14px; line-height: 1.15; white-space: nowrap; }
 .cmp .cr .v small { display: block; font-size: 10px; color: var(--ink3); }
@@ -306,6 +307,7 @@ body.lock { overflow: hidden; }
 .ixr .v { font-family: var(--n); font-weight: 700; font-size: 15px; text-align: right; white-space: nowrap; }
 .ixr .rk { text-align: right; font-size: 11.5px; font-weight: 700; color: var(--ink2); white-space: nowrap; }
 .ixr .rk.top { color: var(--red); }
+.ixr .k .gks { display: block; font-size: 11px; font-weight: 700; color: var(--ink2); line-height: 1.3; }
 .ixr .na { color: var(--ink3); font-weight: 400; font-size: 12px; }
 .ixr .v.up { color: var(--red); }
 .ixr .v.dn { color: var(--ink3); }
@@ -324,7 +326,8 @@ body.lock { overflow: hidden; }
 .lockbox .btns { margin-top: 12px; }
 .freebar { margin: 10px var(--pad) 0; padding: 10px 12px; border: 2px solid var(--red); background: #fff; font-size: 13px; line-height: 1.7; }
 .freebar b { color: var(--red); }
-.autog .a4 button { font-size: 13px; }
+.autog .a4 button { font-size: 13px; white-space: normal; line-height: 1.25; padding: 2px 3px; word-break: keep-all; }
+@media (max-width: 360px) { .autog .a4 button { font-size: 12px; } }
 .autog .aprow { margin-top: 8px; }
 .autog .aprm { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 14px; }
 .autog .aprm input { width: 84px; min-height: 44px; padding: 0 8px; border: 2px solid var(--ink); background: var(--card); font-family: var(--n); font-size: 20px; font-weight: 700; text-align: right; }
@@ -1096,7 +1099,7 @@ function gkLine(label, row) {
   const sc = (v) => `<span class="v${v >= 1.2 ? ' up' : v < 0.85 ? ' dn' : ''}">${Number(v).toFixed(3)}</span>`;
   if (!row) return `<div class="ixr"><span class="k">${label}</span><span class="v na">実績なし</span><span></span></div>`;
   if (!row.flag) return `<div class="ixr"><span class="k">${label}</span><span class="v na">${row.starts != null ? `${row.starts}走${row.wins != null ? `${row.wins}勝` : ''}・` : ''}少ないため参考外</span><span></span></div>`;
-  return `<div class="ixr"><span class="k">${label}</span>${sc(row.score)}<span class="rk">${row.starts != null ? `${row.starts}走${row.win_rate != null ? `・勝率${pct(row.win_rate, 0)}%` : ''}` : ''}</span></div>`;
+  return `<div class="ixr"><span class="k">${label}${row.starts != null ? `<small class="gks">${row.starts}走${row.win_rate != null ? `・勝率${pct(row.win_rate, 0)}%` : ''}</small>` : ''}</span>${sc(row.score)}<span></span></div>`;
 }
 // 指数カードの外厩欄に入れる、その馬の外厩の「今回の条件」の集計
 function farmBlock(r, x, h, redraw) {
@@ -1217,7 +1220,7 @@ function vAuto() {
     : '<p class="note">期待値（確率×オッズ）が1を超える組み合わせを、高い順に最大20点。</p>';
   return `<section class="sec autog">
     <div class="label"><b>自動買い目生成</b><span>${FREE ? '🔒 会員限定' : '会員限定'}</span></div>
-    <div class="seg k4 a4" role="group" aria-label="自動のモード" style="margin-top:10px">${Object.keys(AUTO_NAME).map((x) => `<button type="button" data-am="${x}" aria-pressed="${!FREE && m === x}">${AUTO_NAME[x]}</button>`).join('')}</div>
+    <div class="seg k4 a4" role="group" aria-label="自動のモード" style="margin-top:10px">${Object.keys(AUTO_NAME).map((x) => `<button type="button" data-am="${x}" aria-pressed="${!FREE && m === x}">${AUTO_NAME[x].replace(/(モード|指定)$/, '<wbr>$1')}</button>`).join('')}</div>
     ${FREE ? '' : `<div class="aprow">${param}</div><div class="btns" style="margin-top:8px"><button class="btn sub" type="button" id="autoGo">この条件で買い目を作る<span>▶</span></button></div>`}
     <div id="autoMsg" class="note" role="status" style="margin-top:6px"></div>
   </section>`;
@@ -1385,7 +1388,7 @@ function vGaikyu(farm) {
     const any = GK_KINDS.some((k) => d[k].length);
     if (!any) return `${head}${pick}</section><p class="dnote">この外厩の名前は、集計表に見つかりませんでした（表記の違いの場合があります）。上の一覧から選んでください。</p>`;
     return `${head}${pick}</section>${cover}
-      ${sec(F, '牧場全体・芝ダート・帰厩後の走数', f('farm').length ? gkTable(f('farm'), '区分') : none)}
+      ${sec(F, '全体・芝ダート・走数別', f('farm').length ? gkTable(f('farm'), '区分') : none)}
       ${sec(F, '前走間隔別', f('interval').length ? gkTable(f('interval'), '前走間隔') : none)}
       ${sec(F, 'クラス別', f('class').length ? gkTable(f('class'), 'クラス') : none)}
       ${sec(F, '人気別', f('popularity').length ? gkTable(f('popularity'), '人気') : none)}
@@ -1400,11 +1403,11 @@ function vGaikyu(farm) {
   return `${head}${pick}</section>${cover}
     ${sec('牧場別', 'スコアの高い順', gkLong(farmsBy, '外厩', 20))}
     ${sec('外厩明け vs 連戦', '全体の比較', `<p class="note" style="margin-top:8px">帰厩後1走目の馬（外厩明け）と、外厩を使わず続けて走っている馬（連戦）の比較です。馬の質が違う群どうしの比較なので、原因までは言えません。</p>${gkTable(vs('外厩明け'), '外厩明け')}${gkTable(vs('連戦'), '連戦')}`)}
-    ${sec('外厩×厩舎', 'スコアの高い10組（全騎乗）', gkTable(pair(GK.top.tH), '組み合わせ'))}
-    ${sec('外厩×厩舎', 'スコアの高い10組（直行）', gkTable(pair(GK.top.tfH), '組み合わせ'))}
-    ${sec('外厩×騎手', 'スコアの高い10組（全騎乗）', gkTable(pair(GK.top.jH), '組み合わせ'))}
-    ${sec('外厩×騎手', 'スコアの高い10組（直行）', gkTable(pair(GK.top.jfH), '組み合わせ'))}
-    ${sec('外厩×厩舎', 'スコアの低い10組（全騎乗）', gkTable(pair(GK.top.tL), '組み合わせ'))}`;
+    ${sec('外厩×厩舎', '高い10組・全騎乗', gkTable(pair(GK.top.tH), '組み合わせ'))}
+    ${sec('外厩×厩舎', '高い10組・直行', gkTable(pair(GK.top.tfH), '組み合わせ'))}
+    ${sec('外厩×騎手', '高い10組・全騎乗', gkTable(pair(GK.top.jH), '組み合わせ'))}
+    ${sec('外厩×騎手', '高い10組・直行', gkTable(pair(GK.top.jfH), '組み合わせ'))}
+    ${sec('外厩×厩舎', '低い10組・全騎乗', gkTable(pair(GK.top.tL), '組み合わせ'))}`;
 }
 
 /* ─ 成績 ─ */
