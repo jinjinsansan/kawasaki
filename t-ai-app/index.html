@@ -307,6 +307,9 @@ body.lock { overflow: hidden; }
 .ixr .rk { text-align: right; font-size: 11.5px; font-weight: 700; color: var(--ink2); white-space: nowrap; }
 .ixr .rk.top { color: var(--red); }
 .ixr .na { color: var(--ink3); font-weight: 400; font-size: 12px; }
+.ixr .v.up { color: var(--red); }
+.ixr .v.dn { color: var(--ink3); }
+.lockmini { margin-top: 8px; padding: 10px 12px; border: 2px solid var(--red); background: #fff; font-size: 13px; line-height: 1.7; }
 .lockbox { border-color: var(--red); }
 .blurwrap { position: relative; margin: 12px var(--pad) 0; min-height: 640px; }
 .blurred { filter: blur(6px); opacity: .75; pointer-events: none; user-select: none; border: 2px solid var(--ink); background: var(--card); }
@@ -984,9 +987,9 @@ const IDX = new Map();  // レース → Map(馬番 → 指数)。開いたと�
 function needIdx(r) {
   if (SAMPLE || IDX.has(r.id)) return;
   IDX.set(r.id, 'loading');
-  sb.from('predictions').select('horse_no,idx').eq('race_id', r.id).then(({ data, error }) => {
+  sb.from('predictions').select('horse_no,idx,trainer').eq('race_id', r.id).then(({ data, error }) => {
     if (error) { IDX.delete(r.id); return; }
-    IDX.set(r.id, new Map((data || []).filter((x) => x.idx).map((x) => [x.horse_no, x.idx])));
+    IDX.set(r.id, new Map((data || []).filter((x) => x.idx).map((x) => [x.horse_no, { ...x.idx, _trainer: x.trainer || '' }])));
     const sh = $('#sheet'); if (sh && sh.dataset.race === r.id) $('#sheetB').innerHTML = cardBody(r, +sh.dataset.no);
   });
 }
@@ -1020,10 +1023,36 @@ function cardBody(r, no) {
   const cnt = (p) => (x[p + '_starts'] != null ? `<small style="font-size:10.5px;color:var(--ink2);margin-left:3px">${Math.round(x[p + '_starts'])}戦${x[p + '_wins'] != null ? Math.round(x[p + '_wins']) + '勝' : ''}</small>` : '');
   const lay = () => `${Math.round(x.layoff_starts)}戦${x.layoff_wins != null ? Math.round(x.layoff_wins) + '勝' : ''}${x.layoff_top3 != null ? `・3着内${Math.round(x.layoff_top3)}回` : ''}`;
   const val = (k, f, v, pre) => (f === 'lay' ? lay() : f === 'pcn' ? pct(v, 0) + '%' + cnt(pre) : f === 'fin' ? `${Math.round(v)}着${fieldOf(x) != null ? `／${Math.round(fieldOf(x))}頭` : ''}` : ixFmt(v, f));
+  const redraw = () => { const sh = $('#sheet'); if (sh && sh.dataset.race === r.id && +sh.dataset.no === no) { const sc = $('.ixs') && $('.ixs').scrollTop; $('#sheetB').innerHTML = cardBody(r, no); if ($('.ixs') && sc) $('.ixs').scrollTop = sc; } };
   const naTxt = (k) => (k === 'gaikyu_name' || k === 'gaikyu_return_days' ? '利用なし' : k === 'layoff_starts' ? '該当なし' : 'データなし');
-  return top + `<div class="ixs">${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}` : ''; }).join('')}
+  return top + `<div class="ixs">${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}${t === '外厩' ? farmBlock(x, h, redraw) : ''}` : ''; }).join('')}
     ${x.gaikyu_name ? `<div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-go="#/gaikyu/${encodeURIComponent(farmKey(x))}">この外厩の集計を見る<span>▶</span></button></div>` : ''}
     <p class="note" style="margin-top:12px">指数は、T-AIが勝つ確率を計算するときの材料の一部です。順位は、このレースの出走馬の中での順位です。「データなし」は、過去の走りが無いなどで計算できない項目です。</p></div>`;
+}
+const GKF = new Map();  // 外厩の名前 → その外厩の集計の行 | 'loading' | 'err'
+function needFarm(farm, redraw) {
+  if (FREE || !farm || GKF.has(farm)) return;
+  GKF.set(farm, 'loading');
+  sb.from('gaikyu_ref').select('kind,item,starts,score,win_rate,flag').eq('farm', farm).neq('kind', 'vs').then(({ data, error }) => { GKF.set(farm, error ? 'err' : data || []); redraw(); });
+}
+// 指数カードの外厩欄に入れる、その馬の外厩の集計（2025年・出走30以上だけ）
+function farmBlock(x, h, redraw) {
+  const farm = farmKey(x);
+  if (!x.gaikyu_name || !farm) return '';
+  const headH = `<h3 style="font-size:13px;margin-top:10px">この外厩の集計<span style="font-weight:700;color:var(--ink2);font-size:11px">（2025年の実績・1.0が市場並み）</span></h3>`;
+  if (FREE) return `${headH}<div class="lockmini" style="margin-top:6px"><b style="color:var(--red)">外厩の集計は会員限定です。</b><br>${LIMIT_NOTE}<br><a href="${JOIN_URL}" target="_blank" rel="noopener">T-AIの詳しいご案内を見る ›</a></div>`;
+  const rows = GKF.get(farm);
+  if (rows === undefined || rows === 'loading') { needFarm(farm, redraw); return `${headH}<p class="note">読み込んでいます…</p>`; }
+  if (rows === 'err') return `${headH}<p class="note">読み込めませんでした。</p>`;
+  if (!rows.length) return `${headH}<p class="note">この外厩（${esc(farm)}）の集計はありません。</p>`;
+  const sc = (v) => `<span class="v${v >= 1.2 ? ' up' : v < 0.85 ? ' dn' : ''}">${Number(v).toFixed(3)}</span>`;
+  const line = (label, row, who) => `<div class="ixr"><span class="k">${label}</span>${row && row.flag ? `${sc(row.score)}<span class="rk">${row.starts}走・勝率${pct(row.win_rate, 0)}%</span>` : `<span class="v na">${row ? `出走${row.starts}（少ないため省略）` : who ? '実績なし' : 'データなし'}</span><span></span>`}</div>`;
+  const iv = rows.filter((y) => y.kind === 'interval').sort((a, b) => a.item.localeCompare(b.item, 'ja'));
+  const tr = rows.find((y) => y.kind === 'trainer' && y.item === x._trainer), jk = rows.find((y) => y.kind === 'jockey' && y.item === h.jockey);
+  return `${headH}
+    ${line(`×この厩舎（${esc(x._trainer || '－')}）`, tr, x._trainer)}
+    ${line(`×この騎手（${esc(h.jockey || '－')}）`, jk, h.jockey)}
+    ${iv.map((y) => line(`前走間隔：${esc(y.item)}`, y, true)).join('')}`;
 }
 // 外厩の名前を、集計表の名前に寄せる（川崎さんの正規名の列があればそれを使う）
 const farmKey = (x) => x.gaikyu_name_norm || x.cur_farm_name_norm || String(x.gaikyu_name || '').normalize('NFKC').replace(/[−‐－ー]/g, (c) => (c === 'ー' ? c : '-')).trim();
