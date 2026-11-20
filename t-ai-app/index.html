@@ -287,6 +287,26 @@ body.lock { overflow: hidden; }
 .sb3:empty { display: none; }
 .hb.gk b { font-size: 18px; }
 .hb.gk small { font-size: 10px; }
+.row[data-card] { cursor: pointer; }
+.row[data-card]:active { background: var(--paper2); }
+.card-h { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; padding: 0 var(--pad) 10px; }
+.card-h .hn { width: 34px; height: 34px; font-size: 18px; }
+.card-h b { display: block; font-size: 18px; font-weight: 900; line-height: 1.3; }
+.card-h small { font-size: 12px; color: var(--ink2); }
+.kv4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0 var(--pad) 10px; border: 2px solid var(--ink); background: var(--card); }
+.kv4 div { padding: 6px 4px; text-align: center; border-left: 1px solid var(--ink); }
+.kv4 div:first-child { border-left: 0; }
+.kv4 small { display: block; font-size: 10px; font-weight: 700; color: var(--ink2); }
+.kv4 b { font-family: var(--n); font-size: 17px; font-weight: 700; }
+.kv4 b.r { color: var(--red); }
+.ixs { flex: 1 1 auto; min-height: 0; padding: 0 var(--pad) 16px; overflow-y: auto; overscroll-behavior: contain; }
+.ixs h3 { margin: 14px 0 0; padding-bottom: 4px; border-bottom: 2px solid var(--ink); font-size: 14px; font-weight: 900; }
+.ixr { display: grid; grid-template-columns: minmax(0, 1fr) auto 64px; gap: 8px; align-items: center; min-height: 36px; border-bottom: 1px solid rgba(27, 24, 20, .25); font-size: 13px; }
+.ixr .k { min-width: 0; color: var(--ink); }
+.ixr .v { font-family: var(--n); font-weight: 700; font-size: 15px; text-align: right; white-space: nowrap; }
+.ixr .rk { text-align: right; font-size: 11.5px; font-weight: 700; color: var(--ink2); white-space: nowrap; }
+.ixr .rk.top { color: var(--red); }
+.ixr .na { color: var(--ink3); font-weight: 400; font-size: 12px; }
 .budbox { margin: 12px var(--pad) 0; border: 2px solid var(--ink); background: var(--card); }
 .budbox.sb2 { border-top: 2px solid var(--ink); }
 .sb1 .pts .perS { display: block; margin-top: 3px; font-size: 11px; font-weight: 700; color: var(--ink2); white-space: nowrap; }
@@ -830,13 +850,14 @@ function vRace(r) {
   <div class="tbl box" id="tbl">
     <div class="th"><span></span><span style="text-align:center">馬番</span><span style="text-align:center">印</span><span>馬名・騎手・斤量・前走${done ? '・着順' : ''}</span><span>勝つ確率</span></div>
     <div class="rows" id="rows" style="height:${r.horses.length * ROW}px">
-      ${r.horses.map((h) => `<div class="row${h.prob >= .3 ? ' hi' : ''}${h.prob < .05 ? ' lo' : ''}${h.result === 1 ? ' win' : ''}" data-no="${h.no}">
+      ${r.horses.map((h) => `<div class="row${h.prob >= .3 ? ' hi' : ''}${h.prob < .05 ? ' lo' : ''}${h.result === 1 ? ' win' : ''}" data-no="${h.no}"${h.known === false ? '' : ` data-card="${h.no}" role="button" tabindex="0" aria-label="${esc(h.name)}の指数カードを開く"`}>
         <span class="gt" style="background:${GATE_BG[h.gate]}"></span><span class="no">${dno(h)}</span><span class="mk">${MARK[h.rank] || ''}</span>
         <span class="nm"><b>${esc(h.name)}${done ? `<span class="fin">${h.result === 1 ? `<span class="ring">1着${ring()}</span>` : finTxt(h)}</span>` : ''}</b><small>${esc(h.jockey)}・${h.weight}kg・${h.note ? `<em>${esc(h.last)}</em>` : esc(h.last)}</small></span>
         <span class="pc"><span class="rk">${h.rank}位${oddsOne(r, 'tan', [h.no]) ? `・${o1(oddsOne(r, 'tan', [h.no]))}倍` : ''}</span><span class="pct"><span class="ring">${h.prob >= .3 ? ring() : ''}<em style="font-style:normal" data-v="${pct(h.prob)}">${pct(h.prob)}</em>%</span></span><span class="bar"><i data-w="${h.prob / top(r).prob * 100}"></i></span></span>
       </div>`).join('')}
     </div>
   </div>
+  ${r.numbered === false ? '' : '<p class="dnote">馬の行をタップすると、その馬の「指数カード」が開きます。</p>'}
   ${over ? '<p class="dnote">※海外から来た馬など、日本での出走歴がない馬は、確率が低く出ることがあります。</p>' : ''}
   ${vCompare(r)}
   ${r.numbered === false ? '<section class="sec"><div class="wait-box"><span class="stamp">枠順待ち</span><p class="h2">馬番は、枠順が<br>確定してから載せます。</p><p class="note">組み合わせの確率と買い目は、枠順の確定後に使えます。各馬の勝つ確率は、もう計算済みです。</p></div></section>' : `<section class="sec">
@@ -869,6 +890,56 @@ function renderCompare(r) {
   }).join('');
   box.innerHTML = `<div class="box cmp"><div class="cap4"><span>馬名</span><span>T-AI</span><span>${tanK ? '単勝' : '複勝'}</span><span>期待値</span></div>${rows}</div>
     <p class="dnote">${tanK ? 'T-AIの欄は勝つ確率と、それをオッズに直した「T-AIオッズ」（1÷確率）です。実際の単勝オッズがT-AIオッズより高いと、期待値（確率×オッズ）が1を超えます（白い行）。「オッズの確率」は、単勝オッズから逆算した世の中の見立てです。' : 'T-AIの欄は3着以内に入る確率（7頭立て以下は2着以内）と、それをオッズに直した「T-AIオッズ」です。期待値は、複勝オッズの低い方で計算しています。'}</p>`;
+}
+/* ─ 指数カード ─ */
+// 川崎さんのパッケージの「指数の詳細」。d=1 は大きいほど良い、-1 は小さいほど良い（このレースの順位を付ける）、0 は順位なし
+const IDXF = [
+  ['スピード指数', [['sf_last', '前走', 1], ['sf_prev', '2走前', 1], ['sf_mean3', '近3走の平均', 1], ['sf_mean5', '近5走の平均', 1], ['sf_best3', '近3走の最高', 1], ['sf_best_dist', '同じ距離帯での最高', 1], ['sf_best_classge', '今回以上のクラスでの最高', 1], ['sf_last_surf', '同じ馬場（芝・ダート）での前走', 1], ['sf_trend', '近走の伸び（＋は上向き）', 1, 'sg'], ['sf_rel_field', 'このレースの他馬との差（近3走）', 1, 'sg']]],
+  ['ペースと末脚', [['pf_mean3', 'ペース指数（前半の速さ）近3走', 1], ['pf_last', 'ペース指数 前走', 1], ['lf_mean3', '上がり指数（末脚）近3走', 1], ['lf_last', '上がり指数 前走', 1], ['pf_rel_field', '前半の速さ 他馬との差', 1, 'sg'], ['lf_rel_field', '末脚 他馬との差', 1, 'sg']]],
+  ['脚質', [['style_front5', '近5走で前に行った割合', 1, 'pc'], ['early_pos_mean5', '近5走の序盤の位置（前から）', -1, 'pc'], ['pace_pressure', 'このレースの他馬の先行力', 0, 'pc']]],
+  ['成績', [['n_runs_log', '通算出走数', 0, 'runs'], ['career_win_rate', '通算勝率', 1, 'pc'], ['career_top3_rate', '通算複勝率', 1, 'pc'], ['win_rate_at_class', '同じクラスでの勝率', 1, 'pc'], ['top3_rate_at_class', '同じクラスでの複勝率', 1, 'pc'], ['last_fin_pct', '前走の着順（上位から）', -1, 'pc'], ['avg_fin_pct_5', '近5走の着順の平均（上位から）', -1, 'pc']]],
+  ['騎手・厩舎', [['jockey_win_rate', '騎手の勝率', 1, 'pc'], ['trainer_win_rate', '調教師の勝率', 1, 'pc'], ['jt_win_rate', 'この騎手と調教師のコンビの勝率', 1, 'pc']]],
+  ['今回の条件', [['carried_weight', '斤量', 0, 'kg'], ['carry_diff_last', '前走からの斤量', 0, 'kgd'], ['age', '年齢', 0, 'age'], ['dist_change', '前走からの距離', 0, 'm'], ['surface_switch', '芝・ダートの替わり', 0, 'sw']]],
+];
+const IDX = new Map();  // レース → Map(馬番 → 指数)。開いたときだけ取りに行く
+function needIdx(r) {
+  if (SAMPLE || IDX.has(r.id)) return;
+  IDX.set(r.id, 'loading');
+  sb.from('predictions').select('horse_no,idx').eq('race_id', r.id).then(({ data, error }) => {
+    if (error) { IDX.delete(r.id); return; }
+    IDX.set(r.id, new Map((data || []).filter((x) => x.idx).map((x) => [x.horse_no, x.idx])));
+    const sh = $('#sheet'); if (sh && sh.dataset.race === r.id) $('#sheetB').innerHTML = cardBody(r, +sh.dataset.no);
+  });
+}
+function ixFmt(v, f) {
+  if (f === 'pc') return pct(v, 0) + '%';
+  if (f === 'sg') return (v > 0 ? '+' : '') + v.toFixed(1);
+  if (f === 'runs') return Math.round(Math.exp(v) - 1) + '回';
+  if (f === 'kg') return v + 'kg';
+  if (f === 'kgd') return (v > 0 ? '+' : v < 0 ? '－' : '±') + Math.abs(v) + 'kg';
+  if (f === 'age') return v + '歳';
+  if (f === 'm') return v === 0 ? '同じ' : (v > 0 ? '+' : '－') + Math.abs(v) + 'm';
+  if (f === 'sw') return v ? 'あり' : 'なし';
+  return v.toFixed(1);
+}
+function cardBody(r, no) {
+  const h = r.horses.find((x) => x.no === no), w = r.odds && r.odds.win && r.odds.win[String(no)], pl = CALC.place(r, no);
+  const top = `<div class="card-h">${hn(h)}<div><b>${esc(h.name)}</b><small>${esc(h.jockey)}・${h.weight}kg・${esc(h.last)}</small></div></div>
+    <div class="kv4"><div><small>勝つ確率</small><b class="r">${pct(h.prob)}%</b></div><div><small>複勝率</small><b>${pct(pl)}%</b></div><div><small>T-AIオッズ</small><b>${fair(h.prob)}</b></div><div><small>単勝オッズ</small><b>${w ? o1(w[0]) : '－'}</b></div></div>`;
+  const m = IDX.get(r.id);
+  if (m === undefined || m === 'loading') return top + '<div class="ixs"><p class="note" style="padding:20px 0;text-align:center">指数を読み込んでいます…</p></div>';
+  const x = m.get(no);
+  if (!x) return top + '<div class="ixs"><p class="note" style="padding:16px 0">このレースの指数の内訳は、まだ届いていません。</p></div>';
+  const all = [...m.values()];
+  const rank = (k, d, v) => { if (!d || v == null) return ''; const vs = all.map((y) => y[k]).filter((y) => y != null); const n = 1 + vs.filter((y) => (d > 0 ? y > v : y < v)).length; return `<span class="rk${n <= 3 ? ' top' : ''}">${n}位／${vs.length}頭</span>`; };
+  return top + `<div class="ixs">${IDXF.map(([t, fs]) => `<h3>${t}</h3>${fs.map(([k, label, d, f]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? '<span class="v na">データなし</span><span></span>' : `<span class="v">${ixFmt(v, f)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}`).join('')}
+    <p class="note" style="margin-top:12px">指数は、T-AIが勝つ確率を計算するときの材料の一部です。順位は、このレースの出走馬の中での順位です。「データなし」は、過去の走りが無いなどで計算できない項目です。</p></div>`;
+}
+function openCard(r, no) {
+  closeSheet(true); needIdx(r);
+  document.body.insertAdjacentHTML('beforeend', `<div class="sheet-bg" id="sheetBg"></div><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetT" data-race="${r.id}" data-no="${no}"><div class="sh-h"><b id="sheetT">指数カード</b><button type="button" class="sh-x" id="sheetX" aria-label="閉じる">×</button></div><div class="dbl" style="margin:8px var(--pad) 10px"></div><div id="sheetB" style="display:flex;flex-direction:column;min-height:0;flex:1 1 auto">${cardBody(r, no)}</div></div>`);
+  document.body.classList.add('lock');
+  requestAnimationFrame(() => { $('#sheetBg').classList.add('open'); $('#sheet').classList.add('open'); $('#sheetX').focus(); });
 }
 function placeRows(r, animate = true) {
   const order = r.horses.slice().sort(raceState.sort === 'prob' ? (a, b) => b.prob - a.prob : (a, b) => a.no - b.no);
@@ -1093,6 +1164,7 @@ function vMy() {
       <details><summary>◎○▲△ の印</summary><p>勝つ確率の高い順に、1番手から4番手の馬に付けています。</p></details>
       <details><summary>組み合わせの確率</summary><p>出馬表の面の下に、馬連・ワイド・3連複が当たる確率を、高い順に載せています。</p></details>
       <details><summary>買い目をつくる</summary><p>券種と買い方を選び、馬番をタップすると、その買い目のどれかが当たる確率と点数が、すぐに出ます。予算を入れると、1点あたりの金額も出ます。</p></details>
+      <details><summary>指数カード</summary><p>出馬表で馬の行をタップすると、その馬の指数の内訳（スピード指数・ペースと末脚・脚質・成績・騎手と厩舎・今回の条件）が開きます。各項目には、このレースの出走馬の中での順位を付けています。</p></details>
       <details><summary>オッズと期待値</summary><p>netkeibaのJRAオッズを、発売中は数分おきに取り込みます（発走30分前からは5分ごと）。発走後は、最終オッズに切り替わります。期待値は「T-AIの確率×オッズ」で、1を超えると、T-AIの評価に比べてオッズが高い（人気がない）ことを示します。買い目の「合成オッズ」は、選んだ買い目全体を1つの馬券と見たときのオッズです。「T-AIオッズ」は、T-AIの確率をオッズに直したもの（1÷確率）で、実際のオッズと同じ「倍」で見比べられます。</p></details>
       <details><summary>いつ更新されるか</summary><p>JRAの枠順が確定する前日の午前10時30分ごろのあと、自動で計算して載せます。当日の朝に出走取消・競走除外があれば、計算し直します。レースの結果は、発走のおよそ15〜20分後に、出馬表と「成績」の面に載ります。</p></details>
     </div>
@@ -1157,6 +1229,8 @@ function rerender() { const y = scrollY; const v = $('#view'); route(); v.classL
 
 document.addEventListener('click', (e) => {
   if (e.target.id === 'sheetBg') { closeSheet(); return; }
+  const cardRow = e.target.closest('[data-card]');
+  if (cardRow) { const r = byId.get($('#view').dataset.race); if (r) openCard(r, +cardRow.dataset.card); return; }
   const t = e.target.closest('button, a'); if (!t) return;
   const ds = t.dataset;
   if (t.id === 'raceOpen') { openSheet(); return; }
@@ -1200,7 +1274,10 @@ document.addEventListener('click', (e) => {
   if (ds.month) { resState.m = ds.month; rerender(); return; }
   if (t.id === 'logout') { if (SAMPLE) { location.href = location.pathname; return; } dropCache(); sb.auth.signOut().finally(() => { session = null; memberOk = false; memberStatus = 'none'; go('#/login'); }); }
 });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#sheet')) closeSheet(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && $('#sheet')) closeSheet();
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset && e.target.dataset.card) { e.preventDefault(); const r = byId.get($('#view').dataset.race); if (r) openCard(r, +e.target.dataset.card); }
+});
 document.addEventListener('input', (e) => {
   if (e.target.id === 'bud') updateBuild();
   // 6桁そろったら、そのまま開く
