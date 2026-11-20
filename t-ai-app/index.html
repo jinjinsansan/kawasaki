@@ -537,15 +537,37 @@ async function loadFull(id) {  // 過去のレースを開いたときだけ、�
   const r = toRace(data); DATA.races = DATA.races.map((x) => (x.id === id ? r : x)); byId.set(id, r);
   if (location.hash === '#/race/' + id) rerender();
 }
+// ゲストの紙面データ：CDN に1分ためた /api/guest から読む（大勢が同時に開いても、データベースの問い合わせは1分に1回ほど）。
+// 読めなければ、データベースから直接読む
+async function guestData() {
+  try {
+    const r = await fetch('/api/guest', { headers: { Accept: 'application/json' } });
+    if (!r.ok) throw new Error(r.status);
+    const g = await r.json();
+    if (!g || !Array.isArray(g.races)) throw new Error('shape');
+    return [{ data: g.races, error: null }, { data: g.updated_at ? [{ generated_at: g.updated_at }] : [], error: null }];
+  } catch (e) {
+    return Promise.all([
+      sb.from('races').select(`${RACE_COLS}, predictions(${HORSE_FULL}), ${ODDS_LITE}`).gte('date', jstDay(9)).order('date').order('venue').order('race_no'),
+      sb.from('runs').select('generated_at').order('generated_at', { ascending: false }).limit(1),
+    ]);
+  }
+}
 async function loadData() {
+  if (GUEST) {
+    const [rs, rn] = await guestData();
+    return useData({ data: { name: 'ゲスト', plan: '無料公開（午前のレース）', valid_until: FREE_UNTIL, is_admin: false, tier: 'free' }, error: null }, rs, { data: [] }, rn);
+  }
   const [mem, rs, nt, rn] = await Promise.all([
     GUEST ? Promise.resolve({ data: { name: 'ゲスト', plan: '無料公開（午前のレース）', valid_until: FREE_UNTIL, is_admin: false, tier: 'free' }, error: null }) : sb.from('members').select('name,plan,valid_until,is_admin,tier').maybeSingle(),
     sb.from('races').select(`${RACE_COLS}, predictions(${HORSE_FULL}), ${ODDS_LITE}`).gte('date', jstDay(9)).order('date').order('venue').order('race_no'),
     GUEST ? Promise.resolve({ data: [] }) : sb.from('notices').select('*').order('published_at', { ascending: false }).limit(10),
     sb.from('runs').select('generated_at').order('generated_at', { ascending: false }).limit(1),
   ]);
+  return useData(mem, rs, nt, rn);
+}
+async function useData(mem, rs, nt, rn) {
   const t = jstToday();
-  // 会員の行が無い人は、無料公開の期間なら無料の人として登録して、読み直す（1回だけ）
   memberStatus = !mem.data ? 'none' : (mem.data.is_admin || mem.data.valid_until >= t) ? 'ok' : 'expired';
   FREE = !!mem.data && mem.data.tier === 'free';
   memberOk = memberStatus === 'ok';

@@ -22,6 +22,10 @@
   ],
   "rewrites": [
     {
+      "source": "/api/guest",
+      "destination": "https://tpawwkbqwfyohqhvbtui.supabase.co/rest/v1/rpc/guest_data?apikey=sb_publishable_Ws8k7nsbcxG-9SCbXtzrGQ_lchgKHiZ"
+    },
+    {
       "source": "/api/agent",
       "destination": "https://tpawwkbqwfyohqhvbtui.supabase.co/rest/v1/rpc/agent_data?apikey=sb_publishable_Ws8k7nsbcxG-9SCbXtzrGQ_lchgKHiZ"
     }
