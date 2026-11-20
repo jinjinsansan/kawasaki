@@ -398,11 +398,45 @@ let session = null, memberOk = false, memberStatus = 'none', loadedAt = 0;
 let DATA = { updatedAt: new Date().toISOString(), week: [], today: '', member: { name: '', plan: '', until: '2099-12-31' }, notices: [], races: [] };
 const jstToday = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
 const normName = (n) => String(n || '').replace(/\((G[123]|L|OP|Jpn[123])\)/g, '（$1）');
+// 読み込みは2段：開いたときは「直近9日（今週と先週末）」だけ、成績の面を開いたら「過去70日」を軽い列で足す
+const RACE_COLS = 'race_id,date,venue,race_no,race_name,start_time,surface,distance,field_size,status';
+const HORSE_FULL = 'horse_no,gate,horse_name,jockey,weight,last_run,prob,rank,note,result';
+const jstDay = (back) => new Date(Date.now() + 9 * 3600e3 - back * 864e5).toISOString().slice(0, 10);
+function toRace(r, lite) {
+  const ps = (r.predictions || []).slice().sort((a, b) => (a.horse_no ?? 99) - (b.horse_no ?? 99) || a.rank - b.rank);
+  const n = ps.length;
+  return {
+    id: r.race_id, date: r.date, venue: r.venue, no: r.race_no, name: normName(r.race_name), start: r.start_time || '',
+    surface: r.surface === 'ダ' ? 'ダート' : (r.surface || ''), distance: r.distance, field: r.field_size || n, status: r.status, lite: !!lite,
+    numbered: ps.every((h) => h.horse_no != null),
+    horses: ps.map((h, i) => { const known = h.horse_no != null, no = known ? h.horse_no : 101 + i; return { no, known, gate: known ? (h.gate ?? gateOf(no, n)) : 0, name: h.horse_name, jockey: h.jockey || '', weight: h.weight, last: h.last_run || '', prob: h.prob, rank: h.rank, note: h.note, result: h.result }; }),
+  };
+}
+let histState = 'no', HIST_BINS = [];  // no → loading → ok
+async function loadHistory() {
+  if (SAMPLE || histState !== 'no') return;
+  histState = 'loading';
+  // 過去分はデータベース側で「1レース1行（1着の馬・1番手の着順）」と「月×確率帯の集計」にまとめたものだけ受け取る
+  const { data, error } = await sb.rpc('results_history', { since: jstDay(70), until_: jstDay(9) });
+  if (error || !data) { histState = 'err'; if (/^#\/results/.test(location.hash)) rerender(); return; }
+  const have = new Set(DATA.races.map((r) => r.id));
+  const lite = (data.races || []).filter((r) => !have.has(r.race_id)).map((r) => ({ ...toRace({ ...r, status: 'done' }, true), w: r.w ? { no: r.w.no, gate: r.w.gate, known: true, name: r.w.name, prob: r.w.prob, rank: r.w.rank, result: 1 } : null, topWin: r.top_result === 1 }));
+  HIST_BINS = data.bins || [];
+  DATA.races = [...lite, ...DATA.races];
+  histState = 'ok';
+  byId = new Map(DATA.races.map((r) => [r.id, r]));
+  if (/^#\/(results|race)/.test(location.hash)) rerender();
+}
+async function loadFull(id) {  // 過去のレースを開いたときだけ、騎手・斤量・前走まで取り直す
+  const { data } = await sb.from('races').select(`${RACE_COLS}, predictions(${HORSE_FULL})`).eq('race_id', id).maybeSingle();
+  if (!data) { go('#/results'); return; }
+  const r = toRace(data); DATA.races = DATA.races.map((x) => (x.id === id ? r : x)); byId.set(id, r);
+  if (location.hash === '#/race/' + id) rerender();
+}
 async function loadData() {
-  const since = new Date(Date.now() - 70 * 864e5).toISOString().slice(0, 10);
   const [mem, rs, nt, rn] = await Promise.all([
     sb.from('members').select('name,plan,valid_until,is_admin').maybeSingle(),
-    sb.from('races').select('*, predictions(*)').gte('date', since).order('date').order('venue').order('race_no'),
+    sb.from('races').select(`${RACE_COLS}, predictions(${HORSE_FULL})`).gte('date', jstDay(9)).order('date').order('venue').order('race_no'),
     sb.from('notices').select('*').order('published_at', { ascending: false }).limit(10),
     sb.from('runs').select('generated_at').order('generated_at', { ascending: false }).limit(1),
   ]);
@@ -411,17 +445,9 @@ async function loadData() {
   memberOk = memberStatus === 'ok';
   if (rs.error && memberOk) throw rs.error;
   loadedAt = Date.now();
-  if (!memberOk) return;
-  const races = (rs.data || []).map((r) => {
-    const ps = (r.predictions || []).slice().sort((a, b) => (a.horse_no ?? 99) - (b.horse_no ?? 99) || a.rank - b.rank);
-    const n = ps.length;
-    return {
-      id: r.race_id, date: r.date, venue: r.venue, no: r.race_no, name: normName(r.race_name), start: r.start_time || '',
-      surface: r.surface === 'ダ' ? 'ダート' : (r.surface || ''), distance: r.distance, field: r.field_size || n, status: r.status,
-      numbered: ps.every((h) => h.horse_no != null),
-      horses: ps.map((h, i) => { const known = h.horse_no != null, no = known ? h.horse_no : 101 + i; return { no, known, gate: known ? (h.gate ?? gateOf(no, n)) : 0, name: h.horse_name, jockey: h.jockey || '', weight: h.weight, last: h.last_run || '', prob: h.prob, rank: h.rank, note: h.note, result: h.result }; }),
-    };
-  }).filter((r) => r.status === 'waiting' || r.horses.length);
+  if (!memberOk) { dropCache(); return; }
+  const races = (rs.data || []).map((r) => toRace(r)).filter((r) => r.status === 'waiting' || r.horses.length);
+  histState = 'no';
   const dates = [...new Set(races.map((r) => r.date))].sort();
   const up = dates.filter((d) => races.some((r) => r.date === d && r.status !== 'done'));
   const week = up.length ? up : dates.slice(-2);
@@ -433,7 +459,20 @@ async function loadData() {
     notices: (nt.data || []).map((x) => ({ date: String(x.published_at).slice(0, 10), title: x.title, body: x.body || '' })),
     races,
   };
+  saveCache();
 }
+// 前回の紙面を端末に残しておき、次に開いたときはまずそれを出す（そのあと新しいものに入れ替える）
+const CACHE_KEY = 'taiapp:paper';
+function saveCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ v: 1, uid: session && session.user && session.user.id, at: Date.now(), DATA })); } catch (e) {} }
+function readCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+    if (!c || c.v !== 1 || !session || c.uid !== session.user.id || Date.now() - c.at > 8 * 864e5) return null;
+    if (!c.DATA.member.admin && c.DATA.member.until < jstToday()) return null;
+    return c.DATA;
+  } catch (e) { return null; }
+}
+const dropCache = () => { try { localStorage.removeItem(CACHE_KEY); } catch (e) {} };
 function useSample() { DATA = makeSampleData(); memberOk = true; }
 
 /* ============================================================
@@ -781,20 +820,31 @@ function updateBuild() {
 /* ─ 成績 ─ */
 let resState = { m: '' };
 const BINS = [[0, .05, '5%未満'], [.05, .10, '5〜10%'], [.10, .20, '10〜20%'], [.20, .30, '20〜30%'], [.30, 1.01, '30%以上']];
+const winOf = (r) => (r.lite ? r.w : winner(r));
+const topWon = (r) => (r.lite ? r.topWin : !!top(r) && top(r).result === 1);
 function vResults() {
-  const months = [...new Set(DATA.races.filter((r) => r.status === 'done').map((r) => r.date.slice(0, 7)))];
+  const months = [...new Set(DATA.races.filter((r) => r.status === 'done').map((r) => r.date.slice(0, 7)))].sort();
   const done = DATA.races.filter((r) => r.status === 'done' && r.date.startsWith(resState.m));
-  const hs = done.flatMap((r) => r.horses);
-  const bins = BINS.map(([a, b, l]) => { const g = hs.filter((h) => h.prob >= a && h.prob < b); return { l, n: g.length, pred: g.reduce((s, h) => s + h.prob, 0) / (g.length || 1), act: g.filter((h) => h.result === 1).length / (g.length || 1) }; });
-  const t1 = done.filter((r) => top(r).result === 1).length;
-  if (!done.length) return `<section class="sec"><div class="label"><b>成績</b><span>答え合わせ</span></div><div class="wait-box"><span class="stamp">集計待ち</span><p class="h2">レースが終わると、<br>ここに答え合わせが載ります。</p><p class="note">結果は、開催日の夕方に自動で取り込みます。</p></div></section>`;
+  const hs = done.filter((r) => !r.lite).flatMap((r) => r.horses);
+  const hb = HIST_BINS.filter((b) => b.m === resState.m);
+  const bins = BINS.map(([a, b, l], i) => {
+    const g = hs.filter((h) => h.prob >= a && h.prob < b), x = hb.filter((y) => y.i === i);
+    const n = g.length + x.reduce((s, y) => s + y.n, 0);
+    const sp = g.reduce((s, h) => s + h.prob, 0) + x.reduce((s, y) => s + y.s, 0);
+    const w = g.filter((h) => h.result === 1).length + x.reduce((s, y) => s + y.w, 0);
+    return { l, n, pred: sp / (n || 1), act: w / (n || 1) };
+  });
+  const nh = bins.reduce((s, b) => s + b.n, 0);
+  const t1 = done.filter(topWon).length;
+  if (!done.length) return `<section class="sec"><div class="label"><b>成績</b><span>答え合わせ</span></div>${histState === 'loading' ? '<p class="note" style="margin-top:8px">過去の成績を読み込んでいます…</p>' : ''}<div class="wait-box"><span class="stamp">集計待ち</span><p class="h2">レースが終わると、<br>ここに答え合わせが載ります。</p><p class="note">結果は、開催日の夕方に自動で取り込みます。</p></div></section>`;
   const days = [...new Set(done.map((r) => r.date))].sort().reverse();
   return `<section class="sec">
     <div class="label"><b>成績</b><span>答え合わせ</span></div>
+    ${histState === 'loading' ? '<p class="note" style="margin-top:8px">過去の成績を読み込んでいます…</p>' : ''}
     <h1 class="h1">言った確率は、<br><em>現実になったか。</em></h1>
     <div class="seg" role="group" aria-label="月" style="margin-top:14px">${months.map((m) => `<button type="button" data-month="${m}" aria-pressed="${m === resState.m}">${+m.slice(5)}月</button>`).join('')}</div>
     <div class="box cal" style="margin-top:12px">
-      <div class="cap"><span>確率帯ごとの集計</span><span>${done.length}R・${hs.length.toLocaleString('ja-JP')}頭</span></div>
+      <div class="cap"><span>確率帯ごとの集計</span><span>${done.length}R・${nh.toLocaleString('ja-JP')}頭</span></div>
       <div class="r h"><span>確率帯</span><span>頭数</span><span>予測の平均</span><span>実際の勝率</span></div>
       ${bins.map((b) => `<div class="r"><span>${b.l}</span><span class="cnt">${b.n}</span><span class="pct">${b.n ? pct(b.pred) + '%' : '—'}</span><span class="pct act">${b.n ? pct(b.act) + '%' : '—'}</span></div>`).join('')}
     </div>
@@ -804,9 +854,9 @@ function vResults() {
   <section class="sec">
     <div class="label"><b>日ごとの結果</b><span>1着の馬と、T-AIの確率</span></div>
     <div style="margin-top:8px;border-top:3px solid var(--ink)">
-      ${days.map((d, di) => { const rs = done.filter((r) => r.date === d); const hit = rs.filter((r) => top(r).result === 1).length;
+      ${days.map((d, di) => { const rs = done.filter((r) => r.date === d); const hit = rs.filter(topWon).length;
         return `<details class="day"${di === 0 ? ' open' : ''}><summary><span>${fd(d)}<small>${rs.length}R・1番手の勝ち ${hit}</small></span></summary>
-          ${rs.filter(winner).map((r) => { const w = winner(r); return `<button type="button" class="drow${w.rank === 1 ? ' hit' : ''}" data-go="#/race/${r.id}"><span class="v">${r.no}R<small>${r.venue}</small></span><span class="w"><span class="ring" data-pen>${hn(w)}${w.rank === 1 ? ring('drawn') : ''}</span><b>${esc(w.name)}</b></span><span class="s"><span class="pct">${pct(w.prob)}%</span>T-AI ${w.rank}番手</span></button>`; }).join('')}
+          ${rs.filter(winOf).map((r) => { const w = winOf(r); return `<button type="button" class="drow${w.rank === 1 ? ' hit' : ''}" data-go="#/race/${r.id}"><span class="v">${r.no}R<small>${r.venue}</small></span><span class="w"><span class="ring" data-pen>${hn(w)}${w.rank === 1 ? ring('drawn') : ''}</span><b>${esc(w.name)}</b></span><span class="s"><span class="pct">${pct(w.prob)}%</span>T-AI ${w.rank}番手</span></button>`; }).join('')}
         </details>`; }).join('')}
     </div>
   </section>`;
@@ -856,9 +906,9 @@ function route() {
   else if (empty && name !== 'my') { html = vEmpty(); }
   else if (name === 'sent') html = vSent(lastMail);
   else if (name === 'races') html = vRaces();
-  else if (name === 'race') { const r = byId.get(arg) || weekRaces(DATA.today)[0]; tab = DATA.week.includes(r.date) ? 'races' : 'results'; mopts = { back: tab, backLabel: tab === 'races' ? '出馬表' : '成績', sub: `${fd(r.date)} ${r.venue}${r.no}R` }; raceState.limit = 20; html = vRace(r); view.dataset.race = r.id; }
+  else if (name === 'race') { const r = byId.get(arg) || weekRaces(DATA.today)[0]; tab = DATA.week.includes(r.date) ? 'races' : 'results'; mopts = { back: tab, backLabel: tab === 'races' ? '出馬表' : '成績', sub: `${fd(r.date)} ${r.venue}${r.no}R` }; raceState.limit = 20; view.dataset.race = r.id; if (r.lite) { html = '<section class="sec"><p class="note" style="padding:40px 0;text-align:center">紙面を組んでいます…</p></section>'; loadFull(r.id); } else html = vRace(r); }
   else if (name === 'build') { const r = byId.get(arg); const bl = buildable(); if (r && bl.includes(r) && r.id !== BS.raceId) { BS.raceId = r.id; BS.axis = null; BS.sel.clear(); } if (!BS.raceId || !byId.has(BS.raceId)) BS.raceId = (bl.find((x) => /G1/.test(x.name)) || bl[0] || {}).id; html = BS.raceId ? vBuild() : (DATA.races.length ? vBuildWait() : vEmpty()); }
-  else if (name === 'results') html = vResults();
+  else if (name === 'results') { html = vResults(); if (histState === 'no') loadHistory(); }
   else if (name === 'my') html = vMy();
   else { tab = 'home'; html = vHome(); }
   curTab = tab;
@@ -868,7 +918,7 @@ function route() {
   document.querySelectorAll('.tabs button').forEach((b) => { b.classList.toggle('on', b.dataset.tab === tab); b.setAttribute('aria-current', b.dataset.tab === tab ? 'page' : 'false'); });
   scrollTo(0, 0);
   if (empty || !memberOk) return;
-  if (name === 'race') mountRace(byId.get(view.dataset.race));
+  if (name === 'race' && !byId.get(view.dataset.race).lite) mountRace(byId.get(view.dataset.race));
   if (name === 'build' && BS.raceId) { shownHit = 0; updateBuild(); }
   if (name === 'home' || !['login', 'sent', 'race', 'build', 'races', 'results', 'my'].includes(name)) {
     const feat = view.querySelector('.feat');
@@ -904,7 +954,7 @@ document.addEventListener('click', (e) => {
   }
   if (t.id === 'clear') { BS.axis = null; BS.sel.clear(); updateBuild(); return; }
   if (ds.month) { resState.m = ds.month; rerender(); return; }
-  if (t.id === 'logout') { if (SAMPLE) { location.href = location.pathname; return; } sb.auth.signOut().finally(() => { session = null; memberOk = false; memberStatus = 'none'; go('#/login'); }); }
+  if (t.id === 'logout') { if (SAMPLE) { location.href = location.pathname; return; } dropCache(); sb.auth.signOut().finally(() => { session = null; memberOk = false; memberStatus = 'none'; go('#/login'); }); }
 });
 document.addEventListener('change', (e) => {
   if (e.target.id === 'raceSel') { BS.raceId = e.target.value; BS.axis = null; BS.sel.clear(); rerender(); }
@@ -942,17 +992,18 @@ document.addEventListener('submit', (e) => {
 });
 addEventListener('hashchange', () => { try { sessionStorage.setItem('taiapp:nav', '1'); } catch (e) {} route(); });
 // 開いたままの画面も、戻ってきたとき（前の読み込みから10分たっていれば）新しい予想に入れ替える
-async function refresh() {
-  if (SAMPLE || !session || !memberOk || document.hidden || Date.now() - loadedAt < 10 * 60e3) return;
-  if (location.hash.startsWith('#/build') && BS.sel.size) return;  // 買い目を選んでいる途中は入れ替えない
-  try {
-    const keep = { d: listState.d, v: listState.v, m: resState.m, b: BS.raceId };
-    await loadData(); afterLoad();
-    if (DATA.week.includes(keep.d)) { listState.d = keep.d; listState.v = keep.v; }
-    if (keep.m) resState.m = keep.m;
-    if (byId.has(keep.b)) BS.raceId = keep.b;
-    rerender();
-  } catch (e) {}
+async function refresh(force) {
+  if (SAMPLE || !session || !memberOk) return;
+  if (!force && (document.hidden || Date.now() - loadedAt < 10 * 60e3)) return;
+  if (location.hash.startsWith('#/build') && BS.sel.size) { loadedAt = 0; return; }  // 買い目を選んでいる途中は入れ替えない（次の機会に）
+  const keep = { d: listState.d, v: listState.v, m: resState.m, b: BS.raceId, sel: [...BS.sel], ax: BS.axis, hist: histState === 'ok' };
+  try { await loadData(); } catch (e) { loadedAt = Date.now() - 9 * 60e3; return; }  // 失敗したら1分後にもう一度
+  afterLoad();
+  if (DATA.week.includes(keep.d)) { listState.d = keep.d; listState.v = keep.v; }
+  if (keep.m) resState.m = keep.m;
+  if (byId.has(keep.b)) { BS.raceId = keep.b; }
+  rerender();
+  if (keep.hist) loadHistory();
 }
 document.addEventListener('visibilitychange', refresh);
 setInterval(refresh, 60e3);
@@ -961,7 +1012,16 @@ async function boot() {
   if (!session) { const { data } = await sb.auth.getSession(); session = data.session; }
   // メールのリンクから戻ったとき、URL に残ったログイン情報を消す
   if (/access_token|error_description/.test(location.hash)) history.replaceState(null, '', location.pathname + '#/home');
-  if (session) { $('#view').innerHTML = '<section class="sec"><p class="note" style="padding:40px 0;text-align:center">紙面を組んでいます…</p></section>'; try { await loadData(); } catch (e) { memberOk = false; memberStatus = 'error'; } afterLoad(); }
+  if (session) {
+    const cached = readCache();
+    if (cached) {  // 前回の紙面をすぐ出し、裏で新しいものを取る
+      DATA = cached; memberOk = true; memberStatus = 'ok'; loadedAt = 0; afterLoad(); route();
+      refresh(true); return;
+    }
+    $('#view').innerHTML = '<section class="sec"><p class="note" style="padding:40px 0;text-align:center">紙面を組んでいます…</p></section>';
+    try { await loadData(); } catch (e) { memberOk = false; memberStatus = 'error'; }
+    afterLoad();
+  }
   route();
 }
 if (sb) sb.auth.onAuthStateChange((ev, s) => { if (ev === 'SIGNED_IN' && !session) { session = s; boot(); } if (ev === 'SIGNED_OUT') session = null; });
