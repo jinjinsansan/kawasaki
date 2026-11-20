@@ -326,6 +326,15 @@ body.lock { overflow: hidden; }
 .autog .aprm { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 14px; }
 .autog .aprm input { width: 84px; min-height: 44px; padding: 0 8px; border: 2px solid var(--ink); background: var(--card); font-family: var(--n); font-size: 20px; font-weight: 700; text-align: right; }
 .autog .lockmini { margin-top: 8px; padding: 10px 12px; border: 2px solid var(--red); background: #fff; font-size: 13px; line-height: 1.7; }
+.gkt { margin-top: 8px; }
+.gkr { display: grid; grid-template-columns: minmax(0, 1fr) 44px 48px 52px 54px; gap: 4px; align-items: center; min-height: 40px; padding: 4px 10px; border-top: 1px solid var(--ink); font-size: 13px; }
+.gkr span:not(:first-child) { text-align: right; font-family: var(--n); font-weight: 700; }
+.gkr span:first-child { min-width: 0; overflow-wrap: anywhere; line-height: 1.35; font-weight: 700; }
+.gkr.gkh { min-height: 0; padding: 5px 10px; border-top: 0; background: var(--ink); color: var(--paper); font-size: 11px; }
+.gkr .sc { font-size: 15px; }
+.gkr.up .sc { color: var(--red); }
+.gkr.dn { color: var(--ink3); }
+.gkt + .gkt { margin-top: 10px; }
 .budbox { margin: 12px var(--pad) 0; border: 2px solid var(--ink); background: var(--card); }
 .budbox.sb2 { border-top: 2px solid var(--ink); }
 .sb1 .pts .perS { display: block; margin-top: 3px; font-size: 11px; font-weight: 700; color: var(--ink2); white-space: nowrap; }
@@ -968,7 +977,7 @@ const IDXF = [
   // 騎手・調教師は生の列（*_raw）があればそちら、無ければ推定値に「推定」と付ける。コンビは生の列が無いので推定値のまま
   ['騎手・厩舎', [['jockey_win_rate_raw', '騎手の勝率', 1, 'pcn', null, 'jockey'], ['jockey_win_rate', '騎手の勝率（モデルの推定値）', 1, 'pc', 'jockey_win_rate_raw'], ['trainer_win_rate_raw', '調教師の勝率', 1, 'pcn', null, 'trainer'], ['trainer_win_rate', '調教師の勝率（モデルの推定値）', 1, 'pc', 'trainer_win_rate_raw'], ['jt_win_rate', 'コンビの勝率（モデルの推定値）', 1, 'pc']]],
   // 外厩（JRDB由来・今回のレースの外厩）。列が届いた日だけ出る（どの馬にも無い列の行は出さない）。外厩の名前が空の馬は「利用なし」
-  ['外厩', [['gaikyu_name', '今回の外厩', 0, 'txt'], ['gaikyu_return_days', '帰厩からレースまで', 0, 'day'], ['farm_score', '牧場スコア（1.0が市場並み）', 1, 'sc'], ['layoff_starts', '放牧明け初戦の成績', 0, 'lay']]],
+  ['外厩', [['gaikyu_name', '今回の外厩', 0, 'txt'], ['gaikyu_return_days', '帰厩からレースまで', 0, 'day'], ['farm_score', '牧場スコア（1.0が市場並み）', 1, 'sc'], ['farm_trainer_score', 'この外厩×厩舎のスコア', 1, 'sc'], ['farm_interval_score', 'この外厩×間隔のスコア', 1, 'sc'], ['farm_jockey_score', 'この外厩×騎手のスコア', 1, 'sc'], ['layoff_starts', '放牧明け初戦の成績', 0, 'lay']]],
   ['今回の条件', [['carried_weight', '斤量', 0, 'kg'], ['carry_diff_last', '前走からの斤量', 0, 'kgd'], ['age', '年齢', 0, 'age'], ['dist_change', '前走からの距離', 0, 'm'], ['surface_switch', '芝・ダートの替わり', 0, 'sw']]],
 ];
 const IDX = new Map();  // レース → Map(馬番 → 指数)。開いたときだけ取りに行く
@@ -1013,8 +1022,11 @@ function cardBody(r, no) {
   const val = (k, f, v, pre) => (f === 'lay' ? lay() : f === 'pcn' ? pct(v, 0) + '%' + cnt(pre) : f === 'fin' ? `${Math.round(v)}着${fieldOf(x) != null ? `／${Math.round(fieldOf(x))}頭` : ''}` : ixFmt(v, f));
   const naTxt = (k) => (k === 'gaikyu_name' || k === 'gaikyu_return_days' ? '利用なし' : k === 'layoff_starts' ? '該当なし' : 'データなし');
   return top + `<div class="ixs">${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}` : ''; }).join('')}
+    ${x.gaikyu_name ? `<div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-go="#/gaikyu/${encodeURIComponent(farmKey(x))}">この外厩の集計を見る<span>▶</span></button></div>` : ''}
     <p class="note" style="margin-top:12px">指数は、T-AIが勝つ確率を計算するときの材料の一部です。順位は、このレースの出走馬の中での順位です。「データなし」は、過去の走りが無いなどで計算できない項目です。</p></div>`;
 }
+// 外厩の名前を、集計表の名前に寄せる（川崎さんの正規名の列があればそれを使う）
+const farmKey = (x) => x.gaikyu_name_norm || x.cur_farm_name_norm || String(x.gaikyu_name || '').normalize('NFKC').replace(/[−‐－ー]/g, (c) => (c === 'ー' ? c : '-')).trim();
 function openCard(r, no) {
   closeSheet(true); needIdx(r);
   document.body.insertAdjacentHTML('beforeend', `<div class="sheet-bg" id="sheetBg"></div><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetT" data-race="${r.id}" data-no="${no}"><div class="sh-h"><b id="sheetT">指数カード</b><button type="button" class="sh-x" id="sheetX" aria-label="閉じる">×</button></div><div class="dbl" style="margin:8px var(--pad) 10px"></div><div id="sheetB" style="display:flex;flex-direction:column;min-height:0;flex:1 1 auto">${cardBody(r, no)}</div></div>`);
@@ -1218,6 +1230,45 @@ function updateBuild() {
   $('#tixB').innerHTML = list.length ? list.slice(0, 60).map((c, i) => `<div class="crow${wo ? ' wo' : ''}"><span class="rk">${i + 1}</span><span class="tk">${c.nums.map((n) => chip(r, BS.kind, n)).join(`<i>${ORD[BS.kind] ? '→' : '-'}</i>`)}</span>${wo ? oddsCell(r, BS.kind, c.nums, c.p) : ''}<span class="pr"><span class="pct" style="color:var(--ink)">${pct(c.p, c.p < .001 ? 2 : 1)}%</span></span></div>`).join('') + (list.length > 60 ? `<p class="note" style="padding:8px 12px">ほか${list.length - 60}点</p>` : '') : '<p class="note" style="padding:4px 12px 12px">まだ買い目がありません。</p>';
 }
 
+/* ─ 外厩データ（川崎さんの集計表。会員限定） ─ */
+let GK = null;  // null → 'loading' → [行] / 'err'
+function loadGK() {
+  if (GK) return; GK = 'loading';
+  sb.from('gaikyu_ref').select('kind,farm,item,starts,wins,top3,win_rate,top3_rate,score,flag').or('flag.eq.true,kind.eq.vs').then(({ data, error }) => {
+    GK = error ? 'err' : data || []; if (/^#\/gaikyu/.test(location.hash)) rerender();
+  });
+}
+function gkTable(rows, head) {
+  return `<div class="box gkt"><div class="gkr gkh"><span>${head}</span><span>出走</span><span>勝率</span><span>複勝率</span><span>スコア</span></div>${rows.map((x) => `<div class="gkr${x.score >= 1.2 ? ' up' : x.score < 0.85 ? ' dn' : ''}"><span>${esc(x.item.split('|').pop())}</span><span>${x.starts}</span><span>${pct(x.win_rate)}%</span><span>${pct(x.top3_rate)}%</span><span class="sc">${Number(x.score).toFixed(3)}</span></div>`).join('')}</div>`;
+}
+function vGaikyu(farm) {
+  const head = `<section class="sec"><div class="label"><b>外厩データ</b><span>2025年の実績集計</span></div>
+    <p class="note" style="margin-top:10px">T-AIの勝つ確率の計算には入っていない、参考の集計です。スコアは「市場の期待（単勝オッズ）に対してどれだけ勝っているか」で、<b>1.0が市場並み</b>。1.2以上は赤、0.85未満は灰色にしています。組み合わせは、出走30以上のものだけ載せています。</p>`;
+  if (FREE) return `${head}</section><section class="sec">${joinBox('外厩データは<br>会員限定です')}</section>`;
+  if (!GK || GK === 'loading') { loadGK(); return `${head}<p class="note" style="padding:30px 0;text-align:center">読み込んでいます…</p></section>`; }
+  if (GK === 'err') return `${head}<p class="note" style="padding:20px 0">読み込めませんでした。時間をおいて、もう一度お試しください。</p></section>`;
+  const farms = [...new Set(GK.filter((x) => x.kind !== 'vs').map((x) => x.farm))].sort((a, b) => a.localeCompare(b, 'ja'));
+  const pick = `<div class="pick" style="margin-top:12px"><label class="lbl" for="gkFarm">外厩を選ぶ</label><select id="gkFarm"><option value="">（外厩を選んでください）</option>${farms.map((f) => `<option value="${esc(f)}"${f === farm ? ' selected' : ''}>${esc(f)}</option>`).join('')}</select></div>`;
+  const by = (k) => GK.filter((x) => x.kind === k && x.farm === farm).sort((a, b) => b.score - a.score);
+  if (farm) {
+    const iv = by('interval'), tr = by('trainer'), jk = by('jockey');
+    return `${head}${pick}</section>
+      <section class="sec"><div class="label"><b>${esc(farm)}</b><span>前走間隔別</span></div>${iv.length ? gkTable(iv, '前走間隔') : '<p class="note" style="padding:10px 0">出走30以上の区分がありません。</p>'}</section>
+      <section class="sec"><div class="label"><b>${esc(farm)}</b><span>×厩舎</span></div>${tr.length ? gkTable(tr, '調教師') : '<p class="note" style="padding:10px 0">出走30以上の組み合わせがありません。</p>'}</section>
+      <section class="sec"><div class="label"><b>${esc(farm)}</b><span>×騎手</span></div>${jk.length ? gkTable(jk, '騎手') : '<p class="note" style="padding:10px 0">出走30以上の組み合わせがありません。</p>'}</section>
+      ${!iv.length && !tr.length && !jk.length && !farms.includes(farm) ? '<p class="dnote">この外厩の名前は、集計表に見つかりませんでした（表記の違いの場合があります）。上の一覧から選んでください。</p>' : ''}`;
+  }
+  const vs = (g) => GK.filter((x) => x.kind === 'vs' && x.farm === g);
+  const top = (k, asc) => GK.filter((x) => x.kind === k).sort((a, b) => (asc ? a.score - b.score : b.score - a.score)).slice(0, 10).map((x) => ({ ...x, item: `${x.farm}×${x.item}` }));
+  return `${head}${pick}</section>
+    <section class="sec"><div class="label"><b>外厩明け vs 連戦</b><span>全体の比較</span></div>
+      <p class="note" style="margin-top:8px">帰厩後1走目の馬（外厩明け）と、外厩を使わず続けて走っている馬（連戦）の比較です。馬の質が違う群どうしの比較なので、原因までは言えません。</p>
+      ${gkTable(vs('外厩明け'), '外厩明け')}${gkTable(vs('連戦'), '連戦')}</section>
+    <section class="sec"><div class="label"><b>外厩×厩舎</b><span>スコアの高い10組</span></div>${gkTable(top('trainer'), '組み合わせ')}</section>
+    <section class="sec"><div class="label"><b>外厩×騎手</b><span>スコアの高い10組</span></div>${gkTable(top('jockey'), '組み合わせ')}</section>
+    <section class="sec"><div class="label"><b>外厩×厩舎</b><span>スコアの低い10組</span></div>${gkTable(top('trainer', true), '組み合わせ')}</section>`;
+}
+
 /* ─ 成績 ─ */
 let resState = { m: '' };
 const BINS = [[0, .05, '5%未満'], [.05, .10, '5〜10%'], [.10, .20, '10〜20%'], [.20, .30, '20〜30%'], [.30, 1.01, '30%以上']];
@@ -1260,7 +1311,8 @@ function vResults() {
           ${rs.filter(winOf).map((r) => { const w = winOf(r); return `<button type="button" class="drow${w.rank === 1 ? ' hit' : ''}" data-go="#/race/${r.id}"><span class="v">${r.no}R<small>${r.venue}</small></span><span class="w"><span class="ring" data-pen>${hn(w)}${w.rank === 1 ? ring('drawn') : ''}</span><b>${esc(w.name)}</b></span><span class="s"><span class="pct">${pct(w.prob)}%</span>T-AI ${w.rank}番手</span></button>`; }).join('')}
         </details>`; }).join('')}
     </div>
-  </section>`;
+  </section>
+  <section class="sec"><div class="label"><b>外厩データ</b><span>会員限定・参考の集計</span></div><div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-go="#/gaikyu">外厩データを見る<span>▶</span></button></div></section>`;
 }
 
 /* ─ 会員 ─ */
@@ -1328,6 +1380,7 @@ function route() {
   else if (name === 'race') { const r = byId.get(arg) || weekRaces(DATA.today)[0]; tab = DATA.week.includes(r.date) ? 'races' : 'results'; mopts = { back: tab, backLabel: tab === 'races' ? '出馬表' : '成績', sub: `${fd(r.date)} ${r.venue}${r.no}R` }; raceState.limit = 20; view.dataset.race = r.id; if (DATA.week.includes(r.date)) { listState.d = r.date; listState.v = r.venue; } if (r.lite) { html = '<section class="sec"><p class="note" style="padding:40px 0;text-align:center">紙面を組んでいます…</p></section>'; loadFull(r.id); } else html = vRace(r); }
   else if (name === 'build') { const r = byId.get(arg); const bl = buildable(); if (r && bl.includes(r) && r.id !== BS.raceId) { BS.raceId = r.id; BS.axis = null; BS.sel.clear(); } if (!BS.raceId || !byId.has(BS.raceId)) BS.raceId = (bl.find((x) => /G1/.test(x.name)) || bl[0] || {}).id; html = BS.raceId ? vBuild() : (DATA.races.length ? vBuildWait() : vEmpty()); }
   else if (name === 'results') { html = vResults(); if (histState === 'no') loadHistory(); }
+  else if (name === 'gaikyu') { tab = 'results'; html = vGaikyu(arg ? decodeURIComponent(arg) : ''); mopts = { back: 'results', backLabel: '成績', sub: '外厩データ' }; }
   else if (name === 'my') html = vMy();
   else { tab = 'home'; html = vHome(); mopts = { sub: fd(homeDayOf()) + ' 開催' }; }
   curTab = tab;
@@ -1412,6 +1465,7 @@ document.addEventListener('click', (e) => {
   if (ds.month) { resState.m = ds.month; rerender(); return; }
   if (t.id === 'logout') { if (SAMPLE) { location.href = location.pathname; return; } dropCache(); sb.auth.signOut().finally(() => { session = null; memberOk = false; memberStatus = 'none'; go('#/login'); }); }
 });
+document.addEventListener('change', (e) => { if (e.target.id === 'gkFarm') go('#/gaikyu' + (e.target.value ? '/' + encodeURIComponent(e.target.value) : '')); });
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && $('#sheet')) closeSheet();
   if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset && e.target.dataset.card) { e.preventDefault(); const r = byId.get($('#view').dataset.race); if (r) openCard(r, +e.target.dataset.card); }
