@@ -308,6 +308,16 @@ body.lock { overflow: hidden; }
 .ixr .rk.top { color: var(--red); }
 .ixr .na { color: var(--ink3); font-weight: 400; font-size: 12px; }
 .lockbox { border-color: var(--red); }
+.blurwrap { position: relative; margin: 12px var(--pad) 0; min-height: 640px; }
+.blurred { filter: blur(6px); opacity: .75; pointer-events: none; user-select: none; border: 2px solid var(--ink); background: var(--card); }
+.brow { display: grid; grid-template-columns: 30px 22px minmax(0, 1fr) 64px; align-items: center; height: 52px; border-bottom: 1px solid var(--ink); }
+.brow .no { text-align: center; font-family: var(--n); font-weight: 700; font-size: 18px; }
+.brow .mk { color: var(--red); font-weight: 900; }
+.brow .nm { display: grid; } .brow .nm b { font-weight: 900; } .brow .nm small { font-size: 11px; color: var(--ink2); }
+.brow .pc { text-align: right; padding-right: 10px; font-family: var(--n); font-weight: 700; font-size: 18px; }
+.blurcover { position: absolute; inset: 140px 0 auto; padding: 0 4px; }
+.blurcover .wait-box { margin: 0; box-shadow: 4px 4px 0 var(--ink); background: var(--paper); }
+.rrow .bl { filter: blur(4px); user-select: none; }
 .lockbox .btns { margin-top: 12px; }
 .freebar { margin: 10px var(--pad) 0; padding: 10px 12px; border: 2px solid var(--red); background: #fff; font-size: 13px; line-height: 1.7; }
 .freebar b { color: var(--red); }
@@ -529,14 +539,13 @@ async function loadFull(id) {  // 過去のレースを開いたときだけ、�
 }
 async function loadData() {
   const [mem, rs, nt, rn] = await Promise.all([
-    sb.from('members').select('name,plan,valid_until,is_admin,tier').maybeSingle(),
+    GUEST ? Promise.resolve({ data: { name: 'ゲスト', plan: '無料公開（午前のレース）', valid_until: FREE_UNTIL, is_admin: false, tier: 'free' }, error: null }) : sb.from('members').select('name,plan,valid_until,is_admin,tier').maybeSingle(),
     sb.from('races').select(`${RACE_COLS}, predictions(${HORSE_FULL}), ${ODDS_LITE}`).gte('date', jstDay(9)).order('date').order('venue').order('race_no'),
     sb.from('notices').select('*').order('published_at', { ascending: false }).limit(10),
     sb.from('runs').select('generated_at').order('generated_at', { ascending: false }).limit(1),
   ]);
   const t = jstToday();
   // 会員の行が無い人は、無料公開の期間なら無料の人として登録して、読み直す（1回だけ）
-  if (!mem.data && !mem.error && CAMPAIGN() && !loadData.joined) { loadData.joined = true; const j = await sb.rpc('join_free'); if (j.data === true) return loadData(); }
   memberStatus = !mem.data ? 'none' : (mem.data.is_admin || mem.data.valid_until >= t) ? 'ok' : 'expired';
   FREE = !!mem.data && mem.data.tier === 'free';
   memberOk = memberStatus === 'ok';
@@ -553,7 +562,7 @@ async function loadData() {
   DATA = {
     updatedAt: (rn.data && rn.data[0] && rn.data[0].generated_at) || new Date().toISOString(),
     week, today: week.find((d) => d >= t) || week[week.length - 1] || t,
-    member: { name: m.is_admin ? (m.name || '管理者') : (m.name || '会員'), plan: m.plan, until: m.is_admin ? '2099-12-31' : m.valid_until, admin: !!m.is_admin, free: FREE },
+    member: { name: m.is_admin ? (m.name || '管理者') : (m.name || '会員'), plan: m.plan, until: m.is_admin ? '2099-12-31' : m.valid_until, admin: !!m.is_admin, free: FREE, guest: GUEST },
     notices: (nt.data || []).map((x) => ({ date: String(x.published_at).slice(0, 10), title: x.title, body: x.body || '' })),
     races,
   };
@@ -675,10 +684,19 @@ const MARK = ['', '◎', '○', '▲', '△'];
 // 3連休の無料公開（11/21〜23）。無料の人は、12時より前に発走するレースを、印（◎○▲△）以外すべて見られる。午後のレースは会員限定
 const FREE_UNTIL = '2026-11-23', FREE_CUTOFF = '12:00';
 const CAMPAIGN = () => jstToday() <= FREE_UNTIL;
-const JOIN_URL = 'https://lin.ee/uDgbNni';  // 会員のご案内（申し込みページのURLが決まったら差し替える）
-let FREE = false;
+const JOIN_URL = 'https://t-ai.clubkawasaki.net/';  // T-AI の LP
+const LIMIT_NOTE = '※無料版では買い目の自動投票、オッズ解析や印など一部有料コンテンツを制限しております。';
+let FREE = false, GUEST = false;  // GUEST：ログインせずに見ている人（無料公開の間だけ）
 const mk = (r, rank) => (FREE && r.status !== 'done' ? '' : MARK[rank] || '');  // 無料の人には、レース前の印を出さない
-const joinBox = (t) => `<div class="wait-box lockbox"><span class="stamp">会員限定</span><p class="h2">${t || 'このレースは<br>会員限定です'}</p><p class="note">会員になると、午後のレース・メインレース・重賞（マイルCSなど）と、T-AIの印（◎○▲△）が、すべて見られます。</p><div class="btns"><a class="btn" href="${JOIN_URL}" target="_blank" rel="noopener">会員のご案内を見る<span>▶</span></a></div></div>`;
+const joinBox = (t) => `<div class="wait-box lockbox"><span class="stamp">会員限定</span><p class="h2">${t || 'このレースは<br>会員限定です'}</p><p class="note">${LIMIT_NOTE}</p><p class="note" style="margin-top:6px">会員になると、午後のレース・メインレース・重賞（マイルCSなど）と、T-AIの印（◎○▲△）が、すべて見られます。</p><div class="btns"><a class="btn" href="${JOIN_URL}" target="_blank" rel="noopener">T-AIの詳しいご案内を見る<span>▶</span></a>${GUEST ? '<button class="btn sub" type="button" data-go="#/login">会員の方はログイン</button>' : ''}</div></div>`;
+// 会員限定のレース：中身の代わりに、ぼかした見本の表を出す（数字は飾りで、実際の予想ではない）
+function blurRace(r) {
+  let x = 0; for (const c of r.id) x = (x * 31 + c.charCodeAt(0)) % 9973;
+  const rnd = () => { x = (x * 7919 + 13) % 9973; return x / 9973; };
+  const n = r.field || 12, ps = Array.from({ length: n }, () => Math.pow(rnd(), 3)), sum = ps.reduce((a, b) => a + b, 0) || 1, mx = Math.max(...ps);
+  const rows = ps.map((v, i) => `<div class="brow"><span class="no">${i + 1}</span><span class="mk">${v === mx ? '◎' : ''}</span><span class="nm"><b>${'ー'.repeat(4 + Math.floor(rnd() * 5))}</b><small>ーーー・5${Math.floor(rnd() * 9)}kg</small></span><span class="pc">${pct(v / sum)}%</span></div>`).join('');
+  return `<div class="blurwrap"><div class="blurred" aria-hidden="true">${rows}</div><div class="blurcover">${joinBox()}</div></div>`;
+}
 const WD = ['日', '月', '火', '水', '木', '金', '土'];
 const pct = (p, d = 1) => (p * 100).toFixed(d);
 const yen = (n) => Math.round(n).toLocaleString('ja-JP');
@@ -726,15 +744,14 @@ function vLogin() {
     <div class="big"><b>T<i>-</i>AI新報</b><span class="seal">会員<br>専用</span></div>
     <div class="dbl"></div>
     <p class="lead" style="margin-top:12px">選択を科学する、会員専用の競馬新聞。<br>毎週の出馬表に、T-AIの確率を載せてお届けします。</p>
-    ${CAMPAIGN() ? `<div class="freebar" style="margin:14px 0 0"><b>3連休（11/21〜23）無料公開中</b><br>午前のレース（12時より前に発走するレース）を、メールアドレスだけで、どなたでも見られます。</div>` : ''}
+    ${CAMPAIGN() ? `<div class="freebar" style="margin:14px 0 0"><b>3連休（11/21〜23）無料公開中</b><br>午前のレース（12時より前に発走）は、ログインなしでどなたでも見られます。<br><a href="#/guest">ログインせずに見る ›</a></div>` : ''}
     <form class="field" id="loginForm" novalidate>
-      <label for="mail">${CAMPAIGN() ? 'メールアドレス' : 'ご登録のメールアドレス'}</label>
+      <label for="mail">ご登録のメールアドレス</label>
       <input id="mail" type="email" inputmode="email" autocomplete="email" placeholder="例）taro@example.com">
       <p class="note" id="loginErr" role="alert" style="margin-top:8px;color:var(--red)" hidden></p>
       <div class="btns" style="margin-top:12px"><button class="btn" type="submit" id="loginBtn">ログイン用の番号を送る<span>▶</span></button></div>
     </form>
-    <p class="note" style="margin-top:14px">パスワードはありません。メールアドレスに6桁の番号が届きます。その番号を入れると、紙面が開きます。</p>
-    ${CAMPAIGN() ? '<p class="note" style="margin-top:6px">無料公開でご登録のメールアドレスには、川崎クラブからT-AIのご案内をお送りすることがあります。</p>' : ''}
+    <p class="note" style="margin-top:14px">パスワードはありません。ご登録のメールアドレスに6桁の番号が届きます。その番号を入れると、紙面が開きます。</p>
     ${proto}
   </section>`;
 }
@@ -803,7 +820,7 @@ function vHome() {
       <div><small>出馬表待ち</small><b>${wait.length}</b></div>
     </div>
     <p class="upd">出馬表と枠順の確定ごとに、自動で更新します</p>
-    ${FREE ? `<div class="freebar" style="margin:10px 0 0"><b>無料公開中（${FREE_UNTIL.slice(5).replace('-', '/')}まで）</b><br>12時より前に発走するレースを、印（◎○▲△）以外すべて見られます。午後の${locked.length}レース（メイン・重賞を含む）と印は会員限定です。<br><a href="${JOIN_URL}" target="_blank" rel="noopener">会員のご案内を見る ›</a></div>` : ''}
+    ${FREE ? `<div class="freebar" style="margin:10px 0 0"><b>3連休 無料公開中（${FREE_UNTIL.slice(5).replace('-', '/')}まで）</b><br>午前のレース（12時より前に発走）は、ログインなしでどなたでも見られます。午後の${locked.length}レース（メイン・重賞を含む）は会員限定です。<br><span style="font-size:12px;color:var(--ink2)">${LIMIT_NOTE}</span><br><a href="${JOIN_URL}" target="_blank" rel="noopener">T-AIの詳しいご案内を見る ›</a>${GUEST ? '　<a href="#/login">会員の方はログイン ›</a>' : ''}</div>` : ''}
     ${unnum ? `<p class="note" style="margin-top:6px">※${unnum}レースは枠順の確定待ちです。勝つ確率は計算済みです。馬番と組み合わせは、前日の午前10時30分ごろの枠順確定のあとに載ります。</p>` : ''}
   </section>
   <section class="sec">
@@ -844,7 +861,7 @@ function vRaces() {
         let right;
         if (r.status === 'waiting') right = '<span class="stamp">出馬表待ち</span>';
         else if (r.status === 'done') { const w = winner(r); right = w ? `<span class="who">1着 ${hn(w)}</span><span class="done">T-AI ${w.rank}番手 ${pct(w.prob)}%</span>` : '<span class="done">結果確認中</span>'; }
-        else if (r.locked) right = '<span class="stamp">会員限定</span>';
+        else if (r.locked) right = '<span class="who bl" aria-hidden="true">◎ 00 00.0%</span><span class="stamp" style="margin-top:3px">会員限定</span>';
         else { const h = top(r); right = `<span class="who">${mk(r, 1)} ${hn(h)}</span><span class="pct">${pct(h.prob)}%</span>`; }
         return `<button type="button" class="rrow${r.status === 'waiting' ? ' wait' : ''}" data-go="#/race/${r.id}">${rb(r)}<span class="ri"><span class="tm">${r.start}発走</span><b>${esc(r.name)}</b><small>${meta(r)}</small></span><span class="rt">${right}</span></button>`;
       }).join('')}
@@ -862,7 +879,7 @@ function rnav(r) {
 }
 function vRace(r) {
   const head = `<div class="rhead">${rb(r)}<div><h1>${esc(r.name)}</h1><p>${fd(r.date)} ${r.venue} ${r.start}発走・${meta(r)}</p></div></div>${rnav(r)}`;
-  if (r.locked) return `${head}${joinBox()}`;
+  if (r.locked) return `${head}${blurRace(r)}`;
   if (r.status === 'waiting') return `${head}<div class="wait-box"><span class="stamp">出馬表待ち</span><p class="h2">出馬表が確定すると、<br>T-AIが計算します。</p><p class="note">JRAの枠順は、前日の午前10時30分ごろに確定します。計算が終わると、一面の「計算済み」に加わります。</p></div>`;
   const done = r.status === 'done', over = r.horses.some((h) => h.note === 'overseas');
   return `${head}
@@ -1177,6 +1194,7 @@ function vResults() {
 /* ─ 会員 ─ */
 function vMy() {
   const m = DATA.member;
+  if (m.guest) return `<section class="sec"><div class="label"><b>会員</b><span>ログイン</span></div>${joinBox('会員の方は<br>ログインしてください')}<div class="btns" style="margin:12px var(--pad) 0"><button class="btn" type="button" data-go="#/login">会員ログイン<span>▶</span></button></div></section>`;
   const freeBox = m.free ? `<section class="sec">${joinBox('午後のレースと印は<br>会員限定です')}</section>` : '';
   const days = Math.round((Date.parse(m.until) - Date.parse(jstToday())) / 864e5);
   const [y, mm, d] = m.until.split('-').map(Number);
@@ -1215,15 +1233,17 @@ function vMy() {
    画面の切り替え（#/home  #/races  #/race/ID  #/build/ID  #/results  #/my  #/login  #/sent）
    ============================================================ */
 let lastMail = (() => { try { return sessionStorage.getItem('taiapp:mail') || ''; } catch (e) { return ''; } })(), curTab = 'home';
-const logged = () => SAMPLE || !!session;
+const logged = () => SAMPLE || !!session || GUEST;
 function go(h) { if (location.hash === h) route(); else location.hash = h; }
 function route() {
   clearTimers(); closeSheet(true);
   const [, name = 'home', arg] = (location.hash || '#/home').split('/');
+  if (name === 'guest') { if (!session && CAMPAIGN() && !GUEST) { GUEST = true; history.replaceState(null, '', location.pathname + '#/home'); boot(); return; } return go('#/home'); }
   if (!logged() && name !== 'login' && name !== 'sent') return go('#/login');
-  if (logged() && (name === 'login' || name === 'sent')) return go('#/home');
+  if (logged() && !GUEST && (name === 'login' || name === 'sent')) return go('#/home');
   const app = $('#app'), view = $('#view'), mastEl = $('#mast'), tabs = $('#tabs');
   const bare = name === 'login' || name === 'sent';
+  if (GUEST && bare) { GUEST = false; }  // ゲストがログインへ進んだら、ゲストをやめる
   app.classList.toggle('bare', bare); mastEl.hidden = bare; tabs.hidden = bare;
   let html = '', tab = name, mopts = {};
   const empty = !bare && memberOk && !DATA.races.length;
@@ -1268,7 +1288,7 @@ document.addEventListener('click', (e) => {
     const msg = $('#resendMsg');
     if (!lastMail) { go('#/login'); return; }
     t.disabled = true; msg.hidden = false; msg.textContent = '送っています…';
-    sb.auth.signInWithOtp({ email: lastMail, options: { shouldCreateUser: CAMPAIGN(), emailRedirectTo: location.origin + location.pathname } }).then(({ error }) => {
+    sb.auth.signInWithOtp({ email: lastMail, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } }).then(({ error }) => {
       msg.textContent = error ? (/rate|seconds|security/i.test(String(error.message)) ? '少し時間をおいてから、もう一度お試しください。' : '送れませんでした。時間をおいてもう一度お試しください。') : '新しい番号を送りました。いちばん新しいメールの番号を入れてください。';
       setTimeout(() => { const b = $('#resend'); if (b) b.disabled = false; }, 60e3);
     }).catch(() => { msg.textContent = '通信に失敗しました。'; t.disabled = false; });
@@ -1333,7 +1353,7 @@ document.addEventListener('submit', (e) => {
   if (SAMPLE) { go('#/home'); return; }
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) { err.textContent = 'メールアドレスを入れてください。'; err.hidden = false; return; }
   btn.disabled = true;
-  sb.auth.signInWithOtp({ email: mail, options: { shouldCreateUser: CAMPAIGN(), emailRedirectTo: location.origin + location.pathname } }).then(({ error }) => {
+  sb.auth.signInWithOtp({ email: mail, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } }).then(({ error }) => {
     btn.disabled = false;
     if (error) {
       const m = String(error.message || '');
@@ -1346,7 +1366,7 @@ document.addEventListener('submit', (e) => {
 addEventListener('hashchange', () => { try { sessionStorage.setItem('taiapp:nav', '1'); } catch (e) {} route(); });
 // 開いたままの画面も、戻ってきたとき（前の読み込みから10分たっていれば）新しい予想に入れ替える
 async function refresh(force) {
-  if (SAMPLE || !session || !memberOk) return;
+  if (SAMPLE || (!session && !GUEST) || !memberOk) return;
   if (!force && (document.hidden || Date.now() - loadedAt < 5 * 60e3)) return;  // 開催中は結果が5分ごとに入るので、5分たったら入れ替える
   if (location.hash.startsWith('#/build') && BS.sel.size) { loadedAt = 0; return; }  // 買い目を選んでいる途中は入れ替えない（次の機会に）
   const keep = { d: listState.d, v: listState.v, m: resState.m, b: BS.raceId, sel: [...BS.sel], ax: BS.axis, hist: histState === 'ok' };
@@ -1363,12 +1383,14 @@ setInterval(refresh, 60e3);
 async function boot() {
   if (SAMPLE || !sb) { useSample(); afterLoad(); route(); return; }
   if (!session) { const { data } = await sb.auth.getSession(); session = data.session; }
+  if (session) GUEST = false;
+  else if (CAMPAIGN() && !/^#\/(login|sent)/.test(location.hash)) GUEST = true;
   // メールのリンクから戻ったとき、URL に残ったログイン情報を消す
   if (/access_token|error_description/.test(location.hash)) history.replaceState(null, '', location.pathname + '#/home');
-  if (session) {
-    const cached = readCache();
+  if (session || GUEST) {
+    const cached = session ? readCache() : null;
     if (cached) {  // 前回の紙面をすぐ出し、裏で新しいものを取る
-      DATA = cached; memberOk = true; memberStatus = 'ok'; loadedAt = 0; afterLoad(); route();
+      DATA = cached; memberOk = true; memberStatus = 'ok'; FREE = !!(DATA.member && DATA.member.free); loadedAt = 0; afterLoad(); route();
       refresh(true); return;
     }
     $('#view').innerHTML = '<section class="sec"><p class="note" style="padding:40px 0;text-align:center">紙面を組んでいます…</p></section>';
