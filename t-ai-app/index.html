@@ -1347,7 +1347,7 @@ function vGaikyu(farm) {
   const head = `<section class="sec"><div class="label"><b>外厩データ</b><span>2016〜2026年の集計</span></div>
     <p class="note" style="margin-top:10px">T-AIの勝つ確率の計算には入っていない、参考の集計です。スコアは「市場の期待（単勝オッズ）に対してどれだけ勝っているか」で、<b>1.0が市場並み</b>。出走が少ないほど1.0に寄る式です。1.2以上は赤、0.85未満は灰色にしています。表は出走30以上のものだけ載せています。</p>
     <p class="note" style="margin-top:6px"><b>全騎乗</b>＝その外厩から帰ってきた後の全部の出走（2走目・3走目以降も含む）。<b>直行</b>＝帰ってきて最初のレースだけ。</p>`;
-  const cover = '<p class="dnote">外厩の記録から牧場の名前が分かった出走だけの集計です（放牧の記録のうち約54%。名前の手がかりが無い分は、推測で入れていません）。</p>';
+  const cover = '<p class="dnote">外厩の記録から牧場が分かった出走だけの集計です（放牧の記録のうち約69%）。記録に名前が書かれた分のほか、支所名のない「ノーザンファーム」を美浦＝天栄・栗東＝しがらきで振り分けた分と、同じ馬のほかの滞在がすべて同じ牧場の分も含みます。手がかりの無い分は入れていません。</p>';
   if (FREE) return `${head}</section><section class="sec">${joinBox('外厩データは<br>会員限定です')}</section>`;
   if (!GK || GK === 'loading') { loadGK(); return `${head}<p class="note" style="padding:30px 0;text-align:center">読み込んでいます…</p></section>`; }
   if (GK === 'err') return `${head}<p class="note" style="padding:20px 0">読み込めませんでした。時間をおいて、もう一度お試しください。</p></section>`;
