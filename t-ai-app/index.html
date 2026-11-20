@@ -521,7 +521,7 @@ const jstToday = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 
 const normName = (n) => String(n || '').replace(/\((G[123]|L|OP|Jpn[123])\)/g, '（$1）');
 // 読み込みは2段：開いたときは「直近9日（今週と先週末）」だけ、成績の面を開いたら「過去70日」を軽い列で足す
 const RACE_COLS = 'race_id,date,venue,race_no,race_name,start_time,surface,distance,field_size,status';
-const HORSE_FULL = 'horse_no,gate,horse_name,jockey,weight,last_run,prob,rank,note,result';
+const HORSE_FULL = 'horse_no,gate,horse_name,jockey,weight,last_run,prob,rank,note,result,going';
 const ODDS_LITE = 'odds(win,place,fetched_at,official_at,final)';
 const jstDay = (back) => new Date(Date.now() + 9 * 3600e3 - back * 864e5).toISOString().slice(0, 10);
 function toRace(r, lite) {
@@ -532,7 +532,7 @@ function toRace(r, lite) {
     surface: r.surface === 'ダ' ? 'ダート' : (r.surface || ''), distance: r.distance, field: r.field_size || n, status: r.status, lite: !!lite,
     odds: (Array.isArray(r.odds) ? r.odds[0] : r.odds) || null,
     numbered: ps.every((h) => h.horse_no != null),
-    horses: ps.map((h, i) => { const known = h.horse_no != null, no = known ? h.horse_no : 101 + i; return { no, known, gate: known ? (h.gate ?? gateOf(no, n)) : 0, name: h.horse_name, jockey: h.jockey || '', weight: h.weight, last: h.last_run || '', prob: h.prob, rank: h.rank, note: h.note, result: h.result }; }),
+    horses: ps.map((h, i) => { const known = h.horse_no != null, no = known ? h.horse_no : 101 + i; return { no, known, gate: known ? (h.gate ?? gateOf(no, n)) : 0, name: h.horse_name, jockey: h.jockey || '', weight: h.weight, last: h.last_run || '', prob: h.prob, rank: h.rank, note: h.note, result: h.result, going: h.going || null }; }),
   };
 }
 let histState = 'no', HIST_BINS = [];  // no → loading → ok
@@ -912,7 +912,7 @@ function vRaces() {
 }
 
 /* ─ レース詳細 ─ */
-let raceState = { sort: 'no', kind: 'uma', limit: 20, ck: 'tan' };
+let raceState = { sort: 'no', kind: 'uma', limit: 20, ck: 'tan', gv: '不良' };
 const ROW = 60;
 function rnav(r) {
   const sib = DATA.races.filter((x) => x.date === r.date && x.venue === r.venue).sort((a, b) => a.no - b.no), i = sib.indexOf(r);
@@ -940,6 +940,7 @@ function vRace(r) {
   ${r.numbered === false ? '' : '<p class="dnote">馬の行をタップすると、その馬の「指数カード」が開きます。</p>'}
   ${over ? '<p class="dnote">※海外から来た馬など、日本での出走歴がない馬は、確率が低く出ることがあります。</p>' : ''}
   ${vCompare(r)}
+  ${r.numbered === false ? '' : '<div id="goingSec"></div>'}
   ${r.numbered === false ? '<section class="sec"><div class="wait-box"><span class="stamp">枠順待ち</span><p class="h2">馬番は、枠順が<br>確定してから載せます。</p><p class="note">組み合わせの確率と買い目は、枠順の確定後に使えます。各馬の勝つ確率は、もう計算済みです。</p></div></section>' : `<section class="sec">
     <div class="label"><b>組み合わせ</b><span>確率の高い順</span></div>
     <div class="seg sm k6" role="group" aria-label="券種" id="kindSeg" style="margin-top:12px">${kindsFor(r).filter((k) => k !== 'tan').map((k) => `<button type="button" data-kind="${k}" aria-pressed="${raceState.kind === k}">${KIND[k]}</button>`).join('')}</div>
@@ -955,6 +956,26 @@ function vCompare(r) {
     <div class="seg sm" role="group" aria-label="単勝・複勝" id="cmpSeg" style="margin-top:12px">${['tan', 'place'].map((k) => `<button type="button" data-ck="${k}" aria-pressed="${raceState.ck === k}">${k === 'tan' ? '単勝' : '複勝'}</button>`).join('')}</div>
     <p class="otime">オッズ ${oddsWhen(r)}・netkeibaより</p>
     <div id="cmpBox"></div>
+  </section>`;
+}
+// 馬場状態別の勝率（川崎さんの馬場4区分モデル。上の「勝つ確率」とは別の計算の参考値）。届いたレースだけ出す
+// 数字は紙面のデータ（predictions.going）に入っているので、レースを開くたびの問い合わせはしない
+function renderGoing(r) {
+  const sec = $('#goingSec'); if (!sec) return;
+  const g = raceState.gv, hs = r.horses.filter((h) => h.going && h.going[g] != null && h.going['良'] != null);
+  if (!hs.length) { sec.innerHTML = ''; return; }
+  const v = (h, k) => h.going[k];
+  const rk = (k) => { const o = hs.slice().sort((a, b) => v(b, k) - v(a, k)); return new Map(o.map((h, i) => [h.no, i + 1])); };
+  const r0 = rk('良'), r1 = rk(g);
+  const rows = hs.slice().sort((a, b) => v(b, g) - v(a, g)).map((h) => {
+    const d = Math.round((v(h, g) - v(h, '良')) * 10) / 10, big = Math.abs(d) >= 1;
+    return `<div class="cr${big && d > 0 ? ' ev' : ''}"><span class="n">${hn(h)}<span><b>${esc(h.name)}</b><small>${r0.get(h.no) === r1.get(h.no) ? `${r1.get(h.no)}位のまま` : `${r0.get(h.no)}位→${r1.get(h.no)}位`}</small></span></span><span class="v">${v(h, '良').toFixed(1)}%</span><span class="v">${v(h, g).toFixed(1)}%</span><span class="e" style="color:${big ? (d > 0 ? 'var(--red)' : 'var(--ink3)') : 'var(--ink)'}">${d > 0 ? '+' : d < 0 ? '−' : '±'}${Math.abs(d).toFixed(1)}</span></div>`;
+  }).join('');
+  sec.innerHTML = `<section class="sec">
+    <div class="label"><b>馬場が変わったら</b><span>馬場状態別の勝率</span></div>
+    <div class="seg sm" role="group" aria-label="馬場" id="goSeg" style="margin-top:12px">${['稍重', '重', '不良'].map((k) => `<button type="button" data-gv="${k}" aria-pressed="${g === k}">${k}</button>`).join('')}</div>
+    <div class="box cmp"><div class="cap4"><span>馬（順位：良→${g}）</span><span>良</span><span>${g}</span><span>差</span></div>${rows}</div>
+    <p class="note" style="margin-top:6px">馬場の状態ごとに計算し直した勝率です（馬場の4区分を入れたT-AIの別のモデルによる参考値）。上の「勝つ確率」とは別の計算なので、良の数字も少し違います。差が1ポイント以上の馬を、上がるものは赤、下がるものは灰色にしています。</p>
   </section>`;
 }
 function renderCompare(r) {
@@ -1125,7 +1146,7 @@ function renderCombos(r) {
 }
 function mountRace(r) {
   if (r.status === 'waiting' || r.locked) return;
-  placeRows(r, false); renderCombos(r); renderCompare(r);
+  placeRows(r, false); renderCombos(r); renderCompare(r); renderGoing(r);
   const tbl = $('#tbl'), calc = $('#calc'), first = !seen.has(r.id) && !RM && r.status === 'ready';
   const setBars = () => tbl.querySelectorAll('.bar i[data-w]').forEach((i) => { i.style.width = i.dataset.w + '%'; });
   if (!first) { tbl.classList.add('instant'); setBars(); tbl.classList.add('drawn'); calc.classList.add('ok'); if (r.status === 'ready') $('#calcT').textContent = '計算済み'; return; }
@@ -1432,6 +1453,7 @@ function vMy() {
       <details><summary>組み合わせの確率</summary><p>出馬表の面の下に、馬連・ワイド・3連複が当たる確率を、高い順に載せています。</p></details>
       <details><summary>買い目をつくる</summary><p>券種と買い方を選び、馬番をタップすると、その買い目のどれかが当たる確率と点数が、すぐに出ます。予算を入れると、1点あたりの金額も出ます。</p></details>
       <details><summary>自動買い目生成（会員限定）</summary><p>「買い目をつくる」で、券種を選んでからモードを押すと、T-AIの確率とオッズから買い目を自動で作ります。的中モード：確率の高い順に5・10・20点。的中率指定：指定した確率に届く最少の点数。期待値モード：期待値（確率×オッズ）が1を超える組み合わせ。期待値指定：指定した期待値以上の組み合わせ。</p></details>
+      <details><summary>馬場が変わったら</summary><p>レースのページの「馬場が変わったら」では、馬場が稍重・重・不良になったときの各馬の勝率を、良のときと見比べられます。馬場の状態を4つに分けて入れたT-AIの別のモデルによる参考値で、道悪の得意・不得意、同じ馬場での過去の成績、騎手の道悪の成績、枠と馬場の関係などで動きます。データが届いたレースだけ出ます。</p></details>
       <details><summary>指数カード</summary><p>出馬表で馬の行をタップすると、その馬の指数の内訳（スピード指数・ペースと末脚・脚質・成績・騎手と厩舎・今回の条件）が開きます。各項目には、このレースの出走馬の中での順位を付けています。</p></details>
       <details><summary>オッズと期待値</summary><p>netkeibaのJRAオッズを、発売中は数分おきに取り込みます（発走30分前からは5分ごと）。発走後は、最終オッズに切り替わります。期待値は「T-AIの確率×オッズ」で、1を超えると、T-AIの評価に比べてオッズが高い（人気がない）ことを示します。買い目の「合成オッズ」は、選んだ買い目全体を1つの馬券と見たときのオッズです。「T-AIオッズ」は、T-AIの確率をオッズに直したもの（1÷確率）で、実際のオッズと同じ「倍」で見比べられます。</p></details>
       <details><summary>いつ更新されるか</summary><p>JRAの枠順が確定する前日の午前10時30分ごろのあと、自動で計算して載せます。当日の朝に出走取消・競走除外があれば、計算し直します。レースの結果は、発走のおよそ15〜20分後に、出馬表と「成績」の面に載ります。</p></details>
@@ -1526,6 +1548,7 @@ document.addEventListener('click', (e) => {
   if (ds.hday) { homeDay = ds.hday; listState.d = ds.hday; const vs = [...new Set(weekRaces(ds.hday).map((r) => r.venue))]; if (!vs.includes(listState.v)) listState.v = vs[0] || ''; rerender(); return; }
   if (ds.ven) { listState.v = ds.ven; rerender(); return; }
   if (ds.sort) { raceState.sort = ds.sort; placeRows(byId.get($('#view').dataset.race)); return; }
+  if (ds.gv) { raceState.gv = ds.gv; renderGoing(byId.get($('#view').dataset.race)); return; }
   if (ds.ck) { raceState.ck = ds.ck; document.querySelectorAll('#cmpSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.ck === ds.ck))); renderCompare(byId.get($('#view').dataset.race)); return; }
   if (ds.kind) { raceState.kind = ds.kind; raceState.limit = 20; document.querySelectorAll('#kindSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.kind === ds.kind))); renderCombos(byId.get($('#view').dataset.race)); return; }
   if (t.id === 'more') { raceState.limit += 20; renderCombos(byId.get($('#view').dataset.race)); return; }
