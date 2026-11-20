@@ -321,6 +321,11 @@ body.lock { overflow: hidden; }
 .lockbox .btns { margin-top: 12px; }
 .freebar { margin: 10px var(--pad) 0; padding: 10px 12px; border: 2px solid var(--red); background: #fff; font-size: 13px; line-height: 1.7; }
 .freebar b { color: var(--red); }
+.autog .a4 button { font-size: 13px; }
+.autog .aprow { margin-top: 8px; }
+.autog .aprm { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 14px; }
+.autog .aprm input { width: 84px; min-height: 44px; padding: 0 8px; border: 2px solid var(--ink); background: var(--card); font-family: var(--n); font-size: 20px; font-weight: 700; text-align: right; }
+.autog .lockmini { margin-top: 8px; padding: 10px 12px; border: 2px solid var(--red); background: #fff; font-size: 13px; line-height: 1.7; }
 .budbox { margin: 12px var(--pad) 0; border: 2px solid var(--ink); background: var(--card); }
 .budbox.sb2 { border-top: 2px solid var(--ink); }
 .sb1 .pts .perS { display: block; margin-top: 3px; font-size: 11px; font-weight: 700; color: var(--ink2); white-space: nowrap; }
@@ -1070,10 +1075,45 @@ function mountRace(r) {
 }
 
 /* ─ 買い目をつくる ─ */
-const BS = { raceId: null, kind: 'uma', method: 'box', axis: null, sel: new Set(), budget: 3000 };
+const BS = { raceId: null, kind: 'uma', method: 'box', axis: null, sel: new Set(), budget: 3000, auto: null };
+// 自動買い目生成（会員限定）。mode：hit＝的中モード（確率の高い順に n 点）、hitp＝的中率指定、ev＝期待値モード（期待値1超え）、evp＝期待値指定
+const AUTO = { mode: 'hit', n: 10, target: 30, ev: 1.2 };
+const AUTO_NAME = { hit: '的中モード', hitp: '的中率指定', ev: '期待値モード', evp: '期待値指定' };
+function autoBuild(r) {
+  const k = BS.kind, list = k === 'tan' ? r.horses.map((h) => ({ nums: [h.no], prob: h.prob })).sort((a, b) => b.prob - a.prob) : CALC.combos(r, k);
+  const lo = (c) => { const v = oddsOne(r, k, c.nums); return v == null ? null : Array.isArray(v) ? v[0] : v; };
+  if (AUTO.mode === 'hit') return { tickets: list.slice(0, AUTO.n).map((c) => c.nums), note: `確率の高い順に${Math.min(AUTO.n, list.length)}点` };
+  if (AUTO.mode === 'hitp') {
+    const goal = Math.min(99, Math.max(1, AUTO.target)) / 100, t = []; let h = 0;
+    for (const c of list) { t.push(c.nums); h = k === 'wide' ? CALC.hit(r, k, t) : h + c.prob; if (h >= goal || t.length >= 200) break; }
+    return h >= goal ? { tickets: t, note: `当たる確率${AUTO.target}%以上になる最少の${t.length}点` } : { err: `この券種では、200点まで買っても${AUTO.target}%に届きません。` };
+  }
+  if (!oddsTbl(r, k)) { needOdds(r, k); return { err: r.odds ? 'オッズを読み込んでいます。少し待って、もう一度押してください。' : 'このレースのオッズは、まだ発売前です。' }; }
+  const withEv = list.map((c) => ({ ...c, o: lo(c) })).filter((c) => c.o != null).map((c) => ({ ...c, ev: c.prob * c.o }));
+  if (AUTO.mode === 'ev') {
+    const t = withEv.filter((c) => c.ev > 1).sort((a, b) => b.ev - a.ev).slice(0, 20);
+    return t.length ? { tickets: t.map((c) => c.nums), note: `期待値が1を超える組み合わせを、高い順に${t.length}点` } : { err: '期待値が1を超える組み合わせがありません。' };
+  }
+  const t = withEv.filter((c) => c.ev >= AUTO.ev).sort((a, b) => b.prob - a.prob).slice(0, 30);
+  return t.length ? { tickets: t.map((c) => c.nums), note: `期待値${AUTO.ev}以上の組み合わせを、確率の高い順に${t.length}点` } : { err: `期待値${AUTO.ev}以上の組み合わせがありません。` };
+}
+function vAuto() {
+  const m = AUTO.mode;
+  const param = m === 'hit' ? `<div class="seg sm" role="group" aria-label="点数">${[5, 10, 20].map((n) => `<button type="button" data-an="${n}" aria-pressed="${AUTO.n === n}">${n}点</button>`).join('')}</div>`
+    : m === 'hitp' ? `<label class="aprm">当たる確率<input id="autoT" type="number" inputmode="numeric" min="1" max="99" step="1" value="${AUTO.target}">%以上</label>`
+    : m === 'evp' ? `<label class="aprm">期待値<input id="autoE" type="number" inputmode="decimal" min="0.5" max="5" step="0.1" value="${AUTO.ev}">以上</label>`
+    : '<p class="note">期待値（確率×オッズ）が1を超える組み合わせを、高い順に最大20点。</p>';
+  return `<section class="sec autog">
+    <div class="label"><b>自動買い目生成</b><span>${FREE ? '🔒 会員限定' : '会員限定'}</span></div>
+    <div class="seg k4 a4" role="group" aria-label="自動のモード" style="margin-top:10px">${Object.keys(AUTO_NAME).map((x) => `<button type="button" data-am="${x}" aria-pressed="${!FREE && m === x}">${AUTO_NAME[x]}</button>`).join('')}</div>
+    ${FREE ? '' : `<div class="aprow">${param}</div><div class="btns" style="margin-top:8px"><button class="btn sub" type="button" id="autoGo">この条件で買い目を作る<span>▶</span></button></div>`}
+    <div id="autoMsg" class="note" role="status" style="margin-top:6px"></div>
+  </section>`;
+}
 function comb(arr, k) { const out = []; const rec = (s, acc) => { if (acc.length === k) { out.push(acc.slice()); return; } for (let i = s; i < arr.length; i++) { acc.push(arr[i]); rec(i + 1, acc); acc.pop(); } }; rec(0, []); return out; }
 function perm(arr, k) { const out = []; const rec = (acc, rest) => { if (acc.length === k) { out.push(acc.slice()); return; } rest.forEach((x, i) => { acc.push(x); rec(acc, rest.filter((_, j) => j !== i)); acc.pop(); }); }; rec([], arr); return out; }
 function tickets() {
+  if (BS.auto) return BS.auto.tickets;
   const k = BS.kind, sel = [...BS.sel].sort((a, b) => a - b), need = NEED[k];
   if (k === 'tan') return sel.map((n) => [n]);
   if (BS.method === 'box') return ORD[k] ? perm(sel, need) : comb(sel, need);
@@ -1086,7 +1126,7 @@ const gatesOf = (r) => [...new Set(r.horses.map((h) => h.gate))].filter(Boolean)
 function vBuild() {
   const r = byId.get(BS.raceId), ready = buildable();
   if (!kindsFor(r).includes(BS.kind)) { BS.kind = 'uma'; BS.axis = null; BS.sel.clear(); }
-  const nagashi = BS.method === 'nagashi' && BS.kind !== 'tan';
+  const nagashi = !BS.auto && BS.method === 'nagashi' && BS.kind !== 'tan';
   return `<section class="sec">
     <div class="label"><b>買い目をつくる</b><span>選んだ瞬間に計算</span></div>
     <div class="pick" style="margin-top:12px"><span class="lbl">レース</span>
@@ -1094,9 +1134,10 @@ function vBuild() {
     </div>
     <div class="ctl" style="margin-top:10px">
       <div class="seg k4" role="group" aria-label="券種">${Object.keys(KIND).map((k) => `<button type="button" data-bk="${k}" aria-pressed="${BS.kind === k}"${kindsFor(r).includes(k) ? '' : ' disabled'}>${KIND[k]}</button>`).join('')}</div>
-      <div class="seg sm" role="group" aria-label="買い方"><button type="button" data-bm="box" aria-pressed="${BS.kind === 'tan' || BS.method === 'box'}">${BS.kind === 'tan' ? '選んだ馬すべて' : 'ボックス'}</button><button type="button" data-bm="nagashi" aria-pressed="${nagashi}"${BS.kind === 'tan' ? ' disabled' : ''}>${ORD[BS.kind] ? '流し（1着固定）' : BS.kind === 'waku' ? '流し（軸1枠）' : '流し（軸1頭）'}</button></div>
+      <div class="seg sm" role="group" aria-label="買い方"><button type="button" data-bm="box" aria-pressed="${!BS.auto && (BS.kind === 'tan' || BS.method === 'box')}">${BS.kind === 'tan' ? '選んだ馬すべて' : 'ボックス'}</button><button type="button" data-bm="nagashi" aria-pressed="${nagashi}"${BS.kind === 'tan' ? ' disabled' : ''}>${ORD[BS.kind] ? '流し（1着固定）' : BS.kind === 'waku' ? '流し（軸1枠）' : '流し（軸1頭）'}</button></div>
     </div>
   </section>
+  ${vAuto()}
   <p class="hint" id="hint"></p>
   <div class="grid" id="grid">${BS.kind === 'waku' ? gatesOf(r).map((g) => { const hs = r.horses.filter((h) => h.gate === g), pg = hs.reduce((a, h) => a + h.prob, 0); return `<button type="button" class="hb gk" data-h="${g}" aria-pressed="false" aria-label="${g}枠 ${hs.map((h) => h.no).join('・')}番 ${pct(pg)}%"><span class="gs" style="background:${GATE_BG[g]}"></span><b>${g}枠</b><small>${hs.map((h) => h.no).join('・')}番</small><span class="tag"></span></button>`; }).join('') : r.horses.map((h) => `<button type="button" class="hb" data-h="${h.no}" aria-pressed="false" aria-label="${h.no}番 ${esc(h.name)} ${pct(h.prob)}%"><span class="gs" style="background:${GATE_BG[h.gate]}"></span><b>${h.no}</b><small>${pct(h.prob)}%</small><span class="tag"></span></button>`).join('')}</div>
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px var(--pad) 0"><span class="note">${BS.kind === 'waku' ? '枠の下は、その枠の馬番です' : '数字の下は単勝の確率です'}</span><button type="button" class="clear" id="clear">選び直す</button></div>
@@ -1147,7 +1188,8 @@ function updateBuild() {
     b.querySelector('.tag').textContent = ax ? '軸' : pt ? '相手' : '';
   });
   const need = NEED[BS.kind], wk = BS.kind === 'waku', u = wk ? '枠' : '頭';
-  $('#hint').textContent = BS.kind === 'tan' ? '買いたい馬をタップ。何頭でも選べます。'
+  $('#hint').textContent = BS.auto ? `自動で作った買い目です（${AUTO_NAME[BS.auto.mode]}：${BS.auto.note}）。馬番をタップすると、手で選ぶ形に戻ります。`
+    : BS.kind === 'tan' ? '買いたい馬をタップ。何頭でも選べます。'
     : !nag ? `${wk ? '枠' : '馬番'}をタップ。${need}${u}以上で、ボックスの買い目ができます。${ORD[BS.kind] ? '着順の並びはすべて買います。' : ''}`
     : BS.axis == null ? (ORD[BS.kind] ? 'まず1着に固定する「軸」の馬をタップしてください。' : `まず「軸」の${wk ? '枠' : '馬'}を1つタップしてください。`) : `次に「相手」をタップ。${need - 1}${u}以上で買い目ができます。`;
   const from = shownHit, to = hit * 100, el = $('#hitV'), t0 = performance.now();
@@ -1242,6 +1284,7 @@ function vMy() {
       <details><summary>◎○▲△ の印</summary><p>勝つ確率の高い順に、1番手から4番手の馬に付けています。</p></details>
       <details><summary>組み合わせの確率</summary><p>出馬表の面の下に、馬連・ワイド・3連複が当たる確率を、高い順に載せています。</p></details>
       <details><summary>買い目をつくる</summary><p>券種と買い方を選び、馬番をタップすると、その買い目のどれかが当たる確率と点数が、すぐに出ます。予算を入れると、1点あたりの金額も出ます。</p></details>
+      <details><summary>自動買い目生成（会員限定）</summary><p>「買い目をつくる」で、券種を選んでからモードを押すと、T-AIの確率とオッズから買い目を自動で作ります。的中モード：確率の高い順に5・10・20点。的中率指定：指定した確率に届く最少の点数。期待値モード：期待値（確率×オッズ）が1を超える組み合わせ。期待値指定：指定した期待値以上の組み合わせ。</p></details>
       <details><summary>指数カード</summary><p>出馬表で馬の行をタップすると、その馬の指数の内訳（スピード指数・ペースと末脚・脚質・成績・騎手と厩舎・今回の条件）が開きます。各項目には、このレースの出走馬の中での順位を付けています。</p></details>
       <details><summary>オッズと期待値</summary><p>netkeibaのJRAオッズを、発売中は数分おきに取り込みます（発走30分前からは5分ごと）。発走後は、最終オッズに切り替わります。期待値は「T-AIの確率×オッズ」で、1を超えると、T-AIの評価に比べてオッズが高い（人気がない）ことを示します。買い目の「合成オッズ」は、選んだ買い目全体を1つの馬券と見たときのオッズです。「T-AIオッズ」は、T-AIの確率をオッズに直したもの（1÷確率）で、実際のオッズと同じ「倍」で見比べられます。</p></details>
       <details><summary>いつ更新されるか</summary><p>JRAの枠順が確定する前日の午前10時30分ごろのあと、自動で計算して載せます。当日の朝に出走取消・競走除外があれば、計算し直します。レースの結果は、発走のおよそ15〜20分後に、出馬表と「成績」の面に載ります。</p></details>
@@ -1327,7 +1370,7 @@ document.addEventListener('click', (e) => {
   if (t.id === 'sheetX') { closeSheet(); return; }
   if (ds.sday) { sheetState.d = ds.sday; sheetState.v = ''; sheetRedraw(); return; }
   if (ds.sven) { sheetState.v = ds.sven; sheetRedraw(); return; }
-  if (ds.pickrace) { if (ds.pickrace !== BS.raceId) { BS.raceId = ds.pickrace; BS.axis = null; BS.sel.clear(); } closeSheet(true); rerender(); return; }
+  if (ds.pickrace) { if (ds.pickrace !== BS.raceId) { BS.raceId = ds.pickrace; BS.axis = null; BS.sel.clear(); BS.auto = null; } closeSheet(true); rerender(); return; }
   if (ds.go) { go(ds.go); return; }
   if (ds.tab) { const map = { home: '#/home', races: '#/races', build: '#/build', results: '#/results', my: '#/my' }; go(map[ds.tab]); return; }
   if (ds.back) { let nav = false; try { nav = !!sessionStorage.getItem('taiapp:nav'); } catch (e) {} if (history.length > 1 && nav) history.back(); else go('#/' + ds.back); return; }
@@ -1338,9 +1381,10 @@ document.addEventListener('click', (e) => {
   if (ds.ck) { raceState.ck = ds.ck; document.querySelectorAll('#cmpSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.ck === ds.ck))); renderCompare(byId.get($('#view').dataset.race)); return; }
   if (ds.kind) { raceState.kind = ds.kind; raceState.limit = 20; document.querySelectorAll('#kindSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.kind === ds.kind))); renderCombos(byId.get($('#view').dataset.race)); return; }
   if (t.id === 'more') { raceState.limit += 20; renderCombos(byId.get($('#view').dataset.race)); return; }
-  if (ds.bk) { if (t.disabled) return; if ((ds.bk === 'waku') !== (BS.kind === 'waku')) { BS.sel.clear(); } BS.kind = ds.bk; if (ds.bk === 'tan') { BS.method = 'box'; } BS.axis = null; if (BS.kind !== 'tan' && BS.method === 'nagashi') BS.sel.clear(); rerender(); return; }
-  if (ds.bm) { if (t.disabled) return; BS.method = ds.bm; if (ds.bm === 'nagashi') { const s = [...BS.sel]; BS.axis = null; BS.sel = new Set(s); } rerender(); return; }
+  if (ds.bk) { if (t.disabled) return; BS.auto = null; if ((ds.bk === 'waku') !== (BS.kind === 'waku')) { BS.sel.clear(); } BS.kind = ds.bk; if (ds.bk === 'tan') { BS.method = 'box'; } BS.axis = null; if (BS.kind !== 'tan' && BS.method === 'nagashi') BS.sel.clear(); rerender(); return; }
+  if (ds.bm) { if (t.disabled) return; BS.auto = null; BS.method = ds.bm; if (ds.bm === 'nagashi') { const s = [...BS.sel]; BS.axis = null; BS.sel = new Set(s); } rerender(); return; }
   if (ds.h) {
+    if (BS.auto) { BS.auto = null; BS.method = BS.kind === 'tan' ? 'box' : BS.method; BS.sel.clear(); BS.axis = null; rerender(); }
     const n = +ds.h, nag = BS.method === 'nagashi' && BS.kind !== 'tan';
     if (!nag) { BS.sel.has(n) ? BS.sel.delete(n) : BS.sel.add(n); }
     else if (BS.axis === n) BS.axis = null;
@@ -1350,7 +1394,21 @@ document.addEventListener('click', (e) => {
     if (navigator.vibrate) navigator.vibrate(6);
     updateBuild(); return;
   }
-  if (t.id === 'clear') { BS.axis = null; BS.sel.clear(); updateBuild(); return; }
+  if (t.id === 'clear') { if (BS.auto) { BS.auto = null; rerender(); return; } BS.axis = null; BS.sel.clear(); updateBuild(); return; }
+  if (ds.am || t.id === 'autoGo' || ds.an) {
+    const msg = $('#autoMsg');
+    if (FREE) { msg.innerHTML = `<div class="lockmini"><b style="color:var(--red)">自動買い目生成は会員限定です。</b><br>${LIMIT_NOTE}<br><a href="${JOIN_URL}" target="_blank" rel="noopener">T-AIの詳しいご案内を見る ›</a></div>`; return; }
+    if (ds.am) { AUTO.mode = ds.am; rerender(); return; }
+    if (ds.an) { AUTO.n = +ds.an; document.querySelectorAll('[data-an]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.an === AUTO.n))); return; }
+    const ti = $('#autoT'), ei = $('#autoE');
+    if (ti) AUTO.target = Math.round(+ti.value || 30);
+    if (ei) AUTO.ev = Math.round((+ei.value || 1.2) * 10) / 10;
+    const res = autoBuild(byId.get(BS.raceId));
+    if (res.err) { msg.textContent = res.err; return; }
+    BS.auto = { mode: AUTO.mode, tickets: res.tickets, note: res.note }; BS.sel.clear(); BS.axis = null;
+    rerender(); const m2 = $('#autoMsg'); if (m2) m2.textContent = `${res.tickets.length}点の買い目を作りました。下の「買い目の一覧」で確かめられます。`;
+    return;
+  }
   if (ds.month) { resState.m = ds.month; rerender(); return; }
   if (t.id === 'logout') { if (SAMPLE) { location.href = location.pathname; return; } dropCache(); sb.auth.signOut().finally(() => { session = null; memberOk = false; memberStatus = 'none'; go('#/login'); }); }
 });
