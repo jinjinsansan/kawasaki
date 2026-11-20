@@ -254,6 +254,37 @@ body.lock { overflow: hidden; }
 .hb.ax small { color: #ffd9dc; }
 .hb.pt { box-shadow: inset 0 0 0 3px var(--red); }
 .hb.pt .tag { color: var(--red); }
+.seg.k4 { grid-auto-flow: row; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.seg.k4 button + button { border-left: 0; }
+.seg.k4 button { border-right: 1px solid var(--ink); }
+.seg.k4 button:nth-child(4n) { border-right: 0; }
+.seg.k4 button:nth-child(n+5) { border-top: 1px solid var(--ink); }
+.seg.k6 button { font-size: 12.5px; padding: 0 2px; }
+.crow.wo { grid-template-columns: 28px minmax(0, 1fr) 62px 60px; }
+.crow .od { text-align: right; font-family: var(--n); font-size: 13px; font-weight: 700; line-height: 1.2; white-space: nowrap; }
+.crow .od small { margin-left: 1px; font-size: 10px; font-weight: 700; color: var(--ink3); }
+.crow .od.ev { color: var(--red); }
+.cmp { margin-top: 8px; }
+.cmp .cr { display: grid; grid-template-columns: minmax(0, 1fr) 50px 58px 44px; gap: 6px; align-items: center; min-height: 48px; padding: 4px 10px; border-top: 1px solid var(--ink); }
+.cmp .cr:first-of-type { border-top: 0; }
+.cmp .cr .n { min-width: 0; display: flex; align-items: center; gap: 6px; }
+.cmp .cr .n span:last-child { min-width: 0; display: grid; gap: 1px; }
+.cmp .cr .n b { font-size: 13.5px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.cmp .cr .n small { font-size: 10.5px; color: var(--ink2); white-space: nowrap; line-height: 1.3; }
+.cmp .cr .v { text-align: right; font-family: var(--n); font-weight: 700; font-size: 14px; line-height: 1.15; white-space: nowrap; }
+.cmp .cr .v small { display: block; font-size: 10px; color: var(--ink3); }
+.cmp .cr .e { text-align: right; font-family: var(--n); font-weight: 700; font-size: 15px; }
+.cmp .cr.ev { background: #fff; }
+.cmp .cr.ev .e { color: var(--red); }
+.cmp .cap4 { display: grid; grid-template-columns: minmax(0, 1fr) 50px 58px 44px; gap: 6px; padding: 5px 10px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 11px; }
+.cmp .cap4 span:not(:first-child) { text-align: right; }
+.otime { margin: 6px var(--pad) 0; font-size: 11.5px; color: var(--ink2); }
+.sb3 { display: flex; justify-content: space-between; gap: 8px; padding: 6px 12px 8px; border-top: 1px solid var(--ink); font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.sb3 b { font-family: var(--n); font-size: 16px; }
+.sb3 .ev { color: var(--red); }
+.sb3:empty { display: none; }
+.hb.gk b { font-size: 18px; }
+.hb.gk small { font-size: 10px; }
 .budbox { margin: 12px var(--pad) 0; border: 2px solid var(--ink); background: var(--card); }
 .budbox.sb2 { border-top: 2px solid var(--ink); }
 .sb1 .pts .perS { display: block; margin-top: 3px; font-size: 11px; font-weight: 700; color: var(--ink2); white-space: nowrap; }
@@ -436,6 +467,7 @@ const normName = (n) => String(n || '').replace(/\((G[123]|L|OP|Jpn[123])\)/g, '
 // 読み込みは2段：開いたときは「直近9日（今週と先週末）」だけ、成績の面を開いたら「過去70日」を軽い列で足す
 const RACE_COLS = 'race_id,date,venue,race_no,race_name,start_time,surface,distance,field_size,status';
 const HORSE_FULL = 'horse_no,gate,horse_name,jockey,weight,last_run,prob,rank,note,result';
+const ODDS_LITE = 'odds(win,place,fetched_at,official_at,final)';
 const jstDay = (back) => new Date(Date.now() + 9 * 3600e3 - back * 864e5).toISOString().slice(0, 10);
 function toRace(r, lite) {
   const ps = (r.predictions || []).slice().sort((a, b) => (a.horse_no ?? 99) - (b.horse_no ?? 99) || a.rank - b.rank);
@@ -443,6 +475,7 @@ function toRace(r, lite) {
   return {
     id: r.race_id, date: r.date, venue: r.venue, no: r.race_no, name: normName(r.race_name), start: r.start_time || '',
     surface: r.surface === 'ダ' ? 'ダート' : (r.surface || ''), distance: r.distance, field: r.field_size || n, status: r.status, lite: !!lite,
+    odds: (Array.isArray(r.odds) ? r.odds[0] : r.odds) || null,
     numbered: ps.every((h) => h.horse_no != null),
     horses: ps.map((h, i) => { const known = h.horse_no != null, no = known ? h.horse_no : 101 + i; return { no, known, gate: known ? (h.gate ?? gateOf(no, n)) : 0, name: h.horse_name, jockey: h.jockey || '', weight: h.weight, last: h.last_run || '', prob: h.prob, rank: h.rank, note: h.note, result: h.result }; }),
   };
@@ -463,7 +496,7 @@ async function loadHistory() {
   if (/^#\/(results|race)/.test(location.hash)) rerender();
 }
 async function loadFull(id) {  // 過去のレースを開いたときだけ、騎手・斤量・前走まで取り直す
-  const { data } = await sb.from('races').select(`${RACE_COLS}, predictions(${HORSE_FULL})`).eq('race_id', id).maybeSingle();
+  const { data } = await sb.from('races').select(`${RACE_COLS}, predictions(${HORSE_FULL}), ${ODDS_LITE}`).eq('race_id', id).maybeSingle();
   if (!data) { go('#/results'); return; }
   const r = toRace(data); DATA.races = DATA.races.map((x) => (x.id === id ? r : x)); byId.set(id, r);
   if (location.hash === '#/race/' + id) rerender();
@@ -471,7 +504,7 @@ async function loadFull(id) {  // 過去のレースを開いたときだけ、�
 async function loadData() {
   const [mem, rs, nt, rn] = await Promise.all([
     sb.from('members').select('name,plan,valid_until,is_admin').maybeSingle(),
-    sb.from('races').select(`${RACE_COLS}, predictions(${HORSE_FULL})`).gte('date', jstDay(9)).order('date').order('venue').order('race_no'),
+    sb.from('races').select(`${RACE_COLS}, predictions(${HORSE_FULL}), ${ODDS_LITE}`).gte('date', jstDay(9)).order('date').order('venue').order('race_no'),
     sb.from('notices').select('*').order('published_at', { ascending: false }).limit(10),
     sb.from('runs').select('generated_at').order('generated_at', { ascending: false }).limit(1),
   ]);
@@ -514,45 +547,82 @@ function useSample() { DATA = makeSampleData(); memberOk = true; }
    計算 ─ 本番で差し替えるのはこの CALC だけ（Harville法）
    ============================================================ */
 const CALC = (() => {
-  const cache = new Map();
-  const key = (a) => a.slice().sort((x, y) => x - y).join('-');
+  // 単勝の確率を「割引power」で平らにしてから Harville 法（川崎さんのパッケージと同じ方式）
+  //   2頭の券種（馬連・馬単・枠連）は power 0.90、3頭の券種（ワイド・3連複・3連単）は 0.85
+  const cache = new WeakMap();
+  const ukey = (a) => a.slice().sort((x, y) => x - y).join('-');
+  const okey = (a) => a.join('-');
+  const keyOf = (kind, a) => (ORD[kind] ? okey(a) : ukey(a));
+  const disc = (p, k) => { const x = p.map((v) => Math.pow(Math.max(v, 0), k)), s = x.reduce((u, v) => u + v, 0) || 1; return x.map((v) => v / s); };
   function table(race) {
-    if (cache.has(race.id)) return cache.get(race.id);
-    const p = race.horses.map((h) => h.prob), n = p.length, nos = race.horses.map((h) => h.no);
-    const uma = new Map(), wide = new Map(), fuku = new Map(), tri = [];
+    if (cache.has(race)) return cache.get(race);
+    const hs = race.horses, n = hs.length, nos = hs.map((h) => h.no), gs = hs.map((h) => h.gate);
+    const sum = hs.reduce((u, h) => u + h.prob, 0) || 1, p = hs.map((h) => h.prob / sum), q2 = disc(p, 0.9), q3 = disc(p, 0.85);
+    const uma = new Map(), umatan = new Map(), waku = new Map(), wide = new Map(), fuku = new Map(), tierce = new Map(), tri = [];
+    const add = (m, k, v) => m.set(k, (m.get(k) || 0) + v);
     for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
       if (i === j) continue;
-      const pij = p[i] * p[j] / (1 - p[i]);
-      const ku = key([nos[i], nos[j]]); uma.set(ku, (uma.get(ku) || 0) + pij);
+      const pij = q2[i] * q2[j] / Math.max(1e-12, 1 - q2[i]);
+      umatan.set(okey([nos[i], nos[j]]), pij); add(uma, ukey([nos[i], nos[j]]), pij); add(waku, ukey([gs[i], gs[j]]), pij);
+      const rij = q3[i] * q3[j] / Math.max(1e-12, 1 - q3[i]);
       for (let k = 0; k < n; k++) {
         if (k === i || k === j) continue;
-        const pr = pij * p[k] / Math.max(1e-9, 1 - p[i] - p[j]);
+        const pr = rij * q3[k] / Math.max(1e-12, 1 - q3[i] - q3[j]);
         tri.push([nos[i], nos[j], nos[k], pr]);
-        const kf = key([nos[i], nos[j], nos[k]]); fuku.set(kf, (fuku.get(kf) || 0) + pr);
-        [[nos[i], nos[j]], [nos[i], nos[k]], [nos[j], nos[k]]].forEach((pr2) => { const kw = key(pr2); wide.set(kw, (wide.get(kw) || 0) + pr); });
+        tierce.set(okey([nos[i], nos[j], nos[k]]), pr); add(fuku, ukey([nos[i], nos[j], nos[k]]), pr);
+        add(wide, ukey([nos[i], nos[j]]), pr); add(wide, ukey([nos[i], nos[k]]), pr); add(wide, ukey([nos[j], nos[k]]), pr);
       }
     }
-    const t = { p: new Map(race.horses.map((h) => [String(h.no), h.prob])), uma, wide, fuku, tri };
-    cache.set(race.id, t); return t;
+    const t = { tan: new Map(hs.map((h) => [String(h.no), h.prob])), uma, umatan, waku, wide, fuku, tierce, tri };
+    cache.set(race, t); return t;
   }
-  const mapOf = (t, kind) => ({ tan: t.p, uma: t.uma, wide: t.wide, fuku: t.fuku })[kind];
   return {
-    key,
+    keyOf,
     /** 組み合わせを確率の高い順に [{nums, prob}] */
-    combos(race, kind) { return [...mapOf(table(race), kind)].map(([k, v]) => ({ nums: k.split('-').map(Number), prob: v })).sort((a, b) => b.prob - a.prob); },
+    combos(race, kind) { return [...table(race)[kind]].map(([k, v]) => ({ nums: k.split('-').map(Number), prob: v })).sort((a, b) => b.prob - a.prob); },
     /** 1点の確率 */
-    one(race, kind, nums) { return mapOf(table(race), kind).get(key(nums)) || 0; },
+    one(race, kind, nums) { return table(race)[kind].get(kind === 'tan' ? String(nums[0]) : keyOf(kind, nums)) || 0; },
     /** 買い目（複数点）のどれかが当たる確率 */
     hit(race, kind, tickets) {
       if (!tickets.length) return 0;
-      const t = table(race), set = new Set(tickets.map(key));
-      if (kind !== 'wide') return [...set].reduce((a, k) => a + (mapOf(t, kind).get(k) || 0), 0);
+      const t = table(race), set = new Set(tickets.map((x) => (kind === 'tan' ? String(x[0]) : keyOf(kind, x))));
+      if (kind !== 'wide') return [...set].reduce((a, k) => a + (t[kind].get(k) || 0), 0);
       let s = 0;
-      for (const [a, b, c, pr] of t.tri) if (set.has(key([a, b])) || set.has(key([a, c])) || set.has(key([b, c]))) s += pr;
+      for (const [a, b, c, pr] of t.tri) if (set.has(ukey([a, b])) || set.has(ukey([a, c])) || set.has(ukey([b, c]))) s += pr;
       return s;
     },
   };
 })();
+
+/* ─ オッズ ─ */
+// 単勝は一覧と一緒に、そのほかの券種はレースを開いたときに、その券種だけ取りに行く（3分たったら取り直す）
+const OCOL = { tan: 'win', waku: 'waku', uma: 'uma', wide: 'wide', umatan: 'umatan', fuku: 'trio', tierce: 'tierce' };
+const ODDS = new Map();
+function oddsTbl(r, kind) { if (kind === 'tan') return r.odds && r.odds.win; const e = ODDS.get(r.id); return e && e[OCOL[kind]]; }
+function oddsOne(r, kind, nums) {
+  const t = oddsTbl(r, kind); if (!t) return null;
+  const v = t[kind === 'tan' ? String(nums[0]) : CALC.keyOf(kind, nums)];
+  if (v == null) return null;
+  return kind === 'tan' ? v[0] : v;  // ワイドは [下, 上]
+}
+function needOdds(r, kind) {
+  if (SAMPLE || !r || kind === 'tan' || !r.odds) return;
+  const col = OCOL[kind], e = ODDS.get(r.id) || {};
+  if ((e[col] !== undefined && Date.now() - e['@' + col] < 180e3) || e['~' + col]) return;
+  e['~' + col] = 1; ODDS.set(r.id, e);
+  sb.from('odds').select(col).eq('race_id', r.id).maybeSingle().then(({ data }) => {
+    e[col] = data ? data[col] : null; e['@' + col] = Date.now(); delete e['~' + col];
+    if ($('#view').dataset.race === r.id && raceState.kind === kind && $('#combos')) renderCombos(r);
+    if (/^#\/build/.test(location.hash) && BS.raceId === r.id && BS.kind === kind) updateBuild();
+  }, () => { delete e['~' + col]; });
+}
+const o1 = (x) => Number(x).toFixed(1);
+const oTxt = (v) => (v == null ? '' : Array.isArray(v) ? `${o1(v[0])}-${o1(v[1])}` : o1(v));
+function oddsWhen(r) {
+  const o = r.odds; if (!o) return '';
+  const d = new Date(o.official_at || o.fetched_at), j = new Date(d.getTime() + 9 * 3600e3);
+  return `${j.getUTCMonth() + 1}/${j.getUTCDate()} ${j.getUTCHours()}:${String(j.getUTCMinutes()).padStart(2, '0')}${o.final ? '（最終オッズ）' : '時点'}`;
+}
 
 /* ============================================================
    表示
@@ -561,7 +631,10 @@ const $ = (s, r = document) => r.querySelector(s);
 const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const GATE_BG = ['', '#ecebe6', '#151517', '#c4433f', '#3c63b4', '#d8b83c', '#2f8752', '#d4772e', '#e39cb9'];
 const GATE_FG = ['', '#141414', '#f2ecdf', '#fff', '#fff', '#141414', '#fff', '#fff', '#141414'];
-const KIND = { tan: '単勝', uma: '馬連', wide: 'ワイド', fuku: '3連複' };
+const KIND = { tan: '単勝', waku: '枠連', uma: '馬連', wide: 'ワイド', umatan: '馬単', fuku: '3連複', tierce: '3連単' };
+const ORD = { umatan: 1, tierce: 1 };  // 着順どおりの券種
+const NEED = { tan: 1, waku: 2, uma: 2, wide: 2, umatan: 2, fuku: 3, tierce: 3 };
+const kindsFor = (r) => Object.keys(KIND).filter((k) => k !== 'waku' || r.horses.length >= 9);  // 枠連は9頭以上のレースだけ発売
 const MARK = ['', '◎', '○', '▲', '△'];
 const WD = ['日', '月', '火', '水', '木', '金', '土'];
 const pct = (p, d = 1) => (p * 100).toFixed(d);
@@ -752,17 +825,33 @@ function vRace(r) {
       ${r.horses.map((h) => `<div class="row${h.prob >= .3 ? ' hi' : ''}${h.prob < .05 ? ' lo' : ''}${h.result === 1 ? ' win' : ''}" data-no="${h.no}">
         <span class="gt" style="background:${GATE_BG[h.gate]}"></span><span class="no">${dno(h)}</span><span class="mk">${MARK[h.rank] || ''}</span>
         <span class="nm"><b>${esc(h.name)}${done ? `<span class="fin">${h.result === 1 ? `<span class="ring">1着${ring()}</span>` : finTxt(h)}</span>` : ''}</b><small>${esc(h.jockey)}・${h.weight}kg・${h.note ? `<em>${esc(h.last)}</em>` : esc(h.last)}</small></span>
-        <span class="pc"><span class="rk">${h.rank}位</span><span class="pct"><span class="ring">${h.prob >= .3 ? ring() : ''}<em style="font-style:normal" data-v="${pct(h.prob)}">${pct(h.prob)}</em>%</span></span><span class="bar"><i data-w="${h.prob / top(r).prob * 100}"></i></span></span>
+        <span class="pc"><span class="rk">${h.rank}位${oddsOne(r, 'tan', [h.no]) ? `・${o1(oddsOne(r, 'tan', [h.no]))}倍` : ''}</span><span class="pct"><span class="ring">${h.prob >= .3 ? ring() : ''}<em style="font-style:normal" data-v="${pct(h.prob)}">${pct(h.prob)}</em>%</span></span><span class="bar"><i data-w="${h.prob / top(r).prob * 100}"></i></span></span>
       </div>`).join('')}
     </div>
   </div>
   ${over ? '<p class="dnote">※海外から来た馬など、日本での出走歴がない馬は、確率が低く出ることがあります。</p>' : ''}
+  ${vCompare(r)}
   ${r.numbered === false ? '<section class="sec"><div class="wait-box"><span class="stamp">枠順待ち</span><p class="h2">馬番は、枠順が<br>確定してから載せます。</p><p class="note">組み合わせの確率と買い目は、枠順の確定後に使えます。各馬の勝つ確率は、もう計算済みです。</p></div></section>' : `<section class="sec">
     <div class="label"><b>組み合わせ</b><span>確率の高い順</span></div>
-    <div class="seg sm" role="group" aria-label="券種" id="kindSeg" style="margin-top:12px">${['uma', 'wide', 'fuku'].map((k) => `<button type="button" data-kind="${k}" aria-pressed="${raceState.kind === k}">${KIND[k]}</button>`).join('')}</div>
+    <div class="seg sm k6" role="group" aria-label="券種" id="kindSeg" style="margin-top:12px">${kindsFor(r).filter((k) => k !== 'tan').map((k) => `<button type="button" data-kind="${k}" aria-pressed="${raceState.kind === k}">${KIND[k]}</button>`).join('')}</div>
     <div class="box" style="margin-top:8px" id="combos"></div>
     ${done ? '' : `<div class="btns"><button class="btn" type="button" data-go="#/build/${r.id}">このレースで買い目をつくる<span>▶</span></button></div>`}
   </section>`}${rnav(r)}`;
+}
+function vCompare(r) {
+  const w = r.odds && r.odds.win; if (!w || r.numbered === false) return '';
+  const hs = r.horses.filter((h) => w[String(h.no)]), inv = hs.reduce((a, h) => a + 1 / w[String(h.no)][0], 0);
+  if (!hs.length) return '';
+  const rows = hs.slice().sort((a, b) => b.prob - a.prob).map((h) => {
+    const [o, pop] = w[String(h.no)], ev = h.prob * o, mk = (1 / o) / inv;
+    return `<div class="cr${ev >= 1 ? ' ev' : ''}"><span class="n">${hn(h)}<span><b>${esc(h.name)}</b><small>オッズの確率 ${pct(mk)}%</small></span></span><span class="v">${pct(h.prob)}%</span><span class="v">${o1(o)}倍${pop ? `<small>${pop}番人気</small>` : ''}</span><span class="e">${ev.toFixed(2)}</span></div>`;
+  }).join('');
+  return `<section class="sec">
+    <div class="label"><b>オッズと見比べる</b><span>単勝</span></div>
+    <p class="otime">${oddsWhen(r)}・netkeibaより</p>
+    <div class="box cmp"><div class="cap4"><span>馬名</span><span>T-AI</span><span>単勝</span><span>期待値</span></div>${rows}</div>
+    <p class="dnote">期待値＝T-AIの勝つ確率×単勝オッズ。1を超える馬は、T-AIの評価に比べて人気がない馬です（白い行）。「オッズの確率」は、単勝オッズから逆算した世の中の見立てです。</p>
+  </section>`;
 }
 function placeRows(r, animate = true) {
   const order = r.horses.slice().sort(raceState.sort === 'prob' ? (a, b) => b.prob - a.prob : (a, b) => a.no - b.no);
@@ -772,14 +861,30 @@ function placeRows(r, animate = true) {
   if (!animate) requestAnimationFrame(() => rows.querySelectorAll('.row').forEach((e) => { e.style.transition = ''; }));
   document.querySelectorAll('#sortSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.sort === raceState.sort)));
 }
+function hitOf(r, kind, nums) {
+  const fin = (k) => (r.horses.find((h) => h.result === k) || {}).no, top3 = [fin(1), fin(2), fin(3)];
+  if (kind === 'waku') { const g = (n) => (r.horses.find((h) => h.no === n) || {}).gate; return CALC.keyOf('waku', [g(top3[0]), g(top3[1])]) === CALC.keyOf('waku', nums); }
+  if (kind === 'umatan') return nums[0] === top3[0] && nums[1] === top3[1];
+  if (kind === 'tierce') return nums.every((n, i) => n === top3[i]);
+  if (kind === 'uma') return nums.every((n) => n === top3[0] || n === top3[1]);
+  return nums.every((n) => top3.includes(n));  // ワイド・3連複
+}
+const chip = (r, kind, n) => (kind === 'waku' ? `<span class="hn" style="background:${GATE_BG[n]};color:${GATE_FG[n]}">${n}</span>` : hnNo(r, n));
+function oddsCell(r, kind, nums, p) {
+  const v = oddsOne(r, kind, nums); if (v == null) return '<span class="od"></span>';
+  const lo = Array.isArray(v) ? v[0] : v;
+  return `<span class="od${p * lo >= 1 ? ' ev' : ''}">${oTxt(v)}<small>倍</small></span>`;
+}
 function renderCombos(r) {
   if (!$('#combos')) return;
+  if (!kindsFor(r).includes(raceState.kind) || raceState.kind === 'tan') raceState.kind = 'uma';
+  needOdds(r, raceState.kind);
   const list = CALC.combos(r, raceState.kind), mx = list[0].prob, shown = list.slice(0, raceState.limit);
-  const done = r.status === 'done', win = done ? r.horses.filter((h) => h.result <= (raceState.kind === 'uma' ? 2 : 3)).map((h) => h.no) : [];
-  const hitC = (nums) => done && (raceState.kind === 'wide' ? nums.every((n) => win.includes(n)) : nums.every((n) => win.includes(n)) && nums.length === (raceState.kind === 'uma' ? 2 : 3));
-  $('#combos').innerHTML = `<div class="cap"><span>${KIND[raceState.kind]}　全${list.length}通り</span><span>確率</span></div>` +
-    shown.map((c, i) => `<div class="crow"${hitC(c.nums) ? ' style="background:#fff"' : ''}><span class="rk">${i + 1}</span><span class="tk">${c.nums.map((n) => hnNo(r, n)).join('<i>-</i>')}${hitC(c.nums) ? '<span class="stamp" style="margin-left:6px;font-size:10.5px">的中</span>' : ''}</span><span class="pr"><span class="pct">${pct(c.prob)}%</span><span class="bar red"><i style="width:${c.prob / mx * 100}%"></i></span></span></div>`).join('') +
-    (list.length > raceState.limit ? `<button type="button" class="more" id="more">もっと見る（あと${list.length - raceState.limit}通り）</button>` : '');
+  const done = r.status === 'done' && r.horses.some((h) => h.result === 1), wo = !!oddsTbl(r, raceState.kind);
+  $('#combos').innerHTML = `<div class="cap"><span>${KIND[raceState.kind]}　全${list.length}通り</span><span>確率${wo ? '・オッズ' : ''}</span></div>` +
+    shown.map((c, i) => { const h = done && hitOf(r, raceState.kind, c.nums); return `<div class="crow${wo ? ' wo' : ''}"${h ? ' style="background:#fff"' : ''}><span class="rk">${i + 1}</span><span class="tk">${c.nums.map((n) => chip(r, raceState.kind, n)).join(`<i>${ORD[raceState.kind] ? '→' : '-'}</i>`)}${h ? '<span class="stamp" style="margin-left:6px;font-size:10.5px">的中</span>' : ''}</span>${wo ? oddsCell(r, raceState.kind, c.nums, c.prob) : ''}<span class="pr"><span class="pct">${pct(c.prob, c.prob < .001 ? 2 : 1)}%</span><span class="bar red"><i style="width:${c.prob / mx * 100}%"></i></span></span></div>`; }).join('') +
+    (list.length > raceState.limit ? `<button type="button" class="more" id="more">もっと見る（あと${list.length - raceState.limit}通り）</button>` : '') +
+    (wo ? `<p class="note" style="padding:6px 10px;border-top:1px solid var(--ink)">オッズ ${oddsWhen(r)}。赤いオッズは、確率×オッズが1を超える組み合わせです。</p>` : '');
 }
 function mountRace(r) {
   if (r.status === 'waiting') return;
@@ -804,16 +909,20 @@ function mountRace(r) {
 /* ─ 買い目をつくる ─ */
 const BS = { raceId: null, kind: 'uma', method: 'box', axis: null, sel: new Set(), budget: 3000 };
 function comb(arr, k) { const out = []; const rec = (s, acc) => { if (acc.length === k) { out.push(acc.slice()); return; } for (let i = s; i < arr.length; i++) { acc.push(arr[i]); rec(i + 1, acc); acc.pop(); } }; rec(0, []); return out; }
+function perm(arr, k) { const out = []; const rec = (acc, rest) => { if (acc.length === k) { out.push(acc.slice()); return; } rest.forEach((x, i) => { acc.push(x); rec(acc, rest.filter((_, j) => j !== i)); acc.pop(); }); }; rec([], arr); return out; }
 function tickets() {
-  const k = BS.kind, sel = [...BS.sel].sort((a, b) => a - b);
+  const k = BS.kind, sel = [...BS.sel].sort((a, b) => a - b), need = NEED[k];
   if (k === 'tan') return sel.map((n) => [n]);
-  const need = k === 'fuku' ? 3 : 2;
-  if (BS.method === 'box') return comb(sel, need);
+  if (BS.method === 'box') return ORD[k] ? perm(sel, need) : comb(sel, need);
   if (BS.axis == null) return [];
-  return comb(sel.filter((n) => n !== BS.axis), need - 1).map((c) => [BS.axis, ...c].sort((a, b) => a - b));
+  const rest = sel.filter((n) => n !== BS.axis);
+  if (ORD[k]) return perm(rest, need - 1).map((c) => [BS.axis, ...c]);  // 軸を1着に固定
+  return comb(rest, need - 1).map((c) => [BS.axis, ...c].sort((a, b) => a - b));
 }
+const gatesOf = (r) => [...new Set(r.horses.map((h) => h.gate))].filter(Boolean).sort((a, b) => a - b);
 function vBuild() {
   const r = byId.get(BS.raceId), ready = buildable();
+  if (!kindsFor(r).includes(BS.kind)) { BS.kind = 'uma'; BS.axis = null; BS.sel.clear(); }
   const nagashi = BS.method === 'nagashi' && BS.kind !== 'tan';
   return `<section class="sec">
     <div class="label"><b>買い目をつくる</b><span>選んだ瞬間に計算</span></div>
@@ -821,17 +930,18 @@ function vBuild() {
       <button type="button" class="pickbtn" id="raceOpen" aria-haspopup="dialog">${rb(r)}<span class="pt"><small>${fdShort(r.date)} ${r.venue} ${r.start}発走</small><b>${esc(r.name)}</b></span><span class="chg">変える</span></button>
     </div>
     <div class="ctl" style="margin-top:10px">
-      <div class="seg" role="group" aria-label="券種">${Object.keys(KIND).map((k) => `<button type="button" data-bk="${k}" aria-pressed="${BS.kind === k}">${KIND[k]}</button>`).join('')}</div>
-      <div class="seg sm" role="group" aria-label="買い方"><button type="button" data-bm="box" aria-pressed="${BS.kind === 'tan' || BS.method === 'box'}">${BS.kind === 'tan' ? '選んだ馬すべて' : 'ボックス'}</button><button type="button" data-bm="nagashi" aria-pressed="${nagashi}"${BS.kind === 'tan' ? ' disabled' : ''}>流し（軸1頭）</button></div>
+      <div class="seg k4" role="group" aria-label="券種">${Object.keys(KIND).map((k) => `<button type="button" data-bk="${k}" aria-pressed="${BS.kind === k}"${kindsFor(r).includes(k) ? '' : ' disabled'}>${KIND[k]}</button>`).join('')}</div>
+      <div class="seg sm" role="group" aria-label="買い方"><button type="button" data-bm="box" aria-pressed="${BS.kind === 'tan' || BS.method === 'box'}">${BS.kind === 'tan' ? '選んだ馬すべて' : 'ボックス'}</button><button type="button" data-bm="nagashi" aria-pressed="${nagashi}"${BS.kind === 'tan' ? ' disabled' : ''}>${ORD[BS.kind] ? '流し（1着固定）' : BS.kind === 'waku' ? '流し（軸1枠）' : '流し（軸1頭）'}</button></div>
     </div>
   </section>
   <p class="hint" id="hint"></p>
-  <div class="grid" id="grid">${r.horses.map((h) => `<button type="button" class="hb" data-h="${h.no}" aria-pressed="false" aria-label="${h.no}番 ${esc(h.name)} ${pct(h.prob)}%"><span class="gs" style="background:${GATE_BG[h.gate]}"></span><b>${h.no}</b><small>${pct(h.prob)}%</small><span class="tag"></span></button>`).join('')}</div>
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px var(--pad) 0"><span class="note">数字の下は単勝の確率です</span><button type="button" class="clear" id="clear">選び直す</button></div>
+  <div class="grid" id="grid">${BS.kind === 'waku' ? gatesOf(r).map((g) => { const hs = r.horses.filter((h) => h.gate === g), pg = hs.reduce((a, h) => a + h.prob, 0); return `<button type="button" class="hb gk" data-h="${g}" aria-pressed="false" aria-label="${g}枠 ${hs.map((h) => h.no).join('・')}番 ${pct(pg)}%"><span class="gs" style="background:${GATE_BG[g]}"></span><b>${g}枠</b><small>${hs.map((h) => h.no).join('・')}番</small><span class="tag"></span></button>`; }).join('') : r.horses.map((h) => `<button type="button" class="hb" data-h="${h.no}" aria-pressed="false" aria-label="${h.no}番 ${esc(h.name)} ${pct(h.prob)}%"><span class="gs" style="background:${GATE_BG[h.gate]}"></span><b>${h.no}</b><small>${pct(h.prob)}%</small><span class="tag"></span></button>`).join('')}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px var(--pad) 0"><span class="note">${BS.kind === 'waku' ? '枠の下は、その枠の馬番です' : '数字の下は単勝の確率です'}</span><button type="button" class="clear" id="clear">選び直す</button></div>
   <div class="budbox sb2"><label for="bud">予算</label><input id="bud" type="number" inputmode="numeric" min="100" step="100" value="${BS.budget}"><span>円</span><span class="per" id="per"></span></div>
   <details class="tix" id="tix"><summary><span id="tixT">買い目の一覧</span></summary><div id="tixB"></div></details>
   <div class="sumbar" data-pen id="sum">
     <div class="sb1"><span><small>この買い目が当たる確率</small><span class="big"><span id="hitV">0.0</span><small>%</small>${under()}</span></span><span class="pts"><small>点数</small><b id="ptsV">0</b> 点<span class="perS" id="perS"></span></span></div>
+    <div class="sb3" id="oddsL"></div>
   </div>`;
 }
 let shownHit = 0;
@@ -873,10 +983,10 @@ function updateBuild() {
     b.setAttribute('aria-pressed', String(ax || pt || on));
     b.querySelector('.tag').textContent = ax ? '軸' : pt ? '相手' : '';
   });
-  const need = BS.kind === 'fuku' ? 3 : BS.kind === 'tan' ? 1 : 2;
+  const need = NEED[BS.kind], wk = BS.kind === 'waku', u = wk ? '枠' : '頭';
   $('#hint').textContent = BS.kind === 'tan' ? '買いたい馬をタップ。何頭でも選べます。'
-    : !nag ? `馬番をタップ。${need}頭以上で、ボックスの買い目ができます。`
-    : BS.axis == null ? 'まず「軸」の馬を1頭タップしてください。' : `次に「相手」をタップ。${need - 1}頭以上で買い目ができます。`;
+    : !nag ? `${wk ? '枠' : '馬番'}をタップ。${need}${u}以上で、ボックスの買い目ができます。${ORD[BS.kind] ? '着順の並びはすべて買います。' : ''}`
+    : BS.axis == null ? (ORD[BS.kind] ? 'まず1着に固定する「軸」の馬をタップしてください。' : `まず「軸」の${wk ? '枠' : '馬'}を1つタップしてください。`) : `次に「相手」をタップ。${need - 1}${u}以上で買い目ができます。`;
   const from = shownHit, to = hit * 100, el = $('#hitV'), t0 = performance.now();
   shownHit = to;
   const f = (now) => { const k = RM ? 1 : Math.min(1, (now - t0) / 350); el.textContent = (from + (to - from) * (1 - Math.pow(1 - k, 3))).toFixed(1); if (k < 1) requestAnimationFrame(f); };
@@ -889,8 +999,18 @@ function updateBuild() {
   perEl.innerHTML = !t.length ? '馬を選ぶと計算します' : per < 100 ? '予算が足りません<br>（1点100円から）' : `1点 <b>${yen(per)}</b>円<br>計 ${yen(per * t.length)}円`;
   $('#sum').classList.toggle('drawn', t.length > 0);
   $('#tixT').textContent = `買い目の一覧（${t.length}点）`;
-  const list = t.map((nums) => ({ nums, p: CALC.one(r, BS.kind, nums) })).sort((a, b) => b.p - a.p);
-  $('#tixB').innerHTML = list.length ? list.slice(0, 60).map((c, i) => `<div class="crow"><span class="rk">${i + 1}</span><span class="tk">${c.nums.map((n) => hnNo(r, n)).join('<i>-</i>')}</span><span class="pr"><span class="pct" style="color:var(--ink)">${pct(c.p)}%</span></span></div>`).join('') + (list.length > 60 ? `<p class="note" style="padding:8px 12px">ほか${list.length - 60}点</p>` : '') : '<p class="note" style="padding:4px 12px 12px">まだ買い目がありません。</p>';
+  needOdds(r, BS.kind);
+  const list = t.map((nums) => ({ nums, p: CALC.one(r, BS.kind, nums), o: oddsOne(r, BS.kind, nums) })).sort((a, b) => b.p - a.p), wo = !!oddsTbl(r, BS.kind);
+  // 合成オッズ＝1÷（各点の 1/オッズ の合計）。期待値＝当たる確率×合成オッズ
+  const os = list.map((c) => c.o), all = list.length && os.every((v) => v != null);
+  const syn = (i) => 1 / os.reduce((a, v) => a + 1 / (Array.isArray(v) ? v[i] : v), 0);
+  const oL = $('#oddsL');
+  if (!list.length) oL.innerHTML = '';
+  else if (!wo) oL.innerHTML = r.odds ? '<span>オッズを読み込んでいます…</span>' : '<span>オッズはまだ発売前です</span>';
+  else if (!all) oL.innerHTML = '<span>オッズの無い買い目があります（取消など）</span>';
+  else { const lo = syn(0), hi = BS.kind === 'wide' ? syn(1) : lo, f = (v) => (v >= 100 ? v.toFixed(0) : v.toFixed(1)), e = (v) => (hit * v).toFixed(2);
+    oL.innerHTML = `<span>合成オッズ <b>${f(lo)}${hi !== lo ? `〜${f(hi)}` : ''}</b>倍</span><span class="${hit * lo >= 1 ? 'ev' : ''}">期待値 <b>${e(lo)}${hi !== lo ? `〜${e(hi)}` : ''}</b></span>`; }
+  $('#tixB').innerHTML = list.length ? list.slice(0, 60).map((c, i) => `<div class="crow${wo ? ' wo' : ''}"><span class="rk">${i + 1}</span><span class="tk">${c.nums.map((n) => chip(r, BS.kind, n)).join(`<i>${ORD[BS.kind] ? '→' : '-'}</i>`)}</span>${wo ? oddsCell(r, BS.kind, c.nums, c.p) : ''}<span class="pr"><span class="pct" style="color:var(--ink)">${pct(c.p, c.p < .001 ? 2 : 1)}%</span></span></div>`).join('') + (list.length > 60 ? `<p class="note" style="padding:8px 12px">ほか${list.length - 60}点</p>` : '') : '<p class="note" style="padding:4px 12px 12px">まだ買い目がありません。</p>';
 }
 
 /* ─ 成績 ─ */
@@ -956,6 +1076,7 @@ function vMy() {
       <details><summary>◎○▲△ の印</summary><p>勝つ確率の高い順に、1番手から4番手の馬に付けています。</p></details>
       <details><summary>組み合わせの確率</summary><p>出馬表の面の下に、馬連・ワイド・3連複が当たる確率を、高い順に載せています。</p></details>
       <details><summary>買い目をつくる</summary><p>券種と買い方を選び、馬番をタップすると、その買い目のどれかが当たる確率と点数が、すぐに出ます。予算を入れると、1点あたりの金額も出ます。</p></details>
+      <details><summary>オッズと期待値</summary><p>netkeibaのJRAオッズを、発売中は数分おきに取り込みます（発走30分前からは5分ごと）。発走後は、最終オッズに切り替わります。期待値は「T-AIの確率×オッズ」で、1を超えると、T-AIの評価に比べてオッズが高い（人気がない）ことを示します。買い目の「合成オッズ」は、選んだ買い目全体を1つの馬券と見たときのオッズです。</p></details>
       <details><summary>いつ更新されるか</summary><p>JRAの枠順が確定する前日の午前10時30分ごろのあと、自動で計算して載せます。当日の朝に出走取消・競走除外があれば、計算し直します。レースの結果は、発走のおよそ15〜20分後に、出馬表と「成績」の面に載ります。</p></details>
     </div>
   </section>
@@ -1045,7 +1166,7 @@ document.addEventListener('click', (e) => {
   if (ds.sort) { raceState.sort = ds.sort; placeRows(byId.get($('#view').dataset.race)); return; }
   if (ds.kind) { raceState.kind = ds.kind; raceState.limit = 20; document.querySelectorAll('#kindSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.kind === ds.kind))); renderCombos(byId.get($('#view').dataset.race)); return; }
   if (t.id === 'more') { raceState.limit += 20; renderCombos(byId.get($('#view').dataset.race)); return; }
-  if (ds.bk) { BS.kind = ds.bk; if (ds.bk === 'tan') { BS.method = 'box'; } BS.axis = null; if (BS.kind !== 'tan' && BS.method === 'nagashi') BS.sel.clear(); rerender(); return; }
+  if (ds.bk) { if (t.disabled) return; if ((ds.bk === 'waku') !== (BS.kind === 'waku')) { BS.sel.clear(); } BS.kind = ds.bk; if (ds.bk === 'tan') { BS.method = 'box'; } BS.axis = null; if (BS.kind !== 'tan' && BS.method === 'nagashi') BS.sel.clear(); rerender(); return; }
   if (ds.bm) { if (t.disabled) return; BS.method = ds.bm; if (ds.bm === 'nagashi') { const s = [...BS.sel]; BS.axis = null; BS.sel = new Set(s); } rerender(); return; }
   if (ds.h) {
     const n = +ds.h, nag = BS.method === 'nagashi' && BS.kind !== 'tan';
