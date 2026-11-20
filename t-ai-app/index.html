@@ -695,7 +695,7 @@ function oddsOne(r, kind, nums) {
 function needOdds(r, kind) {
   if (SAMPLE || !r || kind === 'tan' || !r.odds) return;
   const col = OCOL[kind], e = ODDS.get(r.id) || {};
-  if ((e[col] !== undefined && Date.now() - e['@' + col] < 180e3) || e['~' + col]) return;
+  if ((e[col] !== undefined && Date.now() - e['@' + col] < (oddsSoon(r) ? 50e3 : 180e3)) || e['~' + col]) return;
   e['~' + col] = 1; ODDS.set(r.id, e);
   sb.from('odds').select(col).eq('race_id', r.id).maybeSingle().then(({ data }) => {
     e[col] = data ? data[col] : null; e['@' + col] = Date.now(); delete e['~' + col];
@@ -705,6 +705,28 @@ function needOdds(r, kind) {
 }
 const o1 = (x) => Number(x).toFixed(1);
 const oTxt = (v) => (v == null ? '' : Array.isArray(v) ? `${o1(v[0])}-${o1(v[1])}` : o1(v));
+// 発走10分前から発走2分後までは、オッズを1分ごとに取り込んでいる（VPS）。画面もそれに合わせて1分ごとに読み直す
+function oddsSoon(r) {
+  if (!r || !r.start || r.status === 'done' || (r.odds && r.odds.final)) return false;
+  const t = (new Date(`${r.date}T${r.start.slice(0, 5)}:00+09:00`) - Date.now()) / 60e3;
+  return t <= 10 && t >= -4;
+}
+async function oddsTick() {
+  if (SAMPLE || document.hidden || (!session && !GUEST)) return;
+  const onRace = /^#\/race\//.test(location.hash), onBuild = /^#\/build/.test(location.hash);
+  const r = onRace ? byId.get($('#view').dataset.race) : onBuild ? byId.get(BS.raceId) : null;
+  if (!r || r.locked || !oddsSoon(r)) return;
+  const { data, error } = await sb.from('odds').select('win,place,fetched_at,official_at,final').eq('race_id', r.id).maybeSingle();
+  if (error || !data || (r.odds && r.odds.fetched_at === data.fetched_at)) return;
+  r.odds = data;
+  const e = ODDS.get(r.id); if (e) Object.keys(e).filter((k) => k[0] === '@').forEach((k) => { e[k] = 0; });  // 組み合わせのオッズも読み直させる
+  if (onRace && $('#view').dataset.race === r.id) {
+    document.querySelectorAll('#rows .row[data-no]').forEach((row) => { const h = r.horses.find((x) => x.no === +row.dataset.no), rk = row.querySelector('.pc .rk'), o = h && oddsOne(r, 'tan', [h.no]); if (rk && h) rk.textContent = `${h.rank}位${o ? `・${o1(o)}倍` : ''}`; });
+    const ot = $('.otime'); if (ot) ot.textContent = `オッズ ${oddsWhen(r)}・netkeibaより`;
+    renderCompare(r); needOdds(r, raceState.kind);
+  } else if (onBuild) { needOdds(r, BS.kind); updateBuild(); }
+}
+setInterval(oddsTick, 60e3);
 function oddsWhen(r) {
   const o = r.odds; if (!o) return '';
   const d = new Date(o.official_at || o.fetched_at), j = new Date(d.getTime() + 9 * 3600e3);
@@ -1455,7 +1477,7 @@ function vMy() {
       <details><summary>自動買い目生成（会員限定）</summary><p>「買い目をつくる」で、券種を選んでからモードを押すと、T-AIの確率とオッズから買い目を自動で作ります。的中モード：確率の高い順に5・10・20点。的中率指定：指定した確率に届く最少の点数。期待値モード：期待値（確率×オッズ）が1を超える組み合わせ。期待値指定：指定した期待値以上の組み合わせ。</p></details>
       <details><summary>馬場が変わったら</summary><p>レースのページの「馬場が変わったら」では、馬場が稍重・重・不良になったときの各馬の勝率を、良のときと見比べられます。馬場の状態を4つに分けて入れたT-AIの別のモデルによる参考値で、道悪の得意・不得意、同じ馬場での過去の成績、騎手の道悪の成績、枠と馬場の関係などで動きます。データが届いたレースだけ出ます。</p></details>
       <details><summary>指数カード</summary><p>出馬表で馬の行をタップすると、その馬の指数の内訳（スピード指数・ペースと末脚・脚質・成績・騎手と厩舎・今回の条件）が開きます。各項目には、このレースの出走馬の中での順位を付けています。</p></details>
-      <details><summary>オッズと期待値</summary><p>netkeibaのJRAオッズを、発売中は数分おきに取り込みます（発走30分前からは5分ごと）。発走後は、最終オッズに切り替わります。期待値は「T-AIの確率×オッズ」で、1を超えると、T-AIの評価に比べてオッズが高い（人気がない）ことを示します。買い目の「合成オッズ」は、選んだ買い目全体を1つの馬券と見たときのオッズです。「T-AIオッズ」は、T-AIの確率をオッズに直したもの（1÷確率）で、実際のオッズと同じ「倍」で見比べられます。</p></details>
+      <details><summary>オッズと期待値</summary><p>netkeibaのJRAオッズを、発売中は数分おきに取り込みます（発走30分前からは5分ごと、10分前からは1分ごと。開いている画面も1分ごとに新しくなります）。発走後は、最終オッズに切り替わります。期待値は「T-AIの確率×オッズ」で、1を超えると、T-AIの評価に比べてオッズが高い（人気がない）ことを示します。買い目の「合成オッズ」は、選んだ買い目全体を1つの馬券と見たときのオッズです。「T-AIオッズ」は、T-AIの確率をオッズに直したもの（1÷確率）で、実際のオッズと同じ「倍」で見比べられます。</p></details>
       <details><summary>いつ更新されるか</summary><p>JRAの枠順が確定する前日の午前10時30分ごろのあと、自動で計算して載せます。当日の朝に出走取消・競走除外があれば、計算し直します。レースの結果は、発走のおよそ15〜20分後に、出馬表と「成績」の面に載ります。</p></details>
     </div>
   </section>
