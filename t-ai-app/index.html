@@ -254,10 +254,24 @@ body.lock { overflow: hidden; }
 .hb.ax small { color: #ffd9dc; }
 .hb.pt { box-shadow: inset 0 0 0 3px var(--red); }
 .hb.pt .tag { color: var(--red); }
+.budbox { margin: 12px var(--pad) 0; border: 2px solid var(--ink); background: var(--card); }
+.budbox.sb2 { border-top: 2px solid var(--ink); }
+.sb1 .pts .perS { display: block; margin-top: 3px; font-size: 11px; font-weight: 700; color: var(--ink2); white-space: nowrap; }
+.rnav { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 6px; margin: 12px var(--pad) 0; }
+.rnav button { min-height: 44px; border: 2px solid var(--ink); background: var(--card); font-weight: 900; font-size: 13.5px; white-space: nowrap; }
+.rnav button:active { background: var(--paper2); }
+.rnav .mid { background: var(--paper); font-size: 12.5px; }
+.guide { margin-top: 8px; border-top: 3px solid var(--ink); }
+.guide details { border-bottom: 1px solid var(--ink); }
+.guide summary { display: flex; justify-content: space-between; align-items: center; min-height: 48px; padding: 6px 2px; font-weight: 900; font-size: 14.5px; cursor: pointer; list-style: none; }
+.guide summary::-webkit-details-marker { display: none; }
+.guide summary::after { content: "＋"; color: var(--red); font-weight: 900; }
+.guide details[open] summary::after { content: "－"; }
+.guide p { margin: 0 2px 12px; font-size: 13.5px; line-height: 1.8; color: var(--ink2); }
 .sumbar { position: sticky; bottom: calc(var(--tabh) + 10px + env(safe-area-inset-bottom, 0px)); z-index: 5; margin: 16px var(--pad) 0; border: 2px solid var(--ink); background: #fffdf7; box-shadow: 4px 4px 0 var(--ink); }
 .sb1 { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end; padding: 10px 12px 8px; }
 .sb1 small { display: block; font-size: 11.5px; font-weight: 900; line-height: 1.3; }
-.sb1 .big { position: relative; display: inline-block; font-family: var(--n); font-weight: 700; font-size: 40px; line-height: 1.05; color: var(--red); font-variant-numeric: tabular-nums; }
+.sb1 .big { position: relative; display: inline-block; font-family: var(--n); font-weight: 700; font-size: 34px; line-height: 1.05; color: var(--red); font-variant-numeric: tabular-nums; }
 .sb1 .big small { display: inline; font-size: .5em; }
 .sb1 .big .pen { inset: auto -4px -6px -2px; height: 10px; width: calc(100% + 6px); }
 .sb1 .pts { text-align: right; }
@@ -622,8 +636,10 @@ function vSent(mail) {
       <div class="btns" style="margin-top:12px"><button class="btn" type="submit" id="codeBtn">紙面を開く<span>▶</span></button></div>
     </form>
     <div class="btns">
+      <button class="btn sub" type="button" id="resend">番号をもう一度送る</button>
       <button class="btn sub" type="button" data-go="#/login">メールアドレスを入れ直す</button>
     </div>
+    <p class="note" id="resendMsg" role="status" style="margin-top:8px" hidden></p>
     <p class="note" style="margin-top:14px">メールが届かないときは、迷惑メールのフォルダをご確認のうえ、<a href="https://lin.ee/uDgbNni" target="_blank" rel="noopener">公式LINE</a>までご連絡ください。</p>
   </section>`;
 }
@@ -643,8 +659,10 @@ function vNoMember() {
 }
 
 /* ─ 一面 ─ */
+let homeDay = '';
+const homeDayOf = () => (DATA.week.includes(homeDay) ? homeDay : DATA.today);
 function vHome() {
-  const day = DATA.today, rs = weekRaces(day);
+  const day = homeDayOf(), rs = weekRaces(day);
   const ready = rs.filter((r) => r.status === 'ready'), wait = rs.filter((r) => r.status === 'waiting');
   const venues = [...new Set(rs.map((r) => r.venue))].join('・');
   const grade = (r) => (/G1/.test(r.name) ? 50 : /G2/.test(r.name) ? 40 : /G3/.test(r.name) ? 30 : /（L）/.test(r.name) ? 20 : /OP/.test(r.name) ? 10 : 0) + (r.no === 11 ? 5 : 0) + r.no / 100;
@@ -658,6 +676,7 @@ function vHome() {
   const satHit = sat.filter((r) => top(r).result === 1).length;
   return `<section class="sec">
     <div class="label"><b>今週の一面</b><span>${fd(day)}</span></div>
+    ${DATA.week.length > 1 ? `<div class="seg" role="group" aria-label="開催日" style="margin-top:12px">${DATA.week.map((x) => `<button type="button" data-hday="${x}" aria-pressed="${x === day}">${fdShort(x)}</button>`).join('')}</div>` : ''}
     <h1 class="h1">当てるな。選べ。<br><em>今週も、<br>確率だけを見る。</em></h1>
     <div class="box stats">
       <div><small>開催</small><b class="jp">${venues}</b></div>
@@ -665,7 +684,7 @@ function vHome() {
       <div class="red"><small>計算済み</small><b data-count="${ready.length}">${ready.length}</b></div>
       <div><small>出馬表待ち</small><b>${wait.length}</b></div>
     </div>
-    <p class="upd">最終更新 ${updTxt()}（出馬表の確定ごとに更新）</p>
+    <p class="upd">出馬表と枠順の確定ごとに、自動で更新します</p>
     ${unnum ? `<p class="note" style="margin-top:6px">※${unnum}レースは枠順の確定待ちです。勝つ確率は計算済みです。馬番と組み合わせは、前日の午前10時30分ごろの枠順確定のあとに載ります。</p>` : ''}
   </section>
   <section class="sec">
@@ -715,8 +734,13 @@ function vRaces() {
 /* ─ レース詳細 ─ */
 let raceState = { sort: 'no', kind: 'uma', limit: 20 };
 const ROW = 60;
+function rnav(r) {
+  const sib = DATA.races.filter((x) => x.date === r.date && x.venue === r.venue).sort((a, b) => a.no - b.no), i = sib.indexOf(r);
+  const pv = sib[i - 1], nx = sib[i + 1], list = DATA.week.includes(r.date) ? '#/races' : '#/results';
+  return `<nav class="rnav" aria-label="ほかのレース">${pv ? `<button type="button" data-go="#/race/${pv.id}">‹ ${pv.no}R</button>` : '<span></span>'}<button type="button" class="mid" data-go="${list}">${r.venue}の一覧</button>${nx ? `<button type="button" data-go="#/race/${nx.id}">${nx.no}R ›</button>` : '<span></span>'}</nav>`;
+}
 function vRace(r) {
-  const head = `<div class="rhead">${rb(r)}<div><h1>${esc(r.name)}</h1><p>${fd(r.date)} ${r.venue} ${r.start}発走・${meta(r)}</p></div></div>`;
+  const head = `<div class="rhead">${rb(r)}<div><h1>${esc(r.name)}</h1><p>${fd(r.date)} ${r.venue} ${r.start}発走・${meta(r)}</p></div></div>${rnav(r)}`;
   if (r.status === 'waiting') return `${head}<div class="wait-box"><span class="stamp">出馬表待ち</span><p class="h2">出馬表が確定すると、<br>T-AIが計算します。</p><p class="note">JRAの枠順は、前日の午前10時30分ごろに確定します。計算が終わると、一面の「計算済み」に加わります。</p></div>`;
   const done = r.status === 'done', over = r.horses.some((h) => h.note === 'overseas');
   return `${head}
@@ -738,7 +762,7 @@ function vRace(r) {
     <div class="seg sm" role="group" aria-label="券種" id="kindSeg" style="margin-top:12px">${['uma', 'wide', 'fuku'].map((k) => `<button type="button" data-kind="${k}" aria-pressed="${raceState.kind === k}">${KIND[k]}</button>`).join('')}</div>
     <div class="box" style="margin-top:8px" id="combos"></div>
     ${done ? '' : `<div class="btns"><button class="btn" type="button" data-go="#/build/${r.id}">このレースで買い目をつくる<span>▶</span></button></div>`}
-  </section>`}`;
+  </section>`}${rnav(r)}`;
 }
 function placeRows(r, animate = true) {
   const order = r.horses.slice().sort(raceState.sort === 'prob' ? (a, b) => b.prob - a.prob : (a, b) => a.no - b.no);
@@ -804,10 +828,10 @@ function vBuild() {
   <p class="hint" id="hint"></p>
   <div class="grid" id="grid">${r.horses.map((h) => `<button type="button" class="hb" data-h="${h.no}" aria-pressed="false" aria-label="${h.no}番 ${esc(h.name)} ${pct(h.prob)}%"><span class="gs" style="background:${GATE_BG[h.gate]}"></span><b>${h.no}</b><small>${pct(h.prob)}%</small><span class="tag"></span></button>`).join('')}</div>
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px var(--pad) 0"><span class="note">数字の下は単勝の確率です</span><button type="button" class="clear" id="clear">選び直す</button></div>
+  <div class="budbox sb2"><label for="bud">予算</label><input id="bud" type="number" inputmode="numeric" min="100" step="100" value="${BS.budget}"><span>円</span><span class="per" id="per"></span></div>
   <details class="tix" id="tix"><summary><span id="tixT">買い目の一覧</span></summary><div id="tixB"></div></details>
   <div class="sumbar" data-pen id="sum">
-    <div class="sb1"><span><small>この買い目が当たる確率</small><span class="big"><span id="hitV">0.0</span><small>%</small>${under()}</span></span><span class="pts"><small>点数</small><b id="ptsV">0</b> 点</span></div>
-    <div class="sb2"><label for="bud">予算</label><input id="bud" type="number" inputmode="numeric" min="100" step="100" value="${BS.budget}"><span>円</span><span class="per" id="per"></span></div>
+    <div class="sb1"><span><small>この買い目が当たる確率</small><span class="big"><span id="hitV">0.0</span><small>%</small>${under()}</span></span><span class="pts"><small>点数</small><b id="ptsV">0</b> 点<span class="perS" id="perS"></span></span></div>
   </div>`;
 }
 let shownHit = 0;
@@ -861,6 +885,7 @@ function updateBuild() {
   const bud = Math.max(0, +$('#bud').value || 0); BS.budget = bud;
   const per = t.length ? Math.floor(bud / t.length / 100) * 100 : 0, perEl = $('#per');
   perEl.classList.toggle('warn', t.length > 0 && per < 100);
+  $('#perS').textContent = t.length && per >= 100 ? `1点 ${yen(per)}円` : '';
   perEl.innerHTML = !t.length ? '馬を選ぶと計算します' : per < 100 ? '予算が足りません<br>（1点100円から）' : `1点 <b>${yen(per)}</b>円<br>計 ${yen(per * t.length)}円`;
   $('#sum').classList.toggle('drawn', t.length > 0);
   $('#tixT').textContent = `買い目の一覧（${t.length}点）`;
@@ -924,6 +949,16 @@ function vMy() {
       <dl><dt>お名前</dt><dd>${esc(m.name)} 様</dd><dt>プラン</dt><dd>${esc(m.plan)}</dd><dt>利用期限</dt><dd>${m.admin ? '期限なし（管理者）' : `${y}年${mm}月${d}日まで<br><span class="pct">残り ${days}日</span>`}</dd></dl>
     </div>
   </section>
+  <section class="sec">
+    <div class="label"><b>紙面の読み方</b><span>はじめての方へ</span></div>
+    <div class="guide">
+      <details><summary>「勝つ確率」とは</summary><p>T-AIが計算した、その馬が1着になる確率です。1つのレースの全馬を足すと100%になります。</p></details>
+      <details><summary>◎○▲△ の印</summary><p>勝つ確率の高い順に、1番手から4番手の馬に付けています。</p></details>
+      <details><summary>組み合わせの確率</summary><p>出馬表の面の下に、馬連・ワイド・3連複が当たる確率を、高い順に載せています。</p></details>
+      <details><summary>買い目をつくる</summary><p>券種と買い方を選び、馬番をタップすると、その買い目のどれかが当たる確率と点数が、すぐに出ます。予算を入れると、1点あたりの金額も出ます。</p></details>
+      <details><summary>いつ更新されるか</summary><p>JRAの枠順が確定する前日の午前10時30分ごろのあと、自動で計算して載せます。当日の朝に出走取消・競走除外があれば、計算し直します。レースの結果は、開催日の夕方に「成績」の面に載ります。</p></details>
+    </div>
+  </section>
   <section class="sec news">
     <div class="label"><b>お知らせ</b><span>運営より</span></div>
     <div style="margin-top:8px;border-top:3px solid var(--ink)">
@@ -957,11 +992,11 @@ function route() {
   else if (empty && name !== 'my') { html = vEmpty(); }
   else if (name === 'sent') html = vSent(lastMail);
   else if (name === 'races') html = vRaces();
-  else if (name === 'race') { const r = byId.get(arg) || weekRaces(DATA.today)[0]; tab = DATA.week.includes(r.date) ? 'races' : 'results'; mopts = { back: tab, backLabel: tab === 'races' ? '出馬表' : '成績', sub: `${fd(r.date)} ${r.venue}${r.no}R` }; raceState.limit = 20; view.dataset.race = r.id; if (r.lite) { html = '<section class="sec"><p class="note" style="padding:40px 0;text-align:center">紙面を組んでいます…</p></section>'; loadFull(r.id); } else html = vRace(r); }
+  else if (name === 'race') { const r = byId.get(arg) || weekRaces(DATA.today)[0]; tab = DATA.week.includes(r.date) ? 'races' : 'results'; mopts = { back: tab, backLabel: tab === 'races' ? '出馬表' : '成績', sub: `${fd(r.date)} ${r.venue}${r.no}R` }; raceState.limit = 20; view.dataset.race = r.id; if (DATA.week.includes(r.date)) { listState.d = r.date; listState.v = r.venue; } if (r.lite) { html = '<section class="sec"><p class="note" style="padding:40px 0;text-align:center">紙面を組んでいます…</p></section>'; loadFull(r.id); } else html = vRace(r); }
   else if (name === 'build') { const r = byId.get(arg); const bl = buildable(); if (r && bl.includes(r) && r.id !== BS.raceId) { BS.raceId = r.id; BS.axis = null; BS.sel.clear(); } if (!BS.raceId || !byId.has(BS.raceId)) BS.raceId = (bl.find((x) => /G1/.test(x.name)) || bl[0] || {}).id; html = BS.raceId ? vBuild() : (DATA.races.length ? vBuildWait() : vEmpty()); }
   else if (name === 'results') { html = vResults(); if (histState === 'no') loadHistory(); }
   else if (name === 'my') html = vMy();
-  else { tab = 'home'; html = vHome(); }
+  else { tab = 'home'; html = vHome(); mopts = { sub: fd(homeDayOf()) + ' 開催' }; }
   curTab = tab;
   if (!bare) mastEl.innerHTML = memberOk ? mast(mopts) : '';
   view.className = 'view'; void view.offsetWidth;
@@ -971,6 +1006,8 @@ function route() {
   if (empty || !memberOk) return;
   if (name === 'race' && !byId.get(view.dataset.race).lite) mountRace(byId.get(view.dataset.race));
   if (name === 'build' && BS.raceId) { shownHit = 0; updateBuild(); }
+  if (name === 'sent') { const c = $('#code'); if (c) setTimeout(() => c.focus(), 50); }
+  if (name === 'login') { const m = $('#mail'); if (m && lastMail) m.value = lastMail; }
   if (name === 'home' || !['login', 'sent', 'race', 'build', 'races', 'results', 'my'].includes(name)) {
     const feat = view.querySelector('.feat');
     if (feat) later(() => feat.querySelectorAll('.bar i').forEach((i) => { i.style.width = i.dataset.w + '%'; }), 120);
@@ -985,6 +1022,16 @@ document.addEventListener('click', (e) => {
   const t = e.target.closest('button, a'); if (!t) return;
   const ds = t.dataset;
   if (t.id === 'raceOpen') { openSheet(); return; }
+  if (t.id === 'resend') {
+    const msg = $('#resendMsg');
+    if (!lastMail) { go('#/login'); return; }
+    t.disabled = true; msg.hidden = false; msg.textContent = '送っています…';
+    sb.auth.signInWithOtp({ email: lastMail, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } }).then(({ error }) => {
+      msg.textContent = error ? (/rate|seconds|security/i.test(String(error.message)) ? '少し時間をおいてから、もう一度お試しください。' : '送れませんでした。時間をおいてもう一度お試しください。') : '新しい番号を送りました。いちばん新しいメールの番号を入れてください。';
+      setTimeout(() => { const b = $('#resend'); if (b) b.disabled = false; }, 60e3);
+    }).catch(() => { msg.textContent = '通信に失敗しました。'; t.disabled = false; });
+    return;
+  }
   if (t.id === 'sheetX') { closeSheet(); return; }
   if (ds.sday) { sheetState.d = ds.sday; sheetState.v = ''; sheetRedraw(); return; }
   if (ds.sven) { sheetState.v = ds.sven; sheetRedraw(); return; }
@@ -992,7 +1039,8 @@ document.addEventListener('click', (e) => {
   if (ds.go) { go(ds.go); return; }
   if (ds.tab) { const map = { home: '#/home', races: '#/races', build: '#/build', results: '#/results', my: '#/my' }; go(map[ds.tab]); return; }
   if (ds.back) { let nav = false; try { nav = !!sessionStorage.getItem('taiapp:nav'); } catch (e) {} if (history.length > 1 && nav) history.back(); else go('#/' + ds.back); return; }
-  if (ds.day) { listState.d = ds.day; rerender(); return; }
+  if (ds.day) { listState.d = ds.day; const vs = [...new Set(weekRaces(ds.day).map((r) => r.venue))]; if (!vs.includes(listState.v)) listState.v = vs[0] || ''; rerender(); return; }
+  if (ds.hday) { homeDay = ds.hday; listState.d = ds.hday; const vs = [...new Set(weekRaces(ds.hday).map((r) => r.venue))]; if (!vs.includes(listState.v)) listState.v = vs[0] || ''; rerender(); return; }
   if (ds.ven) { listState.v = ds.ven; rerender(); return; }
   if (ds.sort) { raceState.sort = ds.sort; placeRows(byId.get($('#view').dataset.race)); return; }
   if (ds.kind) { raceState.kind = ds.kind; raceState.limit = 20; document.querySelectorAll('#kindSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.kind === ds.kind))); renderCombos(byId.get($('#view').dataset.race)); return; }
@@ -1014,7 +1062,11 @@ document.addEventListener('click', (e) => {
   if (t.id === 'logout') { if (SAMPLE) { location.href = location.pathname; return; } dropCache(); sb.auth.signOut().finally(() => { session = null; memberOk = false; memberStatus = 'none'; go('#/login'); }); }
 });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#sheet')) closeSheet(); });
-document.addEventListener('input', (e) => { if (e.target.id === 'bud') updateBuild(); });
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'bud') updateBuild();
+  // 6桁そろったら、そのまま開く
+  if (e.target.id === 'code' && e.target.value.replace(/\D/g, '').length === 6) { const f = $('#codeForm'); if (f && !$('#codeBtn').disabled) f.requestSubmit(); }
+});
 document.addEventListener('submit', (e) => {
   if (e.target.id === 'codeForm') {
     e.preventDefault();
