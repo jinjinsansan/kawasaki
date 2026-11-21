@@ -2071,7 +2071,8 @@ document.addEventListener('submit', (e) => {
   }
   if (e.target.id !== 'loginForm') return;
   e.preventDefault();
-  const mail = $('#mail').value.trim(), err = $('#loginErr'), btn = $('#loginBtn');
+  // スマホの日本語入力で全角になった英数字・＠・空白も、半角に直してから送る（全角のままだと別のアドレスとして扱われ「登録されていません」になる）
+  const mail = $('#mail').value.normalize('NFKC').replace(/\s+/g, '').toLowerCase(), err = $('#loginErr'), btn = $('#loginBtn');
   if (SAMPLE) { go('#/home'); return; }
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) { err.textContent = 'メールアドレスを入れてください。'; err.hidden = false; return; }
   btn.disabled = true;
