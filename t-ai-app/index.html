@@ -50,7 +50,7 @@ p, h1, h2, h3 { margin: 0; }
 
 /* タブ */
 [hidden] { display: none !important; }
-.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; max-width: 480px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding-bottom: env(safe-area-inset-bottom, 0px); background: rgba(242, 236, 223, .97); border-top: 2px solid var(--ink); }
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; max-width: 480px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding-bottom: env(safe-area-inset-bottom, 0px); background: rgba(242, 236, 223, .97); border-top: 2px solid var(--ink); }
 .tabs button { position: relative; display: grid; place-content: center; gap: 0; min-height: var(--tabh); border: 0; background: none; text-align: center; line-height: 1.25; transition: background-color .2s; }
 .tabs button + button { border-left: 1px solid rgba(27, 24, 20, .18); }
 .tabs b { font-weight: 900; font-size: 15px; }
@@ -571,7 +571,6 @@ details.day > summary small { font-size: 11.5px; font-weight: 700; color: var(--
   <main id="view"></main>
 </div>
 <nav class="tabs" id="tabs" aria-label="紙面の切り替え" hidden>
-  <button type="button" data-tab="home"><b>本日</b><small>開催</small></button>
   <button type="button" data-tab="races"><b>出馬表</b><small>レース</small></button>
   <button type="button" data-tab="build"><b>買い目</b><small>つくる</small></button>
   <button type="button" data-tab="results"><b>成績</b><small>答え合わせ</small></button>
@@ -1043,7 +1042,9 @@ function vRaces() {
   const { d, v } = listState;
   const rs = DATA.races.filter((r) => r.date === d && r.venue === v);
   const venues = [...new Set(weekRaces(d).map((r) => r.venue))];
-  return `<section class="sec">
+  const nowHM = new Date(Date.now() + 9 * 3600e3).toISOString().slice(11, 16);
+  const next = d === jstToday() ? weekRaces(d).filter((r) => r.status !== 'done' && r.start >= nowHM).sort((a, b) => a.start.localeCompare(b.start)).slice(0, 3) : [];
+  return `${next.length ? `<section class="sec"><div class="label"><b>まもなく発走</b><span>発走が近い順</span></div><div class="list" style="margin-top:10px">${next.map((r) => raceRow(r).replace('<span class="tm">', `<span class="tm">${r.venue} `)).join('')}</div></section>` : ''}<section class="sec">
     <div class="ctl">
       <div class="seg" role="group" aria-label="開催日">${DATA.week.map((x) => `<button type="button" data-day="${x}" aria-pressed="${x === d}">${fdShort(x)}</button>`).join('')}</div>
       <div class="seg sm" role="group" aria-label="競馬場">${venues.map((x) => `<button type="button" data-ven="${x}" aria-pressed="${x === v}">${x}</button>`).join('')}</div>
@@ -2083,7 +2084,7 @@ function route() {
   else if (name === 'bias') { tab = 'races'; const [, , dd, vv] = location.hash.split('/'); html = vBias(dd, decodeURIComponent(vv || '')); mopts = { back: 'races', backLabel: '出馬表', sub: '当日の傾向' }; }
   else if (name === 'ai') { tab = 'my'; html = vAi(); mopts = { back: 'my', backLabel: '会員', sub: 'AIとつなぐ' }; }
   else if (name === 'my') html = vMy();
-  else { tab = 'home'; html = vHome(); mopts = { sub: fd(homeDayOf()) + ' 開催' }; }
+  else { tab = 'races'; html = vRaces(); }
   curTab = tab;
   if (!bare) mastEl.innerHTML = memberOk ? mast(mopts) : '';
   view.className = 'view'; void view.offsetWidth;
