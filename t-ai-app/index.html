@@ -6,6 +6,13 @@
 <title>T-AI新報 会員版（プロトタイプ）</title>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#f2ecdf">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="T-AI">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&amp;family=Zen+Kaku+Gothic+New:wght@500;700;900&amp;family=Zen+Kurenaido&amp;family=Oswald:wght@500;700&amp;display=swap">
@@ -447,6 +454,8 @@ body.lock { overflow: hidden; }
 .b3 .bt span:last-child { white-space: nowrap; color: var(--ink2); font-size: 11.5px; }
 .gkr.up4 { grid-template-columns: minmax(0, 1fr) 70px 80px; }
 .ctabs { margin: 0 var(--pad) 4px; }
+.hsteps { margin: 8px 0 0; padding-left: 1.4em; font-size: 13.5px; line-height: 1.7; }
+.hsteps b { font-weight: 900; }
 .mybar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 8px var(--pad) 0; padding: 8px 10px; border: 1.5px solid var(--red); background: var(--card); font-size: 12px; }
 .mybar span { min-width: 0; overflow-wrap: anywhere; }
 .mybar b { display: block; font-size: 11px; color: var(--red); }
@@ -1528,6 +1537,22 @@ function myRanks(r) {
   sc.sort((a, b) => b.s - a.s || b.h.prob - a.h.prob);
   return new Map(sc.map((x, i) => [x.h.no, i + 1]));
 }
+// ホーム画面に追加（アプリのように開く）。開くと、その日の開催（出馬表）がすぐ出る
+let INSTALL = null;
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); INSTALL = e; if (/^#\/my/.test(location.hash)) rerender(); });
+window.addEventListener('appinstalled', () => { INSTALL = null; });
+const STANDALONE = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+function homeBox() {
+  if (STANDALONE()) return '';
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  return `<section class="sec"><div class="label"><b>ホーム画面に追加</b><span>アプリのように開く</span></div>
+    <p class="note" style="margin-top:10px">スマホのホーム画面にT-AIのアイコンを置くと、タップ1回でその日の開催（出馬表）が開きます。</p>
+    ${INSTALL ? `<div class="btns" style="margin-top:10px"><button class="btn" type="button" data-install="1">ホーム画面に追加する<span>▶</span></button></div>` : ''}
+    <ol class="hsteps">${ios
+      ? '<li>Safari で開く（ほかのアプリの中のブラウザでは追加できません）</li><li>画面の下（iPadは上）の <b>共有ボタン</b>（四角から上向きの矢印）を押す</li><li><b>「ホーム画面に追加」</b>を選び、右上の<b>「追加」</b>を押す</li>'
+      : '<li>Chrome で開く</li><li>右上の <b>︙（メニュー）</b>を押す</li><li><b>「ホーム画面に追加」</b>または<b>「アプリをインストール」</b>を選ぶ</li>'}</ol>
+    <p class="dnote" style="margin-top:6px">追加したアイコンから開いたときも、最初の1回だけログイン（メールのコード）が必要です。</p></section>`;
+}
 function openMine() {
   closeSheet(true);
   document.body.insertAdjacentHTML('beforeend', `<div class="sheet-bg" id="sheetBg"></div><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetT" data-mine="1"><div class="sh-h"><b id="sheetT">あなたの重視順</b><button type="button" class="sh-x" id="sheetX" aria-label="閉じる">×</button></div><div class="dbl" style="margin:8px var(--pad) 10px"></div><div id="sheetB" style="display:flex;flex-direction:column;min-height:0;flex:1 1 auto">${mineBody()}</div></div>`);
@@ -2302,6 +2327,7 @@ function vMy() {
     </div>
   </section>
   ${freeBox}
+  ${homeBox()}
   <section class="sec"><div class="label"><b>あなたの予想</b><span>重視する順番</span></div><p class="note" style="margin-top:10px">確率・指数・騎手・展開などを、あなたが重視する順に並べると、出馬表に「あなたの順位・あなたの◎」が出ます（出馬表の「あなた」で切り替え）。今の重視順：${mineLabel()}</p><div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-mineset="1">重視順を決める<span>▶</span></button></div></section>
   ${m.free ? '' : `<section class="sec"><div class="label"><b>AIとつなぐ</b><span>自分の生成AIで使う</span></div><p class="note" style="margin-top:10px">ChatGPTやClaudeなど、ふだん使っている生成AIにT-AIのデータを読ませて、自分の言葉で質問できます。</p><div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-go="#/ai">AIとつなぐ<span>▶</span></button></div></section>`}
   <section class="sec">
@@ -2393,6 +2419,7 @@ document.addEventListener('click', (e) => {
   const t = e.target.closest('button, a'); if (!t) return;
   const ds = t.dataset;
   if (ds.copy != null) { copyText(ds.copy, t); return; }
+  if (ds.install && INSTALL) { INSTALL.prompt(); INSTALL.userChoice.finally(() => { INSTALL = null; rerender(); }); return; }
   if (ds.cnav) { cardStep(+ds.cnav); return; }
   if (ds.pmode) { MINE.mode = ds.pmode; mineSave(); if (ds.pmode === 'mine') raceState.sort = 'prob'; rerender(); return; }
   if (ds.mineset) { openMine(); return; }

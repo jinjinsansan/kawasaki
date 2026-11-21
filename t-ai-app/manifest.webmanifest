@@ -1,0 +1,17 @@
+{
+  "name": "T-AI新報",
+  "short_name": "T-AI",
+  "description": "T-AIの勝つ確率・指数・展開を、当日の開催からすぐ見られる会員サイト",
+  "start_url": "/?src=home",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2ecdf",
+  "theme_color": "#f2ecdf",
+  "lang": "ja",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
