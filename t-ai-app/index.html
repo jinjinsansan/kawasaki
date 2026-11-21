@@ -377,6 +377,22 @@ body.lock { overflow: hidden; }
 .gkr span:first-child { min-width: 0; overflow-wrap: anywhere; line-height: 1.35; font-weight: 700; }
 .gkr.gkh { min-height: 0; padding: 5px 10px; border-top: 0; background: var(--ink); color: var(--paper); font-size: 11px; }
 .gkr .sc { font-size: 15px; }
+.bbox { padding: 4px 12px; }
+.bbox .bk { display: grid; grid-template-columns: 44px 1fr; grid-template-rows: auto auto; column-gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(27, 24, 20, .25); }
+.bbox .bk:last-child { border-bottom: 0; }
+.bbox .bk small { grid-row: 1 / 3; align-self: center; font-size: 11px; font-weight: 900; color: var(--ink2); }
+.bbox .bk b { font-size: 15px; font-weight: 900; }
+.bbox .bk span { font-size: 11.5px; color: var(--ink2); overflow-wrap: anywhere; }
+.bx { display: grid; grid-template-columns: 44px repeat(3, minmax(0, 1fr)); border: 1.5px solid var(--ink); margin-top: 6px; }
+.bx > span { padding: 6px 2px; text-align: center; font-size: 12px; font-weight: 700; border-top: 1px solid rgba(27, 24, 20, .2); border-left: 1px solid rgba(27, 24, 20, .2); }
+.bx > span:nth-child(-n+4) { border-top: 0; background: var(--ink); color: var(--paper); font-size: 11px; }
+.bx > span:nth-child(4n+1) { border-left: 0; font-size: 11px; }
+.bx > span small { display: block; font-size: 9.5px; color: var(--ink3); font-weight: 700; }
+.bx > span.hot { color: var(--red); }
+.b3 { display: grid; grid-template-columns: 1fr; gap: 4px; }
+.b3 .bt { display: flex; justify-content: space-between; gap: 8px; padding: 5px 0; border-bottom: 1px solid rgba(27, 24, 20, .2); font-size: 12.5px; }
+.b3 .bt span:first-child { font-weight: 900; min-width: 0; overflow-wrap: anywhere; }
+.b3 .bt span:last-child { white-space: nowrap; color: var(--ink2); font-size: 11.5px; }
 .gkr.up4 { grid-template-columns: minmax(0, 1fr) 70px 80px; }
 .memo .mrow { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(27, 24, 20, .25); }
 .memo .mtag { align-self: start; text-align: center; font-size: 11px; font-weight: 900; padding: 3px 0; border: 1.5px solid var(--ink); }
@@ -983,6 +999,7 @@ function vRaces() {
         return `<button type="button" class="rrow${r.status === 'waiting' ? ' wait' : ''}" data-go="#/race/${r.id}">${rb(r)}<span class="ri"><span class="tm">${r.start}発走</span><b>${esc(r.name)}</b><small>${meta(r)}</small></span><span class="rt">${right}</span></button>`;
       }).join('')}
     </div>
+    ${FREE || DATA.member.guest ? '' : `<div class="btns" style="margin-top:14px"><button class="btn sub" type="button" data-go="#/bias/${d}/${encodeURIComponent(v)}">${esc(v)}の当日の傾向<span>▶</span></button></div>`}
   </section>`;
 }
 
@@ -1430,6 +1447,53 @@ function updateBuild() {
   $('#tixB').innerHTML = list.length ? list.slice(0, 60).map((c, i) => `<div class="crow${wo ? ' wo' : ''}"><span class="rk">${i + 1}</span><span class="tk">${c.nums.map((n) => chip(r, BS.kind, n)).join(`<i>${ORD[BS.kind] ? '→' : '-'}</i>`)}</span>${wo ? oddsCell(r, BS.kind, c.nums, c.p) : ''}<span class="pr"><span class="pct" style="color:var(--ink)">${pct(c.p, c.p < .001 ? 2 : 1)}%</span></span></div>`).join('') + (list.length > 60 ? `<p class="note" style="padding:8px 12px">ほか${list.length - 60}点</p>` : '') : '<p class="note" style="padding:4px 12px 12px">まだ買い目がありません。</p>';
 }
 
+/* ─ 当日の傾向（川崎さんの today_bias。予測とは別欄の記述的な集計。日付ごとに残る） ─ */
+const BIAS = new Map();  // 日付 → { part: rows } | 'loading' | 'err'
+let BIAS_DAYS = null;
+function needBias(d, cb) {
+  if (FREE || BIAS.has(d)) return;
+  BIAS.set(d, 'loading');
+  sb.from('today_bias').select('part,rows').eq('date', d).then(({ data, error }) => { BIAS.set(d, error ? 'err' : Object.fromEntries((data || []).map((x) => [x.part, x.rows]))); cb(); });
+  if (!BIAS_DAYS) { BIAS_DAYS = []; sb.from('today_bias').select('date').eq('part', 'main').order('date', { ascending: false }).limit(8).then(({ data }) => { BIAS_DAYS = (data || []).map((x) => x.date); cb(); }); }
+}
+function vBias(d, v) {
+  const re = () => { if (/^#\/bias/.test(location.hash)) rerender(); };
+  if (FREE || DATA.member.guest) return '<section class="sec"><p class="note" style="padding:24px 0">会員の方だけが見られます。</p></section>';
+  d = /^\d{4}-\d{2}-\d{2}$/.test(d || '') ? d : jstToday();
+  needBias(d, re);
+  const B = BIAS.get(d);
+  const days = [...new Set([...(BIAS_DAYS || []), d])].sort().slice(-4);
+  const dayBtns = `<div class="seg" role="group" aria-label="日付">${days.map((x) => `<button type="button" data-go="#/bias/${x}/${encodeURIComponent(v)}" aria-pressed="${x === d}">${fdShort(x)}</button>`).join('')}</div>`;
+  if (!B || B === 'loading') return `<section class="sec"><div class="ctl">${dayBtns}</div><p class="note" style="padding:40px 0;text-align:center">読み込んでいます…</p></section>`;
+  const main = (B !== 'err' && B.main) || [];
+  if (!main.length) return `<section class="sec"><div class="ctl">${dayBtns}</div><p class="note" style="padding:24px 0">${fd(d)}の当日の傾向は、まだありません。レースが終わるごとに更新されます。</p></section>`;
+  const venues = [...new Set(main.map((x) => x.venue))];
+  if (!venues.includes(v)) v = venues[0];
+  const pc = (x) => (x == null ? '－' : pct(x, 0) + '%');
+  const dir = (r, a, b) => (r == null ? '' : r > 1.05 ? a : r < 0.95 ? b : '偏りなし');
+  const of = (part, sf) => ((B[part] || []).filter((x) => x.venue === v && x.surface === sf));
+  const top = (rows, nameKey, nKey) => rows.filter((x) => x.top3 > 0).sort((a, b) => b.top3 - a.top3 || b.wins - a.wins || a[nKey] - b[nKey]).slice(0, 6)
+    .map((x) => `<div class="bt"><span>${esc(x[nameKey])}</span><span>${x[nKey]}走 ${x.wins}勝・3着内${x.top3}</span></div>`).join('') || '<p class="note">まだありません</p>';
+  const block = (m) => {
+    const sf = m.surface, cross = of('cross', sf), cell = (pb, fb) => { const c = cross.find((x) => x.pos_band === pb && x.frame_band === fb); return c ? `<span class="${c.starts >= 3 && c.top3_rate >= 0.4 ? 'hot' : ''}">${pc(c.top3_rate)}<small>${c.starts}頭</small></span>` : '<span>－</span>'; };
+    const times = of('times', sf);
+    return `<section class="sec"><div class="label"><b>${esc(sf)}</b><span>${m.races_done || 0}レース終了・${esc(m.track_condition || '')}${m.weather ? '・' + esc(m.weather) : ''}</span></div>
+      <div class="box bbox">
+        <div class="bk"><small>脚質</small><b>${dir(m.style_bias_ratio, '先行が有利', '差しが有利') || '－'}</b><span>先行 ${pc(m.front_top3_rate)}・差し ${pc(m.sashi_top3_rate)}（複勝率）${m.style_bias_trend ? `・前日から${esc(m.style_bias_trend)}` : ''}</span></div>
+        <div class="bk"><small>枠</small><b>${dir(m.frame_bias_ratio, '内枠が有利', '外枠が有利') || '－'}</b><span>内 ${pc(m.inside_top3_rate)}・外 ${pc(m.outside_top3_rate)}${m.frame_bias_trend ? `・前日から${esc(m.frame_bias_trend)}` : ''}</span></div>
+        <div class="bk"><small>人気</small><b>${m.fav123_top3_rate == null ? '－' : m.fav123_top3_rate >= 0.6 ? '堅め' : m.fav123_top3_rate <= 0.4 ? '荒れ気味' : 'ふつう'}</b><span>1〜3番人気の複勝率 ${pc(m.fav123_top3_rate)}</span></div>
+        <div class="bk"><small>時計</small><b>${m.time_diff_avg_sec == null ? '－' : m.time_diff_avg_sec > 0.5 ? 'かかっている' : m.time_diff_avg_sec < -0.5 ? '出ている' : 'ふつう'}</b><span>${m.time_diff_avg_sec == null ? '比べられるレースなし' : `標準より${m.time_diff_avg_sec > 0 ? '+' : ''}${m.time_diff_avg_sec}秒（${m.time_compared_races}レース平均）`}</span></div>
+      </div>
+      ${cross.length ? `<p class="ixsub" style="margin-top:12px">4コーナーの位置 × 枠（複勝率）</p><div class="bx"><span></span><span>内</span><span>中</span><span>外</span>${['先行', '中団', '差し'].map((pb) => `<span>${pb}</span>${cell(pb, '内')}${cell(pb, '中')}${cell(pb, '外')}`).join('')}</div>` : ''}
+      <div class="b3"><div><p class="ixsub">騎手</p>${top(of('jockey', sf), 'jockey', 'rides')}</div><div><p class="ixsub">調教師</p>${top(of('trainer', sf), 'trainer', 'starts')}</div><div><p class="ixsub">父</p>${top(of('sire', sf), 'sire', 'starts')}</div></div>
+      ${times.length ? `<details class="gkmore"><summary>レースごとの時計（${times.length}）</summary><div class="box gkt">${times.map((t) => `<div class="gkr up4"><span>${esc(String(t.race_id).slice(-2).replace(/^0/, ''))}R ${t.distance}m ${esc(t.track_condition || '')}</span><span>${t.win_time_sec != null ? t.win_time_sec + '秒' : '－'}</span><span class="sc">${t.diff_sec == null ? '－' : (t.diff_sec > 0 ? '+' : '') + t.diff_sec}</span></div>`).join('')}</div></details>` : ''}
+    </section>`;
+  };
+  return `<section class="sec"><div class="ctl">${dayBtns}<div class="seg sm" role="group" aria-label="競馬場">${venues.map((x) => `<button type="button" data-go="#/bias/${d}/${encodeURIComponent(x)}" aria-pressed="${x === v}">${esc(x)}</button>`).join('')}</div></div>
+    <p class="note" style="margin-top:10px">${fd(d)}の${esc(v)}で、終わったレースの結果から見た傾向です。芝とダートは分けています。数レース分の結果なので、偏りは大きく出やすい点に注意してください。T-AIの勝つ確率の計算には入っていません。</p></section>
+    ${main.filter((m) => m.venue === v).sort((a, b) => (a.surface === '芝' ? -1 : 1)).map(block).join('')}`;
+}
+
 /* ─ AIとつなぐ（会員ごとのキー。川崎さんの ai_connect_kit） ─ */
 const SITE_URL = 'https://t-ai-app.clubkawasaki.net';
 let AIK = null;  // null → 'loading' → { key } | 'err'
@@ -1834,6 +1898,7 @@ function route() {
   else if (name === 'results') { html = vResults(); if (histState === 'no') loadHistory(); }
   else if (name === 'gaikyu') { tab = 'results'; html = vGaikyu(arg ? decodeURIComponent(arg) : ''); mopts = { back: 'results', backLabel: '成績', sub: '外厩データ' }; }
   else if (name === 'person') { tab = 'races'; const [, , ro, ...rest] = location.hash.split('/'); html = vPerson(ro, decodeURIComponent(rest.join('/'))); mopts = { back: 'races', backLabel: '出馬表', sub: ro === 'trainer' ? '調教師' : '騎手' }; }
+  else if (name === 'bias') { tab = 'races'; const [, , dd, vv] = location.hash.split('/'); html = vBias(dd, decodeURIComponent(vv || '')); mopts = { back: 'races', backLabel: '出馬表', sub: '当日の傾向' }; }
   else if (name === 'ai') { tab = 'my'; html = vAi(); mopts = { back: 'my', backLabel: '会員', sub: 'AIとつなぐ' }; }
   else if (name === 'my') html = vMy();
   else { tab = 'home'; html = vHome(); mopts = { sub: fd(homeDayOf()) + ' 開催' }; }
