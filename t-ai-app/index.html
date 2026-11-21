@@ -1654,8 +1654,7 @@ function memoBlock(m) {
   const one = (lab, p) => `<div class="mrow"><span class="mtag">${lab}</span><div>${res(p)}<p>${esc(p.memo)}</p></div></div>`;
   return `<div class="memo"><h3 style="margin-top:12px">レースメモ</h3>
     ${m.cur ? `<div class="mrow"><span class="mtag now">今回</span><div><p>${esc(m.cur)}</p></div></div>` : ''}
-    ${m.p1 ? one('前走', m.p1) : ''}${m.p2 ? one('前々走', m.p2) : ''}
-    <p class="dnote" style="margin-top:4px">厩舎の話をもとに、言い回しを整えたものです。</p></div>`;
+    ${m.p1 ? one('前走', m.p1) : ''}${m.p2 ? one('前々走', m.p2) : ''}</div>`;
 }
 // 指数カード：近走成績（馬柱。川崎さんの horse_recent）。行をタップすると回顧・厩舎コメント・勝ち上がり率が開く
 function recentBlock(rs) {
