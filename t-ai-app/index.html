@@ -402,7 +402,7 @@ body.lock { overflow: hidden; }
 .memo .mres { display: block; margin-bottom: 3px; font-size: 11px; line-height: 1.45; color: var(--ink2); overflow-wrap: anywhere; }
 .memo .mres b { color: var(--red); }
 .recent .rc { border-bottom: 1px solid rgba(27, 24, 20, .25); }
-.recent .rc summary { display: grid; grid-template-columns: 38px minmax(0, 1fr) 44px 12px; gap: 6px; align-items: center; padding: 7px 0; cursor: pointer; list-style: none; }
+.recent .rc summary { display: grid; grid-template-columns: 38px minmax(0, 1fr) 58px 12px; gap: 6px; align-items: center; padding: 7px 0; cursor: pointer; list-style: none; }
 .recent .rc summary::-webkit-details-marker { display: none; }
 .recent .rc summary::after { font-size: 12px; text-align: right; }
 .recent .rfin { align-self: stretch; display: grid; place-content: center; text-align: center; font-family: var(--n); font-weight: 900; font-size: 19px; line-height: 1; border: 1.5px solid rgba(27, 24, 20, .3); color: var(--ink3); }
@@ -416,6 +416,12 @@ body.lock { overflow: hidden; }
 .recent .rmain small { font-size: 10.5px; color: var(--ink2); overflow-wrap: anywhere; line-height: 1.4; }
 .recent .rfig { text-align: right; font-family: var(--n); font-weight: 700; font-size: 14px; line-height: 1.1; }
 .recent .rfig small { display: block; font-size: 9.5px; color: var(--ink3); }
+.recent .rfig.ev { text-align: center; }
+.recent .rfig.ev b { display: block; font-size: 22px; font-weight: 900; line-height: 1.05; }
+.recent .rfig.ev b.gS { color: var(--red); }
+.recent .rfig.ev b.gD { color: var(--ink3); }
+.recent .rfig.ev small { font-size: 9.5px; color: var(--ink2); white-space: nowrap; }
+.recent .rl { color: var(--ink); }
 .recent .rbody { padding: 0 0 8px 46px; display: grid; gap: 6px; }
 .recent .rbody p { margin: 0; font-size: 12.5px; line-height: 1.6; overflow-wrap: anywhere; }
 .recent .rbody .mtag { display: inline-block; margin-right: 6px; padding: 0 5px; font-size: 10.5px; font-weight: 900; border: 1.5px solid var(--ink); }
@@ -1671,7 +1677,12 @@ function recentBlock(rs) {
   const row = (x, i) => {
     const fc = typeof x.fin === 'number' ? (x.fin <= 3 ? ' f' + x.fin : x.fin <= 5 ? ' f45' : '') : '';
     // レースのレベルの目安：その後の勝ち上がり率（3走以内）。分母3頭以上のときだけ、行にも出す（判定の基準は川崎さんと決める）
-    const lv = x.w3 != null && x.w3n >= 3 ? `・勝ち上がり ${pct(x.w3, 0)}%（${x.w3n}頭）` : '';
+    const lv = x.race_level ? `・レースレベル <b class="rl">${esc(String(x.race_level))}</b>${x.race_level_pct != null ? `（勝ち上がり ${pct(x.race_level_pct, 0)}%${x.race_level_class_avg != null ? `・クラス平均 ${pct(x.race_level_class_avg, 0)}%` : ''}）` : ''}`
+      : x.w3 != null && x.w3n >= 3 ? `・勝ち上がり ${pct(x.w3, 0)}%（${x.w3n}頭）` : '';
+    // 指数：評価（S〜D）・偏差値・レース内順位があればそれを主に、生の値はタップの中へ（川崎さんの fig_eval / fig_dev / fig_rank_in_race）
+    const ev = x.fig_eval ? String(x.fig_eval) : '';
+    const figR = ev ? `<span class="rfig ev"><b class="g${esc(ev)}">${esc(ev)}</b><small>${x.fig_dev != null ? `偏差値${Math.round(x.fig_dev)}` : ''}</small><small>${x.fig_rank_in_race != null ? `${x.fig_rank_in_race}位${x.n ? '／' + x.n + '頭' : ''}` : ''}</small></span>`
+      : `<span class="rfig">${x.fig != null ? Number(x.fig).toFixed(1) : '－'}<small>指数</small></span>`;
     const wu = (r, n, lab) => (r != null && n ? `${lab} ${pct(r, 0)}%（${n}頭中）` : '');
     const ups = [wu(x.wn, x.wnn, '次走で勝ち上がり'), wu(x.w3, x.w3n, '3走以内')].filter(Boolean).join('・');
     return `<details class="rc"><summary>
@@ -1679,11 +1690,11 @@ function recentBlock(rs) {
       <span class="rmain"><b>${x.d ? esc(String(x.d).slice(2).replace(/-/g, '/')) : ''} ${esc(x.v || '')}${x.rn ? x.rn + 'R' : ''} ${esc(x.cls || x.race || '')}</b>
         <small>${sfc(x.sf)}${x.dist || ''}・${esc(x.cond || '')}・${x.n || '－'}頭${x.mg ? `・${esc(x.mg)}` : ''}　${esc(x.jk || '')}${x.kg ? ` ${x.kg}` : ''}</small>
         <small>${x.pop != null ? `${x.pop}番人気` : ''}${x.odds != null ? ` ${x.odds}倍` : ''}${x.time ? `・${esc(x.time)}` : ''}${x.bw ? `・${x.bw}kg${x.bwd ? `(${esc(String(x.bwd))})` : ''}` : ''}${lv}</small></span>
-      <span class="rfig">${x.fig != null ? Number(x.fig).toFixed(1) : '－'}<small>指数</small></span></summary>
-      <div class="rbody">${x.rv ? `<p><span class="mtag">回顧</span>${esc(x.rv)}</p>` : ''}${x.cm ? `<p><span class="mtag now">厩舎</span>${esc(x.cm)}</p>` : ''}${ups ? `<p class="rup">このレースの出走馬の${ups}</p>` : ''}${x.race && x.cls ? `<p class="rup">${esc(x.race)}</p>` : ''}</div></details>`;
+      ${figR}</summary>
+      <div class="rbody">${ev && x.fig != null ? `<p class="rup">スピード指数 ${Number(x.fig).toFixed(1)}</p>` : ''}${x.rv ? `<p><span class="mtag">回顧</span>${esc(x.rv)}</p>` : ''}${x.cm ? `<p><span class="mtag now">厩舎</span>${esc(x.cm)}</p>` : ''}${ups ? `<p class="rup">このレースの出走馬の${ups}</p>` : ''}${x.race && x.cls ? `<p class="rup">${esc(x.race)}</p>` : ''}</div></details>`;
   };
   return `<div class="recent"><h3 style="margin-top:12px">近走成績</h3>${rs.slice(0, 5).map(row).join('')}
-    <p class="dnote" style="margin-top:4px">着順の色は、1着＝赤・2着＝青・3着＝緑、4〜5着は枠だけ。「勝ち上がり」は、そのレースに出た馬が3走以内に勝った割合（レースのレベルの目安）。指数はT-AIのスピード指数（高いほど速い）。行をタップすると、回顧と、そのときの厩舎の話、そのレースに出た馬がその後どれだけ勝ち上がったか（レースのレベルの目安）が開きます。</p></div>`;
+    <p class="dnote" style="margin-top:4px">着順の色は、1着＝赤・2着＝青・3着＝緑、4〜5着は枠だけ。「勝ち上がり」は、そのレースに出た馬が3走以内に勝った割合（レースのレベルの目安）。右端は、その走りのスピード指数の評価（S〜D）と、同じ条件の馬と比べた偏差値、そのレースの中での順位です（指数の値はタップした中）。行をタップすると、回顧と、そのときの厩舎の話、そのレースに出た馬がその後どれだけ勝ち上がったか（レースのレベルの目安）が開きます。</p></div>`;
 }
 function fitBlock(r, h, f, trainer) {
   if (!f) return '';
