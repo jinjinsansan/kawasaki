@@ -522,6 +522,9 @@ body.lock { overflow: hidden; }
 .nh.dn { box-shadow: inset 3px 0 0 #1f4fa3; }
 .nh b { display: block; font-size: 13.5px; }
 .nh small { display: block; font-size: 12px; color: var(--ink2); }
+.tone { display: inline-block; margin-bottom: 4px; padding: 0 6px; border: 1.5px solid var(--ink3); font-size: 11.5px; font-weight: 900; color: var(--ink2); }
+.tone.up { border-color: #c8102e; color: #c8102e; }
+.tone.dn { border-color: #1f4fa3; color: #1f4fa3; }
 .memo .mrow { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(27, 24, 20, .25); }
 .memo .mtag { align-self: start; text-align: center; font-size: 11px; font-weight: 900; padding: 3px 0; border: 1.5px solid var(--ink); }
 .memo .mtag.now { background: var(--ink); color: var(--paper); }
@@ -2151,7 +2154,7 @@ function memoBlock(m) {
     return `<small class="mres">${esc(s)}${r ? `<br>${r}` : ''}</small>`; };
   const one = (lab, p) => `<div class="mrow"><span class="mtag">${lab}</span><div>${res(p)}<p>${esc(p.memo)}</p></div></div>`;
   return `<div class="memo"><h3 style="margin-top:12px">レースメモ</h3>
-    ${m.cur ? `<div class="mrow"><span class="mtag now">今回</span><div><p>${esc(m.cur)}</p></div></div>` : ''}
+    ${m.cur ? `<div class="mrow"><span class="mtag now">今回</span><div>${m.tone ? `<span class="tone ${m.tone === '強気' ? 'up' : m.tone === '弱気' ? 'dn' : ''}">陣営のトーン：${esc(m.tone)}</span>` : ''}<p>${esc(m.cur)}</p></div></div>` : ''}
     ${m.p1 ? one('前走', m.p1) : ''}${m.p2 ? one('前々走', m.p2) : ''}</div>`;
 }
 // 指数カード：近走成績（馬柱。川崎さんの horse_recent）。行をタップすると回顧・厩舎コメント・勝ち上がり率が開く
