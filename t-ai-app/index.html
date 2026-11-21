@@ -454,6 +454,19 @@ body.lock { overflow: hidden; }
 .recent .rbody .mtag { display: inline-block; margin-right: 6px; padding: 0 5px; font-size: 10.5px; font-weight: 900; border: 1.5px solid var(--ink); }
 .recent .rbody .mtag.now { background: var(--ink); color: var(--paper); }
 .recent .rup { font-size: 11px !important; color: var(--ink2); }
+.dsum { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; margin-top: 8px; }
+.dsum b { font-family: var(--n); font-size: 26px; font-weight: 900; color: var(--red); line-height: 1; }
+.dsum span { font-size: 13px; font-weight: 700; }
+.dsum .dgap { color: var(--ink2); }
+.dsum em { font-style: normal; font-size: 11.5px; font-weight: 900; padding: 1px 6px; border: 1.5px solid var(--ink); }
+.dist { margin-top: 8px; display: grid; gap: 3px; }
+.dist .dr { display: grid; grid-template-columns: 30px minmax(0, 1fr) 44px; gap: 6px; align-items: center; }
+.dist .db { height: 12px; background: rgba(27, 24, 20, .08); }
+.dist .db i { display: block; height: 100%; background: var(--ink3); }
+.dist .dr.me .db i { background: var(--red); }
+.dist .dv { text-align: right; font-family: var(--n); font-size: 12px; font-weight: 700; color: var(--ink2); }
+.dist .dr.me .dv { color: var(--red); font-size: 13px; }
+.dist .dn .hn { transform: scale(.85); transform-origin: left center; }
 .ixs .ixsub { margin: 10px 0 0; font-size: 12px; font-weight: 900; color: var(--ink2); }
 .gkr span small { display: block; font-size: 10px; font-weight: 700; color: var(--ink3); line-height: 1.2; }
 .gkr.up .sc { color: var(--red); }
@@ -1234,7 +1247,7 @@ function cardBody(r, no) {
   const val = (k, f, v, pre) => (f === 'lay' ? lay() : f === 'pcn' ? pct(v, 0) + '%' + cnt(pre) : f === 'fin' ? `${Math.round(v)}着${fieldOf(x) != null ? `／${Math.round(fieldOf(x))}頭` : ''}` : ixFmt(v, f));
   const redraw = () => { const sh = $('#sheet'); if (sh && sh.dataset.race === r.id && +sh.dataset.no === no) { const sc = $('.ixs') && $('.ixs').scrollTop; $('#sheetB').innerHTML = cardBody(r, no); if ($('.ixs') && sc) $('.ixs').scrollTop = sc; } };
   const naTxt = (k) => (k === 'gaikyu_name' || k === 'gaikyu_return_days' ? '利用なし' : k === 'layoff_starts' ? '該当なし' : /^farm_/.test(k) ? (x.gaikyu_name ? '出走30未満のため省略' : '－') : 'データなし');
-  return top + cardTabs(x) + `<div class="ixs">${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return (rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}${t === '外厩' ? farmBlock(r, x, h, redraw) : ''}` : '') + (t === '脚質' ? paceBlock(h, x._trainer) : '') + (t === '騎手・厩舎' ? personMini(h, x._trainer, redraw) + fitBlock(r, h, x._fit, x._trainer) : ''); }).join('')}
+  return top + cardTabs(x) + `<div class="ixs">${distBlock(r, m, h)}${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return (rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}${t === '外厩' ? farmBlock(r, x, h, redraw) : ''}` : '') + (t === '脚質' ? paceBlock(h, x._trainer) : '') + (t === '騎手・厩舎' ? personMini(h, x._trainer, redraw) + fitBlock(r, h, x._fit, x._trainer) : ''); }).join('')}
     ${x.gaikyu_name && farmKey(x) ? `<div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-go="#/gaikyu/${encodeURIComponent(farmKey(x))}">この外厩の集計を見る<span>▶</span></button></div>` : ''}
     <p class="note" style="margin-top:12px">指数は、T-AIが勝つ確率を計算するときの材料の一部です。順位は、このレースの出走馬の中での順位です。「データなし」は、過去の走りが無いなどで計算できない項目です。${x.gaikyu_name ? '外厩のスコアは参考の集計で、勝つ確率の計算には入っていません。全騎乗＝その外厩から帰ってきた後の全部の出走、直行＝帰ってきて最初のレースだけ。' : ''}</p></div>`;
 }
@@ -1784,6 +1797,30 @@ function recentBlock(rs) {
   return `<div class="recent"><h3 style="margin-top:12px">近走成績</h3>${rs.slice(0, 5).map(row).join('')}
     <p class="dnote" style="margin-top:4px">着順の色は、1着＝赤・2着＝青・3着＝緑、4〜5着は枠だけ。「勝ち上がり」は、そのレースに出た馬が3走以内に勝った割合（レースのレベルの目安）。右端は、その走りのスピード指数の評価（S〜D）と、同じ条件の馬と比べた偏差値、そのレースの中での順位です（指数の値はタップした中）。行をタップすると、回顧と、そのときの厩舎の話、そのレースに出た馬がその後どれだけ勝ち上がったか（レースのレベルの目安）が開きます。</p></div>`;
 }
+// 指数カードの「このレースでの位置」：スピード指数（近3走の平均）の、このレースの全馬の分布（川崎さんの依頼）
+// 馬身への換算は川崎さんの係数（SF_PER_LENGTH：指数何ポイントで1馬身か）が届いたら入れる。無いあいだは指数の差だけ
+const SF_PER_LENGTH = null;
+let distKey = 'sf_mean3';
+const DIST_KEYS = [['sf_mean3', '近3走の平均'], ['sf_last', '前走'], ['sf_best3', '近3走の最高']];
+function distBlock(r, m, h) {
+  const all = [...m.entries()].filter(([, y]) => !y._noidx);
+  const k = DIST_KEYS.some(([kk]) => all.some(([, y]) => y[kk] != null) && kk === distKey) ? distKey : (DIST_KEYS.find(([kk]) => all.some(([, y]) => y[kk] != null)) || [])[0];
+  if (!k) return '';
+  const vals = all.filter(([, y]) => typeof y[k] === 'number').map(([no, y]) => ({ no, v: y[k] })).sort((a, b) => b.v - a.v);
+  if (vals.length < 2) return '';
+  const me = vals.find((x) => x.no === h.no), topv = vals[0].v, lo = Math.min(...vals.map((x) => x.v));
+  const span = Math.max(topv - lo, 1e-9), miss = r.horses.filter((y) => y.known !== false).length - vals.length;
+  const rank = me ? vals.findIndex((x) => x.no === h.no) + 1 : null, gap = me ? topv - me.v : null;
+  const second = vals[1] ? topv - vals[1].v : 0;
+  const shape = second >= span * 0.25 ? '1頭が抜けている' : vals.length >= 4 && (topv - vals[Math.min(3, vals.length - 1)].v) <= span * 0.2 ? '上位が混戦' : '';
+  const len = (d) => (SF_PER_LENGTH ? `（約${(d / SF_PER_LENGTH).toFixed(1)}馬身）` : '');
+  const horse = (no) => r.horses.find((y) => y.no === no);
+  return `<h3>このレースでの位置</h3>
+    <div class="seg sm scroll" role="group" aria-label="指数の種類" style="margin-top:8px">${DIST_KEYS.filter(([kk]) => all.some(([, y]) => y[kk] != null)).map(([kk, l]) => `<button type="button" data-dkey="${kk}" aria-pressed="${kk === k}">${l}</button>`).join('')}</div>
+    <div class="dsum">${me ? `<b>${rank}位</b><span>／${vals.length}頭</span><span class="dgap">${rank === 1 ? (vals.length > 1 ? `2位と${(me.v - vals[1].v).toFixed(1)}差${len(me.v - vals[1].v)}` : '') : `トップと${gap.toFixed(1)}差${len(gap)}`}</span>` : '<span>この馬は指数がありません</span>'}${shape ? `<em>${shape}</em>` : ''}</div>
+    <div class="dist">${vals.map((x) => { const y = horse(x.no); return `<div class="dr${x.no === h.no ? ' me' : ''}"><span class="dn">${y ? hn(y) : x.no}</span><span class="db"><i style="width:${Math.max(4, (x.v - lo) / span * 100)}%"></i></span><span class="dv">${x.v.toFixed(1)}</span></div>`; }).join('')}</div>
+    <p class="dnote" style="margin-top:6px">スピード指数（高いほど速い）を、このレースの全馬で高い順に並べたものです。赤がこの馬。${miss > 0 ? `指数の無い馬（新馬など）${miss}頭は入っていません。` : ''}${SF_PER_LENGTH ? '' : '差は指数のポイントです。'}</p>`;
+}
 function fitBlock(r, h, f, trainer) {
   if (!f) return '';
   const sc = (v) => `<span class="v${v >= 1.2 ? ' up' : v < 0.85 ? ' dn' : ''}">${Number(v).toFixed(3)}</span>`;
@@ -2079,6 +2116,7 @@ document.addEventListener('click', (e) => {
   const ds = t.dataset;
   if (ds.copy != null) { copyText(ds.copy, t); return; }
   if (ds.jump) { const el = $(ds.jump), toc = $('#rtoc'), m = $('#mast'); if (el) { const off = (m ? m.offsetHeight : 0) + (toc ? toc.offsetHeight : 0) + 8; scrollTo({ top: el.getBoundingClientRect().top + scrollY - off, behavior: 'smooth' }); } return; }
+  if (ds.dkey) { distKey = ds.dkey; const sh = $('#sheet'), r = sh && byId.get(sh.dataset.race); if (r) { const ix = $('.ixs'), sc = ix && ix.scrollTop; $('#sheetB').innerHTML = cardBody(r, +sh.dataset.no); if ($('.ixs') && sc) $('.ixs').scrollTop = sc; } return; }
   if (ds.ctab) { cardTab = ds.ctab; const sh = $('#sheet'), r = sh && byId.get(sh.dataset.race); if (r) { $('#sheetB').innerHTML = cardBody(r, +sh.dataset.no); const ix = $('.ixs'); if (ix) ix.scrollTop = 0; } return; }
   if (ds.ai) { aiAction(ds.ai); return; }
   if (t.id === 'raceOpen') { openSheet(); return; }
