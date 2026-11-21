@@ -50,7 +50,7 @@ p, h1, h2, h3 { margin: 0; }
 
 /* タブ */
 [hidden] { display: none !important; }
-.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; max-width: 480px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding-bottom: env(safe-area-inset-bottom, 0px); background: rgba(242, 236, 223, .97); border-top: 2px solid var(--ink); }
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; max-width: 480px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding-bottom: env(safe-area-inset-bottom, 0px); background: rgba(242, 236, 223, .97); border-top: 2px solid var(--ink); }
 .tabs button { position: relative; display: grid; place-content: center; gap: 0; min-height: var(--tabh); border: 0; background: none; text-align: center; line-height: 1.25; transition: background-color .2s; }
 .tabs button + button { border-left: 1px solid rgba(27, 24, 20, .18); }
 .tabs b { font-weight: 900; font-size: 15px; }
@@ -572,6 +572,7 @@ details.day > summary small { font-size: 11.5px; font-weight: 700; color: var(--
 </div>
 <nav class="tabs" id="tabs" aria-label="紙面の切り替え" hidden>
   <button type="button" data-tab="races"><b>出馬表</b><small>レース</small></button>
+  <button type="button" data-tab="bias"><b>傾向</b><small>当日</small></button>
   <button type="button" data-tab="build"><b>買い目</b><small>つくる</small></button>
   <button type="button" data-tab="results"><b>成績</b><small>答え合わせ</small></button>
   <button type="button" data-tab="my"><b>会員</b><small>マイページ</small></button>
@@ -1591,7 +1592,8 @@ function needBias(d, cb) {
 function vBias(d, v) {
   const re = () => { if (/^#\/bias/.test(location.hash)) rerender(); };
   if (FREE || DATA.member.guest) return '<section class="sec"><p class="note" style="padding:24px 0">会員の方だけが見られます。</p></section>';
-  d = /^\d{4}-\d{2}-\d{2}$/.test(d || '') ? d : jstToday();
+  d = /^\d{4}-\d{2}-\d{2}$/.test(d || '') ? d : (DATA.week.includes(jstToday()) ? jstToday() : (BIAS_DAYS && BIAS_DAYS[0]) || jstToday());
+  if (!BIAS_DAYS) needBias(d, re);
   needBias(d, re);
   const B = BIAS.get(d);
   const days = [...new Set([...(BIAS_DAYS || []), d])].sort().slice(-4);
@@ -2081,7 +2083,7 @@ function route() {
   else if (name === 'results') { html = vResults(); if (histState === 'no') loadHistory(); }
   else if (name === 'gaikyu') { tab = 'results'; html = vGaikyu(arg ? decodeURIComponent(arg) : ''); mopts = { back: 'results', backLabel: '成績', sub: '外厩データ' }; }
   else if (name === 'person') { tab = 'races'; const [, , ro, ...rest] = location.hash.split('/'); html = vPerson(ro, decodeURIComponent(rest.join('/'))); mopts = { back: 'races', backLabel: '出馬表', sub: ro === 'trainer' ? '調教師' : '騎手' }; }
-  else if (name === 'bias') { tab = 'races'; const [, , dd, vv] = location.hash.split('/'); html = vBias(dd, decodeURIComponent(vv || '')); mopts = { back: 'races', backLabel: '出馬表', sub: '当日の傾向' }; }
+  else if (name === 'bias') { tab = 'bias'; const [, , dd, vv] = location.hash.split('/'); html = vBias(dd, decodeURIComponent(vv || '')); mopts = { sub: '当日の傾向' }; }
   else if (name === 'ai') { tab = 'my'; html = vAi(); mopts = { back: 'my', backLabel: '会員', sub: 'AIとつなぐ' }; }
   else if (name === 'my') html = vMy();
   else { tab = 'races'; html = vRaces(); }
@@ -2136,7 +2138,7 @@ document.addEventListener('click', (e) => {
   if (ds.sven) { sheetState.v = ds.sven; sheetRedraw(); return; }
   if (ds.pickrace) { if (ds.pickrace !== BS.raceId) { BS.raceId = ds.pickrace; BS.axis = null; BS.sel.clear(); BS.auto = null; } closeSheet(true); rerender(); return; }
   if (ds.go) { go(ds.go); return; }
-  if (ds.tab) { const map = { home: '#/home', races: '#/races', build: '#/build', results: '#/results', my: '#/my' }; go(map[ds.tab]); return; }
+  if (ds.tab) { const map = { home: '#/home', races: '#/races', bias: '#/bias', build: '#/build', results: '#/results', my: '#/my' }; go(map[ds.tab]); return; }
   if (ds.back) { let nav = false; try { nav = !!sessionStorage.getItem('taiapp:nav'); } catch (e) {} if (history.length > 1 && nav) history.back(); else go('#/' + ds.back); return; }
   if (ds.day) { listState.d = ds.day; const vs = [...new Set(weekRaces(ds.day).map((r) => r.venue))]; if (!vs.includes(listState.v)) listState.v = vs[0] || ''; rerender(); return; }
   if (ds.hday) { homeDay = ds.hday; listState.d = ds.hday; const vs = [...new Set(weekRaces(ds.hday).map((r) => r.venue))]; if (!vs.includes(listState.v)) listState.v = vs[0] || ''; rerender(); return; }
