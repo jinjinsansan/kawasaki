@@ -318,6 +318,19 @@ body.lock { overflow: hidden; }
 .pcmp .cr, .pcmp .cap4 { grid-template-columns: minmax(0, 1fr) 36px 44px 36px; }
 .pkv2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .pkv2 b { font-size: 15px; font-weight: 900; }
+.lapbars { display: flex; align-items: flex-end; gap: 3px; margin-top: 6px; overflow-x: auto; padding-bottom: 2px; }
+.lapbars > div { flex: 1 0 26px; display: grid; justify-items: center; gap: 2px; }
+.lapbars i { display: block; width: 100%; background: var(--ink); }
+.lapbars small { font-family: var(--n); font-size: 10px; font-weight: 700; }
+.lapbars span { font-size: 9px; color: var(--ink3); }
+.pkv3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+.pkv3 > div { border: 1.5px solid var(--ink); padding: 6px; text-align: center; background: var(--card); }
+.pkv3 > div.best { border-color: var(--red); }
+.pkv3 small { display: block; font-size: 11px; font-weight: 700; color: var(--ink2); }
+.pkv3 b { font-family: var(--n); font-size: 18px; font-weight: 900; }
+.pkv3 > div.best b { color: var(--red); }
+.pkv3 span { display: block; font-size: 10px; color: var(--ink3); }
+.lapt .cr .v { font-family: inherit; font-size: 13px; font-weight: 900; }
 .btns.two { grid-template-columns: 1fr 1fr; gap: 8px; }
 .btns.three { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
 .btns.three .btn { min-width: 0; padding-left: 6px; padding-right: 6px; justify-content: center; font-size: 13px; }
@@ -682,7 +695,7 @@ const jstToday = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 
 const normName = (n) => String(n || '').replace(/\((G[123]|L|OP|Jpn[123])\)/g, '（$1）');
 // 読み込みは2段：開いたときは「直近9日（今週と先週末）」だけ、成績の面を開いたら「過去70日」を軽い列で足す
 const RACE_COLS = 'race_id,date,venue,race_no,race_name,start_time,surface,distance,field_size,status,going,going_used,pace';
-const HORSE_FULL = 'horse_no,gate,horse_name,jockey,weight,last_run,prob,rank,note,result,going,pace';
+const HORSE_FULL = 'horse_no,gate,horse_name,jockey,weight,last_run,prob,rank,note,result,going,pace,lap';
 const ODDS_LITE = 'odds(win,place,fetched_at,official_at,final)';
 const jstDay = (back) => new Date(Date.now() + 9 * 3600e3 - back * 864e5).toISOString().slice(0, 10);
 function toRace(r, lite) {
@@ -693,7 +706,7 @@ function toRace(r, lite) {
     surface: r.surface === 'ダ' ? 'ダート' : (r.surface || ''), distance: r.distance, field: r.field_size || n, status: r.status, lite: !!lite, going: r.going || '', goingUsed: r.going_used || '', pace: r.pace || null,
     odds: (Array.isArray(r.odds) ? r.odds[0] : r.odds) || null,
     numbered: ps.every((h) => h.horse_no != null),
-    horses: ps.map((h, i) => { const known = h.horse_no != null, no = known ? h.horse_no : 101 + i; return { no, known, gate: known ? (h.gate ?? gateOf(no, n)) : 0, name: h.horse_name, jockey: h.jockey || '', weight: h.weight, last: h.last_run || '', prob: h.prob, rank: h.rank, note: h.note, result: h.result, going: h.going || null, pace: h.pace || null }; }),
+    horses: ps.map((h, i) => { const known = h.horse_no != null, no = known ? h.horse_no : 101 + i; return { no, known, gate: known ? (h.gate ?? gateOf(no, n)) : 0, name: h.horse_name, jockey: h.jockey || '', weight: h.weight, last: h.last_run || '', prob: h.prob, rank: h.rank, note: h.note, result: h.result, going: h.going || null, pace: h.pace || null, lap: h.lap || null }; }),
   };
 }
 let histState = 'no', HIST_BINS = [];  // no → loading → ok
@@ -1096,7 +1109,7 @@ function vRace(r) {
   if (r.status === 'waiting') return `${head}<div class="wait-box"><span class="stamp">出馬表待ち</span><p class="h2">出馬表が確定すると、<br>T-AIが計算します。</p><p class="note">JRAの枠順は、前日の午前10時30分ごろに確定します。計算が終わると、一面の「計算済み」に加わります。</p></div>`;
   const done = r.status === 'done', over = r.horses.some((h) => h.note === 'overseas');
   return `${head}
-  <nav class="rtoc" id="rtoc" aria-label="このページの目次">${[['#tbl', '出馬表'], ['#cmpSeg', 'オッズ'], ['#paceSec', '展開'], ['#goingSec', '馬場'], ['#kindSeg', '組み合わせ']].map(([t, l]) => `<button type="button" data-jump="${t}">${l}</button>`).join('')}</nav>
+  <nav class="rtoc" id="rtoc" aria-label="このページの目次">${[['#tbl', '出馬表'], ['#cmpSeg', 'オッズ'], ['#paceSec', '展開'], ['#lapSec', 'ラップ'], ['#goingSec', '馬場'], ['#kindSeg', '組み合わせ']].map(([t, l]) => `<button type="button" data-jump="${t}">${l}</button>`).join('')}</nav>
   <div class="calc" id="calc"><span>${done ? 'レース終了' : 'T-AI'}</span><span class="rot"><i></i></span><b id="calcT">${done ? 'RESULT' : 'READY'}</b></div>
   <div class="dctl"><div class="seg sm" role="group" aria-label="並び順" id="sortSeg"><button type="button" data-sort="no" aria-pressed="${raceState.sort === 'no'}">馬番順</button><button type="button" data-sort="prob" aria-pressed="${raceState.sort === 'prob'}">${MY ? 'あなた順' : '確率順'}</button></div><div class="seg sm" role="group" aria-label="予想" id="pmodeSeg"><button type="button" data-pmode="std" aria-pressed="${MINE.mode !== 'mine'}">標準</button><button type="button" data-pmode="mine" aria-pressed="${MINE.mode === 'mine'}">あなた</button></div></div>
   ${MINE.mode === 'mine' ? `<div class="mybar">${MY ? `<span><b>あなたの重視順</b>${mineLabel()}</span>` : '<span>あなたの順位を計算しています…</span>'}<button type="button" class="btn sub" data-mineset="1">変更</button></div>` : ''}
@@ -1114,7 +1127,7 @@ function vRace(r) {
   ${r.numbered === false ? '' : '<p class="dnote">馬の行をタップすると、その馬の「指数カード」が開きます。</p>'}
   ${over ? '<p class="dnote">※海外から来た馬など、日本での出走歴がない馬は、確率が低く出ることがあります。</p>' : ''}
   ${vCompare(r)}
-  ${r.numbered === false ? '' : '<div id="paceSec"></div><div id="goingSec"></div>'}
+  ${r.numbered === false ? '' : '<div id="paceSec"></div><div id="lapSec"></div><div id="goingSec"></div>'}
   ${r.numbered === false ? '<section class="sec"><div class="wait-box"><span class="stamp">枠順待ち</span><p class="h2">馬番は、枠順が<br>確定してから載せます。</p><p class="note">組み合わせの確率と買い目は、枠順の確定後に使えます。各馬の勝つ確率は、もう計算済みです。</p></div></section>' : `<section class="sec">
     <div class="label"><b>組み合わせ</b><span>確率の高い順</span></div>
     <div class="seg sm k6 scroll" role="group" aria-label="券種" id="kindSeg" style="margin-top:12px">${kindsFor(r).filter((k) => k !== 'tan').map((k) => `<button type="button" data-kind="${k}" aria-pressed="${raceState.kind === k}">${KIND[k]}</button>`).join('')}</div>
@@ -1179,6 +1192,43 @@ function renderPace(r) {
     <div class="box cmp pcmp" style="margin-top:8px"><div class="cap4"><span>馬（脚質の順）</span><span>脚質</span><span>隊列</span><span>展開</span></div>${rows}</div>
     <p class="note" style="margin-top:6px">脚質は近5走の序盤の位置から分けています（記録が3走未満の馬は「不明」）。有利・不利は、2016年からの同じ条件（芝・ダート、距離帯、先行する馬の多さ）での脚質別の成績から見たもので、勝つ確率の計算には入っていません。</p>
   </section>`;
+}
+// ラップ傾向（川崎さんの tab_data：コースのペースの骨格・脚質と位置取りの成績、出走馬の前走のラップ型）。記述的な集計
+const COURSE = new Map();  // '場|芝ダ|距離帯' → data | 'loading' | null
+const lapBand = (d) => (d <= 1200 ? '1200以下' : d <= 1600 ? '1300-1600' : d <= 2000 ? '1700-2000' : '2100以上');
+function renderLap(r) {
+  const sec = $('#lapSec'); if (!sec) return;
+  const sf = r.surface === '芝' ? '芝' : /ダ/.test(r.surface || '') ? 'ダート' : '', band = r.distance ? lapBand(r.distance) : '';
+  const key = `${r.venue}|${sf}|${band}`;
+  if (!FREE && sf && band && !COURSE.has(key)) {
+    COURSE.set(key, 'loading');
+    sb.from('course_lap').select('data').eq('venue', r.venue).eq('surface', sf).eq('band', band).maybeSingle().then(({ data }) => { COURSE.set(key, data ? data.data : null); if ($('#lapSec') && $('#view').dataset.race === r.id) { renderLap(r); tocSync(); } });
+  }
+  const c = COURSE.get(key), hs = r.horses.filter((h) => h.lap);
+  if ((!c || c === 'loading') && !hs.length) { sec.innerHTML = ''; return; }
+  const pc = (x) => (x == null ? '－' : pct(x, 0) + '%');
+  let course = '';
+  if (c && c !== 'loading') {
+    const laps = Object.keys(c).filter((k) => /^lap_\d+$/.test(k)).map((k) => [+k.slice(4), c[k]]).sort((a, b) => a[0] - b[0]).filter(([d]) => !r.distance || d <= r.distance);
+    const mx = Math.max(...laps.map((x) => x[1])), mn = Math.min(...laps.map((x) => x[1]));
+    const tilt = [['前傾', c.share_front_tilt], ['平均', c.share_even], ['後傾', c.share_back_tilt]];
+    const main = tilt.slice().sort((a, b) => (b[1] || 0) - (a[1] || 0))[0];
+    const styles = ['先行', '好位', '中団', '後方'].map((t) => ({ t, n: c[`style_${t}_n`], w: c[`style_${t}_win_rate`], p: c[`style_${t}_top3_rate`] })).filter((x) => x.n);
+    const bestS = Math.max(...styles.map((x) => x.p || 0));
+    const pos = ['内', '中', '外'].map((t) => ({ t, n: c[`pos4c_${t}_n`], p: c[`pos4c_${t}_top3_rate`] })).filter((x) => x.n);
+    const bestP = Math.max(...pos.map((x) => x.p || 0));
+    course = `<p class="ixsub" style="margin-top:10px">このコースのペースの骨格（${esc(r.venue)}・${sf}・${band}m、過去${c.n_races}レースの平均）</p>
+      <div class="lapbars">${laps.map(([d, v]) => `<div title="${d}m ${v}秒"><i style="height:${18 + (mx - v) / Math.max(mx - mn, .01) * 52}px"></i><small>${v.toFixed(1)}</small><span>${d}</span></div>`).join('')}</div>
+      <p class="dnote" style="margin-top:4px">棒が高いほど速い区間（200mごとの平均ラップ・秒）。</p>
+      <div class="box pacebox" style="margin-top:8px"><div class="pkv2"><div><small>レースの型</small><b>${main[0]}が多い</b><span class="note" style="display:block">${tilt.map(([t, v]) => `${t} ${pc(v)}`).join('・')}</span></div><div><small>ペース（H／M／S）</small><b>${pc(c.pace_call_H_share)}／${pc(c.pace_call_M_share)}／${pc(c.pace_call_S_share)}</b></div></div></div>
+      <p class="ixsub">好走しやすい脚質（1角の位置）</p>
+      <div class="box gkt"><div class="gkr gkh"><span>脚質</span><span>件数</span><span>勝率</span><span>複勝率</span><span></span></div>${styles.map((x) => `<div class="gkr${x.p === bestS ? ' up' : ''}"><span>${x.t}</span><span>${x.n}</span><span>${pc(x.w)}</span><span>${pc(x.p)}</span><span></span></div>`).join('')}</div>
+      ${pos.length ? `<p class="ixsub">4コーナーの位置（内・中・外）の複勝率</p><div class="pkv3">${pos.map((x) => `<div class="${x.p === bestP ? 'best' : ''}"><small>${x.t}</small><b>${pc(x.p)}</b><span>${x.n}頭</span></div>`).join('')}</div>` : ''}`;
+  }
+  const typeCol = (t) => (t === '前傾' ? 'var(--red)' : t === '後傾' ? '#1f4fa3' : 'var(--ink)');
+  const horses = hs.length ? `<p class="ixsub">出走馬の前走のラップ型</p><div class="box cmp pcmp lapt"><div class="cap4"><span>馬（馬番順）</span><span>型</span><span>4角</span><span>着順</span></div>${hs.slice().sort((a, b) => a.no - b.no).map((h) => { const l = h.lap; return `<div class="cr"><span class="n">${hn(h)}<span><b>${esc(h.name)}</b><small>${l.prev_date ? String(l.prev_date).slice(5).replace('-', '/') : ''} ${esc(l.prev_venue || '')}${l.prev_surface ? (String(l.prev_surface).startsWith('ダ') ? 'ダ' : '芝') : ''}${l.prev_distance || ''}・ペース${esc(l.prev_pace_call || '－')}</small></span></span><span class="v" style="color:${typeCol(l.prev_lap_type)}">${esc(l.prev_lap_type || '－')}</span><span class="v">${esc(l.prev_pos_4c || '－')}</span><span class="e" style="font-size:14px">${l.prev_finish_pos != null ? l.prev_finish_pos + '着' : '－'}</span></div>`; }).join('')}</div>` : '';
+  sec.innerHTML = `<section class="sec"><div class="label"><b>ラップ傾向</b><span>コースの骨格と前走の型</span></div>${course}${horses}
+    <p class="note" style="margin-top:6px">ラップは200mごとの区間タイム。前傾＝前半が速い流れ、後傾＝後半が速い流れ。4角の位置は「残り400m地点の走行位置」で見た近似です。過去の傾向を示すもので、勝つ確率の計算には入っていません。前走のラップが無い馬（初出走・集計前のレース）は入っていません。</p></section>`;
 }
 // 指数カードの「展開」の行（その馬の脚質・有利不利・騎手と調教師のその脚質での成績）
 function paceBlock(h, trainer) {
@@ -1517,7 +1567,7 @@ function renderCombos(r) {
 }
 function mountRace(r) {
   if (r.status === 'waiting' || r.locked) return;
-  placeRows(r, false); renderCombos(r); renderCompare(r); renderPace(r); renderGoing(r); tocSync(); vsBar();
+  placeRows(r, false); renderCombos(r); renderCompare(r); renderPace(r); renderLap(r); renderGoing(r); tocSync(); vsBar();
   const tbl = $('#tbl'), calc = $('#calc'), first = !seen.has(r.id) && !RM && r.status === 'ready';
   const setBars = () => tbl.querySelectorAll('.bar i[data-w]').forEach((i) => { i.style.width = i.dataset.w + '%'; });
   if (!first) { tbl.classList.add('instant'); setBars(); tbl.classList.add('drawn'); calc.classList.add('ok'); if (r.status === 'ready') $('#calcT').textContent = '計算済み'; return; }
