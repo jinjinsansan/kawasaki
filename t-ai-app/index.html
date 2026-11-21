@@ -185,11 +185,11 @@ p, h1, h2, h3 { margin: 0; }
 .row .ck { align-self: stretch; display: grid; place-items: center; cursor: pointer; }
 .row .ck i { display: grid; place-items: center; width: 20px; height: 20px; border: 2px solid var(--ink3); background: var(--card); font-style: normal; font-size: 13px; font-weight: 900; color: transparent; }
 .row .ck.on i { border-color: var(--red); background: var(--red); color: #fff; }
-.cmpbar { position: fixed; left: 0; right: 0; bottom: calc(var(--tabh) + env(safe-area-inset-bottom, 0px) + 2px); z-index: 19; max-width: 480px; margin: 0 auto; padding: 8px var(--pad); background: rgba(242, 236, 223, .97); border-top: 1px solid var(--ink); display: flex; gap: 8px; align-items: center; }
+.cmpbar { position: fixed; left: 0; right: 0; bottom: calc(var(--tabh) + env(safe-area-inset-bottom, 0px) + 2px); z-index: 19; max-width: 480px; margin: 0 auto; padding: 8px var(--pad); background: rgba(242, 236, 223, .97); border-top: 1px solid var(--ink); display: grid; grid-template-columns: minmax(0, 1fr) 72px; gap: 8px; align-items: stretch; }
 .cmpbar[hidden] { display: none; }
 .vsb #view::after { content: ''; display: block; height: 64px; }
-.cmpbar .btn { flex: 1 1 auto; margin: 0; min-height: 46px; }
-.cmpbar .sub { flex: 0 0 auto; min-width: 72px; }
+.cmpbar .btn { width: auto; min-width: 0; margin: 0; min-height: 46px; max-height: 56px; padding: 0 12px; font-size: 14px; line-height: 1.3; white-space: normal; writing-mode: horizontal-tb; justify-content: center; text-align: center; }
+.cmpbar .btn:disabled { background: var(--card); color: var(--ink2); border-color: var(--ink3); font-size: 13px; }
 .vs { overflow-x: auto; margin: 0 calc(var(--pad) * -1); padding: 0 var(--pad); }
 .vs table { border-collapse: collapse; width: 100%; min-width: calc(76px + var(--n) * 74px); table-layout: fixed; }
 .vs th, .vs td { border-bottom: 1px solid rgba(27, 24, 20, .25); padding: 7px 4px; text-align: center; font-size: 13px; vertical-align: middle; overflow-wrap: anywhere; }
@@ -1316,7 +1316,7 @@ function vsBar() {
   const n = r && VS.race === r.id && /^#\/race\//.test(location.hash) ? VS.set.size : 0;
   if (!bar) { document.body.insertAdjacentHTML('beforeend', '<div class="cmpbar" id="vsBar" hidden><button type="button" class="btn" id="vsGo"></button><button type="button" class="btn sub" id="vsClear">解除</button></div>'); bar = $('#vsBar'); }
   bar.hidden = !n; document.body.classList.toggle('vsb', !!n);
-  if (n) { const go = $('#vsGo'); go.disabled = n < 2; go.innerHTML = n < 2 ? 'もう1頭チェックすると比べられます' : `${n}頭を比べる<span>▶</span>`; }
+  if (n) { const go = $('#vsGo'); go.disabled = n < 2; go.innerHTML = n < 2 ? 'あと1頭チェックで比べられます' : `${n}頭を比べる<span>▶</span>`; }
 }
 function vsToggle(no, el) {
   const r = byId.get($('#view').dataset.race); if (!r) return;
