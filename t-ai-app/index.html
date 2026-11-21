@@ -544,6 +544,10 @@ body.lock { overflow: hidden; }
 .srow .sf.f1 { color: var(--red); }
 .smore { margin-top: 8px; }
 .smore summary { font-size: 13px; font-weight: 900; padding: 6px 0; cursor: pointer; }
+.ipr { margin: 10px 0 0; font-size: 12px; color: var(--ink2); }
+.ipr b { display: block; font-size: 15px; color: var(--ink); }
+.ipr small { font-size: 12px; font-weight: 700; }
+.ipat .btns { display: grid; gap: 8px; margin-top: 10px; }
 .memo .mrow { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(27, 24, 20, .25); }
 .memo .mtag { align-self: start; text-align: center; font-size: 11px; font-weight: 900; padding: 3px 0; border: 1.5px solid var(--ink); }
 .memo .mtag.now { background: var(--ink); color: var(--paper); }
@@ -1942,6 +1946,36 @@ function tickets() {
   return comb(rest, need - 1).map((c) => [BS.axis, ...c].sort((a, b) => a - b));
 }
 const gatesOf = (r) => [...new Set(r.horses.map((h) => h.gate))].filter(Boolean).sort((a, b) => a - b);
+// 即PAT（川崎さんの ipat_link_spec）：JRA公式の入口へ飛ぶボタンと、即PATの入力順に並べた買い目のコピー。
+// 特定レースの投票画面へ直接飛ぶ公式の仕組みは無いので、入口だけ。会員の即PATの番号の入力欄・保存は作らない
+const IPAT_SP = 'https://www.ipat.jra.go.jp/sp/', IPAT_PC = 'https://www.ipat.jra.go.jp/';
+const ipatUrl = () => (/iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent) ? IPAT_SP : IPAT_PC);
+function ipatBox(r) {
+  return `<section class="sec ipat"><div class="label"><b>即PATで買う</b><span>JRA公式サイトへ</span></div>
+    <p class="ipr">即PATで選ぶレース<b>${fd(r.date)} ${esc(r.venue)}${r.no}R ${esc(r.name)}</b><small>${esc(r.start)}発走</small></p>
+    <div class="btns"><button class="btn" type="button" data-ipat="1">即PATで買う（JRA公式サイトへ）<span>▶</span></button><button class="btn sub" type="button" data-ipatcopy="1">買い目をコピー（即PATの入力順）<span>▶</span></button></div>
+    <details class="smore"><summary>買い方の手順と注意</summary><ol class="hsteps">
+      <li>「即PATで買う」を押すと、JRA公式の即PATが別のタブで開きます（この画面はそのまま残ります）。</li>
+      <li>即PATにログインします。当日の初回だけログインすれば、同じブラウザで開き直してもログインが続くことが多いです。</li>
+      <li>「通常投票」から、上と同じ<b>競馬場・レース</b>を選びます。</li>
+      <li>コピーした買い目を見ながら、券種→買い方→馬番→金額の順に入れます。</li>
+      <li>内容を確かめて購入し、必ず即PATの「照会メニュー」で投票が成立したかを確認してください。</li></ol>
+      <p class="dnote" style="margin-top:6px">※加入者番号・暗証番号・P-ARS番号・INET-IDは、このサイトには絶対に入力しないでください。※成立した投票の取消・変更はできません。締切10分前ごろは回線が混み合うことがあります。※節の初めの投票前には即PATへの入金が必要です。※T-AIから直接は買えません（買うのはJRAの即PATです）。</p></details></section>`;
+}
+function ipatText() {
+  const r = byId.get(BS.raceId), t = tickets(); if (!r || !t.length) return '';
+  const per = Math.floor((BS.budget || 0) / t.length / 100) * 100, nag = !BS.auto && BS.method === 'nagashi' && BS.kind !== 'tan';
+  const sep = ORD[BS.kind] ? '→' : '-', nums = (a) => [...a].sort((x, y) => x - y).join('、'), unit = BS.kind === 'waku' ? '枠番' : '馬番';
+  const way = BS.kind === 'tan' ? '通常' : BS.auto ? '通常（1点ずつ）' : nag ? 'ながし' : 'ボックス';
+  const L = [`${r.date.slice(5).replace('-', '/')} ${r.venue}${r.no}R ${r.name}（${r.start}発走）`, '', '【即PATの入力順】', `券種：${KIND[BS.kind]}`, `買い方：${way}`];
+  if (BS.kind === 'tan') L.push(`馬番：${nums(t.map((x) => x[0]))}`);
+  else if (!BS.auto && nag) L.push(`軸${ORD[BS.kind] ? '（1着）' : ''}：${BS.axis}`, `相手：${nums(BS.sel)}`);
+  else if (!BS.auto) L.push(`${unit}：${nums(BS.sel)}`);
+  L.push(per >= 100 ? `金額：1点 ${yen(per)}円（${t.length}点・計${yen(per * t.length)}円）` : `金額：1点100円から（予算 ${yen(BS.budget || 0)}円では足りません）`);
+  L.push('', '【買い目の一覧】', ...t.map((x) => `${x.join(sep)}　${per >= 100 ? yen(per) + '円' : ''}`));
+  if (per >= 100) L.push(`合計 ${yen(per * t.length)}円`);
+  return L.join('\n');
+}
 function vBuild() {
   const r = byId.get(BS.raceId), ready = buildable();
   if (!kindsFor(r).includes(BS.kind)) { BS.kind = 'uma'; BS.axis = null; BS.sel.clear(); }
@@ -1962,6 +1996,7 @@ function vBuild() {
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px var(--pad) 0"><span class="note">${BS.kind === 'waku' ? '枠の下は、その枠の馬番です' : '数字の下は単勝の確率です'}</span><button type="button" class="clear" id="clear">選び直す</button></div>
   <div class="budbox sb2"><label for="bud">予算</label><input id="bud" type="number" inputmode="numeric" min="100" step="100" value="${BS.budget}"><span>円</span><span class="per" id="per"></span></div>
   <details class="tix" id="tix"><summary><span id="tixT">買い目の一覧</span></summary><div id="tixB"></div></details>
+  ${ipatBox(r)}
   <div class="sumbar" data-pen id="sum">
     <div class="sb1"><span><small>この買い目が当たる確率</small><span class="big"><span id="hitV">0.0</span><small>%</small>${under()}</span></span><span class="pts"><small>点数</small><b id="ptsV">0</b> 点<span class="perS" id="perS"></span></span></div>
     <div class="sb3" id="oddsL"></div>
@@ -2590,6 +2625,8 @@ document.addEventListener('click', (e) => {
   const t = e.target.closest('button, a'); if (!t) return;
   const ds = t.dataset;
   if (ds.copy != null) { copyText(ds.copy, t); return; }
+  if (ds.ipat) { window.open(ipatUrl(), '_blank', 'noopener'); return; }
+  if (ds.ipatcopy) { const tx = ipatText(); if (!tx) { alert('先に馬を選んで、買い目を作ってください。'); return; } copyText(tx, t); return; }
   if (ds.install && INSTALL) { INSTALL.prompt(); INSTALL.userChoice.finally(() => { INSTALL = null; rerender(); }); return; }
   if (ds.cnav) { cardStep(+ds.cnav); return; }
   if (ds.pmode) { MINE.mode = ds.pmode; mineSave(); if (ds.pmode === 'mine') raceState.sort = 'prob'; rerender(); return; }
