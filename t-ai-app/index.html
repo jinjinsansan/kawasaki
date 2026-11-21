@@ -272,12 +272,26 @@ body.lock { overflow: hidden; }
 .cmp .cr .n { min-width: 0; display: flex; align-items: center; gap: 6px; }
 .cmp .cr .n span:last-child { min-width: 0; display: grid; gap: 1px; }
 .cmp .cr .n b { font-size: 13.5px; font-weight: 900; line-height: 1.25; overflow-wrap: anywhere; }
-.cmp .cr .n small { font-size: 10.5px; color: var(--ink2); white-space: nowrap; line-height: 1.3; }
+.cmp .cr .n small { font-size: 10.5px; color: var(--ink2); line-height: 1.3; overflow-wrap: anywhere; }
 .cmp .cr .v { text-align: right; font-family: var(--n); font-weight: 700; font-size: 14px; line-height: 1.15; white-space: nowrap; }
 .cmp .cr .v small { display: block; font-size: 10px; color: var(--ink3); }
 .cmp .cr .e { text-align: right; font-family: var(--n); font-weight: 700; font-size: 15px; }
 .cmp .cr.ev { background: #fff; }
 .cmp .cr.ev .e { color: var(--red); }
+.pacebox { padding: 10px 12px; display: grid; gap: 10px; }
+.pacebox small { display: block; font-size: 11px; font-weight: 700; color: var(--ink2); }
+.pacebox .pcall b { font-size: 22px; font-weight: 900; line-height: 1.2; }
+.pscale { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border: 1.5px solid var(--ink); }
+.pscale span { padding: 5px 2px; text-align: center; font-size: 11px; font-weight: 700; color: var(--ink3); border-left: 1px solid rgba(27, 24, 20, .3); white-space: nowrap; }
+.pscale span:first-child { border-left: 0; }
+.pscale span.on { background: var(--ink); color: var(--paper); }
+.pfront { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 2px; margin-top: 3px; }
+.pfh { display: inline-flex; align-items: center; gap: 4px; min-width: 0; }
+.pfh b { font-size: 13px; font-weight: 900; overflow-wrap: anywhere; }
+.pfa { font-style: normal; color: var(--ink3); font-size: 12px; padding: 0 3px; }
+.pcmp .cr, .pcmp .cap4 { grid-template-columns: minmax(0, 1fr) 36px 44px 36px; }
+.pkv2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pkv2 b { font-size: 15px; font-weight: 900; }
 .cmp .cap4 { display: grid; grid-template-columns: minmax(0, 1fr) 50px 58px 44px; gap: 6px; padding: 5px 10px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 11px; }
 .cmp .cap4 span:not(:first-child) { text-align: right; }
 .otime { margin: 6px var(--pad) 0; font-size: 11.5px; color: var(--ink2); }
@@ -523,8 +537,8 @@ let DATA = { updatedAt: new Date().toISOString(), week: [], today: '', member: {
 const jstToday = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
 const normName = (n) => String(n || '').replace(/\((G[123]|L|OP|Jpn[123])\)/g, '（$1）');
 // 読み込みは2段：開いたときは「直近9日（今週と先週末）」だけ、成績の面を開いたら「過去70日」を軽い列で足す
-const RACE_COLS = 'race_id,date,venue,race_no,race_name,start_time,surface,distance,field_size,status,going,going_used';
-const HORSE_FULL = 'horse_no,gate,horse_name,jockey,weight,last_run,prob,rank,note,result,going';
+const RACE_COLS = 'race_id,date,venue,race_no,race_name,start_time,surface,distance,field_size,status,going,going_used,pace';
+const HORSE_FULL = 'horse_no,gate,horse_name,jockey,weight,last_run,prob,rank,note,result,going,pace';
 const ODDS_LITE = 'odds(win,place,fetched_at,official_at,final)';
 const jstDay = (back) => new Date(Date.now() + 9 * 3600e3 - back * 864e5).toISOString().slice(0, 10);
 function toRace(r, lite) {
@@ -532,10 +546,10 @@ function toRace(r, lite) {
   const n = ps.length;
   return {
     id: r.race_id, date: r.date, venue: r.venue, no: r.race_no, name: normName(r.race_name), start: r.start_time || '',
-    surface: r.surface === 'ダ' ? 'ダート' : (r.surface || ''), distance: r.distance, field: r.field_size || n, status: r.status, lite: !!lite, going: r.going || '', goingUsed: r.going_used || '',
+    surface: r.surface === 'ダ' ? 'ダート' : (r.surface || ''), distance: r.distance, field: r.field_size || n, status: r.status, lite: !!lite, going: r.going || '', goingUsed: r.going_used || '', pace: r.pace || null,
     odds: (Array.isArray(r.odds) ? r.odds[0] : r.odds) || null,
     numbered: ps.every((h) => h.horse_no != null),
-    horses: ps.map((h, i) => { const known = h.horse_no != null, no = known ? h.horse_no : 101 + i; return { no, known, gate: known ? (h.gate ?? gateOf(no, n)) : 0, name: h.horse_name, jockey: h.jockey || '', weight: h.weight, last: h.last_run || '', prob: h.prob, rank: h.rank, note: h.note, result: h.result, going: h.going || null }; }),
+    horses: ps.map((h, i) => { const known = h.horse_no != null, no = known ? h.horse_no : 101 + i; return { no, known, gate: known ? (h.gate ?? gateOf(no, n)) : 0, name: h.horse_name, jockey: h.jockey || '', weight: h.weight, last: h.last_run || '', prob: h.prob, rank: h.rank, note: h.note, result: h.result, going: h.going || null, pace: h.pace || null }; }),
   };
 }
 let histState = 'no', HIST_BINS = [];  // no → loading → ok
@@ -968,7 +982,7 @@ function vRace(r) {
   ${r.numbered === false ? '' : '<p class="dnote">馬の行をタップすると、その馬の「指数カード」が開きます。</p>'}
   ${over ? '<p class="dnote">※海外から来た馬など、日本での出走歴がない馬は、確率が低く出ることがあります。</p>' : ''}
   ${vCompare(r)}
-  ${r.numbered === false ? '' : '<div id="goingSec"></div>'}
+  ${r.numbered === false ? '' : '<div id="paceSec"></div><div id="goingSec"></div>'}
   ${r.numbered === false ? '<section class="sec"><div class="wait-box"><span class="stamp">枠順待ち</span><p class="h2">馬番は、枠順が<br>確定してから載せます。</p><p class="note">組み合わせの確率と買い目は、枠順の確定後に使えます。各馬の勝つ確率は、もう計算済みです。</p></div></section>' : `<section class="sec">
     <div class="label"><b>組み合わせ</b><span>確率の高い順</span></div>
     <div class="seg sm k6" role="group" aria-label="券種" id="kindSeg" style="margin-top:12px">${kindsFor(r).filter((k) => k !== 'tan').map((k) => `<button type="button" data-kind="${k}" aria-pressed="${raceState.kind === k}">${KIND[k]}</button>`).join('')}</div>
@@ -1006,6 +1020,48 @@ function renderGoing(r) {
     <div class="box cmp"><div class="cap4"><span>馬（順位：良→${g}）</span><span>良</span><span>${g}</span><span>差</span></div>${rows}</div>
     <p class="note" style="margin-top:6px">馬場の状態ごとに計算し直した勝率です（馬場の4区分を入れたT-AIのモデル）。上の「勝つ確率」とは別の計算なので、良の数字も少し違います。差が1ポイント以上の馬を、上がるものは赤、下がるものは灰色にしています。</p>
   </section>`;
+}
+// 展開（川崎さんの展開データ。races.pace / predictions.pace）。勝つ確率の計算には入っていない、過去の成績からの見立て
+const PACE_STEPS = ['遅い', 'やや遅い', '普通', 'やや速い', '速い'], STYLE_ORD = ['逃げ', '先行', '差し', '追込', '不明'];
+const advCol = (a) => (a === '有利' ? 'var(--red)' : a === '不利' ? 'var(--ink3)' : 'var(--ink)');
+const sbTxt = (p) => { const s = (p && p.sb) || {}, m = /\((\d+)\/(\d+)\)/.exec(String(s.led_share5 || '')); return s.mean_early5 != null ? `序盤 前から${pct(s.mean_early5, 0)}%${m ? `・先頭${m[1]}/${m[2]}` : ''}` : ''; };
+function renderPace(r) {
+  const sec = $('#paceSec'); if (!sec) return;
+  const rp = r.pace, hs = r.horses.filter((h) => h.pace);
+  if (!rp || !hs.length) { sec.innerHTML = ''; return; }
+  const byName = new Map(r.horses.map((h) => [h.name, h]));
+  const front = (rp.front || []).map((n) => { const h = byName.get(n); return `<span class="pfh">${hn(h)}<b>${esc(n)}</b></span>`; }).join('<i class="pfa">→</i>');
+  const ord = (h) => [STYLE_ORD.indexOf(h.pace.style), h.pace.front || 99, h.no];
+  const rows = hs.slice().sort((a, b) => { const x = ord(a), y = ord(b); return x[0] - y[0] || x[1] - y[1] || x[2] - y[2]; }).map((h) => {
+    const p = h.pace;
+    return `<div class="cr${p.adv === '有利' ? ' ev' : ''}"><span class="n">${hn(h)}<span><b>${esc(h.name)}</b><small>${sbTxt(p) || '記録が少ない'}</small></span></span><span class="v">${esc(p.style)}</span><span class="v">${p.front ? `${p.front}番手` : '－'}</span><span class="e" style="color:${advCol(p.adv)};font-family:inherit;font-size:13.5px;font-weight:900">${esc(p.adv)}</span></div>`;
+  }).join('');
+  sec.innerHTML = `<section class="sec">
+    <div class="label"><b>展開</b><span>ペースと脚質の見立て</span></div>
+    <div class="box pacebox">
+      <div class="pcall"><small>ペース</small><b>${esc(rp.call || '－')}</b></div>
+      <div class="pscale">${PACE_STEPS.map((s) => `<span${s === rp.call ? ' class="on"' : ''}>${s}</span>`).join('')}</div>
+      <div class="pkv"><small>先行勢（並びの見立て）</small><div class="pfront">${front || '<span class="note">先行する馬が見当たりません</span>'}</div></div>
+      <div class="pkv2"><div><small>有利な脚質</small><b style="color:var(--red)">${(rp.adv || []).map(esc).join('・') || 'なし'}</b></div><div><small>不利な脚質</small><b>${(rp.dis || []).map(esc).join('・') || 'なし'}</b></div></div>
+    </div>
+    <div class="box cmp pcmp" style="margin-top:8px"><div class="cap4"><span>馬（脚質の順）</span><span>脚質</span><span>隊列</span><span>展開</span></div>${rows}</div>
+    <p class="note" style="margin-top:6px">脚質は近5走の序盤の位置から分けています（記録が3走未満の馬は「不明」）。有利・不利は、2016年からの同じ条件（芝・ダート、距離帯、先行する馬の多さ）での脚質別の成績から見たもので、勝つ確率の計算には入っていません。</p>
+  </section>`;
+}
+// 指数カードの「展開」の行（その馬の脚質・有利不利・騎手と調教師のその脚質での成績）
+function paceBlock(h, trainer) {
+  const p = h.pace; if (!p) return '';
+  const line = (label, sub, v, col) => `<div class="ixr"><span class="k">${label}${sub ? `<small class="gks">${sub}</small>` : ''}</span><span class="v"${col ? ` style="color:${col}"` : ''}>${v}</span><span></span></div>`;
+  const w = p.why, sty = esc(p.style);
+  const whyTxt = w && typeof w === 'object' ? (w.cell_win_rate != null ? `この条件の${sty} 勝率${pct(w.cell_win_rate, 1)}%・複勝率${pct(w.cell_top3_rate, 0)}%（${sty}全体は${pct(w.base_win_rate, 1)}%・${pct(w.base_top3_rate, 0)}%）` : '') : esc(w || '');
+  const who = (tag, name) => {
+    const s = p[tag]; if (!s || !STYLE_ORD.slice(0, 4).includes(p.style)) return '';
+    const lab = `${tag === 'jk' ? '騎手' : '調教師'}（${esc(name)}）×${sty}`;
+    if (!s.n) return line(lab, 'この脚質での記録なし', '－');
+    if (s.n < 30) return line(lab, `${s.n}走${s.w}勝・少ないため参考外`, '－');
+    return line(lab, `${s.n}走${s.w}勝・複勝率${pct(s.t3 / s.n, 0)}%${s.an ? `（全体の勝率${pct(s.aw / s.an, 1)}%）` : ''}`, `${pct(s.w / s.n, 1)}%`);
+  };
+  return `<h3>展開</h3>${line('脚質', sbTxt(p) ? '近5走の' + sbTxt(p).replace(/(\d+\/\d+)$/, '$1回') : '', sty)}${p.front ? line('先行勢の中での並び', '', `${p.front}番手`) : ''}${line('このレースの展開', whyTxt, esc(p.adv), advCol(p.adv))}${who('jk', h.jockey)}${who('tr', trainer)}`;
 }
 function renderCompare(r) {
   const box = $('#cmpBox'); if (!box) return;
@@ -1077,7 +1133,7 @@ function cardBody(r, no) {
   const val = (k, f, v, pre) => (f === 'lay' ? lay() : f === 'pcn' ? pct(v, 0) + '%' + cnt(pre) : f === 'fin' ? `${Math.round(v)}着${fieldOf(x) != null ? `／${Math.round(fieldOf(x))}頭` : ''}` : ixFmt(v, f));
   const redraw = () => { const sh = $('#sheet'); if (sh && sh.dataset.race === r.id && +sh.dataset.no === no) { const sc = $('.ixs') && $('.ixs').scrollTop; $('#sheetB').innerHTML = cardBody(r, no); if ($('.ixs') && sc) $('.ixs').scrollTop = sc; } };
   const naTxt = (k) => (k === 'gaikyu_name' || k === 'gaikyu_return_days' ? '利用なし' : k === 'layoff_starts' ? '該当なし' : /^farm_/.test(k) ? (x.gaikyu_name ? '出走30未満のため省略' : '－') : 'データなし');
-  return top + `<div class="ixs">${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}${t === '外厩' ? farmBlock(r, x, h, redraw) : ''}` : ''; }).join('')}
+  return top + `<div class="ixs">${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return (rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}${t === '外厩' ? farmBlock(r, x, h, redraw) : ''}` : '') + (t === '脚質' ? paceBlock(h, x._trainer) : ''); }).join('')}
     ${x.gaikyu_name && farmKey(x) ? `<div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-go="#/gaikyu/${encodeURIComponent(farmKey(x))}">この外厩の集計を見る<span>▶</span></button></div>` : ''}
     <p class="note" style="margin-top:12px">指数は、T-AIが勝つ確率を計算するときの材料の一部です。順位は、このレースの出走馬の中での順位です。「データなし」は、過去の走りが無いなどで計算できない項目です。${x.gaikyu_name ? '外厩のスコアは参考の集計で、勝つ確率の計算には入っていません。全騎乗＝その外厩から帰ってきた後の全部の出走、直行＝帰ってきて最初のレースだけ。' : ''}</p></div>`;
 }
@@ -1175,7 +1231,7 @@ function renderCombos(r) {
 }
 function mountRace(r) {
   if (r.status === 'waiting' || r.locked) return;
-  placeRows(r, false); renderCombos(r); renderCompare(r); renderGoing(r);
+  placeRows(r, false); renderCombos(r); renderCompare(r); renderPace(r); renderGoing(r);
   const tbl = $('#tbl'), calc = $('#calc'), first = !seen.has(r.id) && !RM && r.status === 'ready';
   const setBars = () => tbl.querySelectorAll('.bar i[data-w]').forEach((i) => { i.style.width = i.dataset.w + '%'; });
   if (!first) { tbl.classList.add('instant'); setBars(); tbl.classList.add('drawn'); calc.classList.add('ok'); if (r.status === 'ready') $('#calcT').textContent = '計算済み'; return; }
