@@ -1480,20 +1480,28 @@ const IDXF = [
 ];
 const IDX = new Map();  // レース → Map(馬番 → 指数)。開いたときだけ取りに行く
 function needIdx(r) {
-  if (SAMPLE || IDX.has(r.id)) return;
+  if (SAMPLE || (IDX.has(r.id) && IDX.get(r.id) !== 'err')) return;
   IDX.set(r.id, 'loading');
   // 外厩の項目は、データベースで会員だけが読める pred_gaikyu に分けてある（無料公開でも外厩は会員限定。川崎さんの決定）
   Promise.all([
     sb.from('predictions').select('horse_no,horse_name,idx,trainer,fit,memo,recent,training').eq('race_id', r.id),
     FREE ? Promise.resolve({ data: [] }) : sb.from('pred_gaikyu').select('horse_name,data').eq('race_id', r.id),
   ]).then(([{ data, error }, gk]) => {
-    if (error) { IDX.delete(r.id); return; }
+    if (error) {
+      // スマホをしばらく置いたあとなど、ログインの期限切れで失敗することがある。ログインを更新して1回だけ自動でやり直す
+      if (!r._idxRetried) { r._idxRetried = true; IDX.delete(r.id); sb.auth.refreshSession().catch(() => {}).finally(() => { needIdx(r); idxRedraw(r); }); return; }
+      IDX.set(r.id, 'err'); idxRedraw(r); return;
+    }
+    r._idxRetried = false;
     const G = new Map(((gk && gk.data) || []).map((g) => [g.horse_name, g.data || {}]));
     IDX.set(r.id, new Map((data || []).filter((x) => x.idx || x.memo || x.recent || x.training).map((x) => { const g = G.get(x.horse_name) || {}; const fit = x.fit || g.fit ? { ...(x.fit || {}), ...(g.fit || {}) } : null; return [x.horse_no, { ...(x.idx || {}), ...(x.idx ? g.idx || {} : {}), _noidx: !x.idx, _trainer: x.trainer || '', _fit: fit, _memo: x.memo || null, _recent: x.recent || null, _trn: x.training || null }]; })));
-    const sh = $('#sheet'); if (sh && sh.dataset.race === r.id) $('#sheetB').innerHTML = sh.dataset.vs ? vsBody(r) : cardBody(r, +sh.dataset.no);
+    const sh = $('#sheet'); if (sh && sh.dataset.race === r.id) $('#sheetB').innerHTML = sh.dataset.vs ? vsBody(r) : cardSafe(r, +sh.dataset.no);
     else if (MINE.mode === 'mine' && $('#view') && $('#view').dataset.race === r.id && /^#\/race\//.test(location.hash)) rerender();
-  });
+  }).catch((e) => { console.error('idx', r.id, e); IDX.set(r.id, 'err'); idxRedraw(r); });
+  // 20秒たっても届かなければ、読み込み直せるようにする
+  setTimeout(() => { if (IDX.get(r.id) === 'loading') { IDX.set(r.id, 'err'); idxRedraw(r); } }, 20000);
 }
+function idxRedraw(r) { const sh = $('#sheet'); if (sh && sh.dataset.race === r.id && !sh.dataset.mine) $('#sheetB').innerHTML = sh.dataset.vs ? vsBody(r) : cardSafe(r, +sh.dataset.no); }
 function ixFmt(v, f) {
   if (f === 'pc') return pct(v, 0) + '%';
   if (f === 'sg') return (v > 0 ? '+' : '') + v.toFixed(1);
@@ -1512,11 +1520,19 @@ function ixFmt(v, f) {
 // 指数カードのタブ：左「指数」（もともとの内訳）／右「近走・メモ」（レースメモと近走成績）。川崎さんの指定
 let cardTab = 'idx';
 const cardTabs = (x) => (x && (x._memo || x._trn || (x._recent && x._recent.length)) ? `<div class="seg sm ctabs" role="group" aria-label="カードの表示">${[['idx', '指数'], ['memo', '近走・メモ']].map(([k, t]) => `<button type="button" data-ctab="${k}" aria-pressed="${cardTab === k}">${t}</button>`).join('')}</div>` : '');
+// カードを描く。途中で失敗しても「読み込んでいます」で固まらないよう、知らせて描き直せるようにする
+function cardSafe(r, no) {
+  try { return cardBody(r, no); } catch (e) {
+    console.error('card', r && r.id, no, e);
+    return `<div class="ixs"><p class="note" style="padding:20px 0;text-align:center">このカードを表示できませんでした。<br><button class="btn sub" type="button" data-idxretry="${r.id}" style="margin-top:10px">もう一度読み込む<span>▶</span></button></p></div>`;
+  }
+}
 function cardBody(r, no) {
   const h = r.horses.find((x) => x.no === no), w = r.odds && r.odds.win && r.odds.win[String(no)], pl = CALC.place(r, no);
   const top = `<div class="card-h">${hn(h)}<div><b>${esc(h.name)}</b><small>${esc(h.jockey)}・${h.weight}kg・${esc(h.last)}</small></div></div>
     <div class="kv4"><div><small>勝つ確率</small><b class="r">${pct(h.prob)}%</b></div><div><small>複勝率</small><b>${pct(pl)}%</b></div><div><small>T-AIオッズ</small><b>${fair(h.prob)}</b></div><div><small>単勝オッズ</small><b>${w ? o1(w[0]) : '－'}</b></div></div>`;
   const m = IDX.get(r.id);
+  if (m === 'err') return top + `<div class="ixs"><p class="note" style="padding:20px 0;text-align:center">指数を読み込めませんでした（電波の状態などで）。<br><button class="btn sub" type="button" data-idxretry="${r.id}" style="margin-top:10px">もう一度読み込む<span>▶</span></button></p></div>`;
   if (m === undefined || m === 'loading') return top + '<div class="ixs"><p class="note" style="padding:20px 0;text-align:center">指数を読み込んでいます…</p></div>';
   const x = m.get(no);
   const memoTab = x && (x._memo || x._trn || (x._recent && x._recent.length)) && cardTab === 'memo';
@@ -1529,7 +1545,7 @@ function cardBody(r, no) {
   const cnt = (p) => (x[p + '_starts'] != null ? `<small style="font-size:10.5px;color:var(--ink2);margin-left:3px">${Math.round(x[p + '_starts'])}戦${x[p + '_wins'] != null ? Math.round(x[p + '_wins']) + '勝' : ''}</small>` : '');
   const lay = () => `${Math.round(x.layoff_starts)}戦${x.layoff_wins != null ? Math.round(x.layoff_wins) + '勝' : ''}${x.layoff_top3 != null ? `・3着内${Math.round(x.layoff_top3)}回` : ''}`;
   const val = (k, f, v, pre) => (f === 'lay' ? lay() : f === 'pcn' ? pct(v, 0) + '%' + cnt(pre) : f === 'fin' ? `${Math.round(v)}着${fieldOf(x) != null ? `／${Math.round(fieldOf(x))}頭` : ''}` : ixFmt(v, f));
-  const redraw = () => { const sh = $('#sheet'); if (sh && sh.dataset.race === r.id && +sh.dataset.no === no) { const sc = $('.ixs') && $('.ixs').scrollTop; $('#sheetB').innerHTML = cardBody(r, no); if ($('.ixs') && sc) $('.ixs').scrollTop = sc; } };
+  const redraw = () => { const sh = $('#sheet'); if (sh && sh.dataset.race === r.id && +sh.dataset.no === no) { const sc = $('.ixs') && $('.ixs').scrollTop; $('#sheetB').innerHTML = cardSafe(r, no); if ($('.ixs') && sc) $('.ixs').scrollTop = sc; } };
   const naTxt = (k) => (k === 'gaikyu_name' || k === 'gaikyu_return_days' ? '利用なし' : k === 'layoff_starts' ? '該当なし' : /^farm_/.test(k) ? (x.gaikyu_name ? '出走30未満のため省略' : '－') : 'データなし');
   return top + cardTabs(x) + `<div class="ixs">${judgeBlock(r, h)}${distBlock(r, m, h)}${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return (rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}${t === '外厩' ? farmBlock(r, x, h, redraw) : ''}` : '') + (t === '脚質' ? paceBlock(h, x._trainer) : '') + (t === '騎手・厩舎' ? personMini(h, x._trainer, redraw) + fitBlock(r, h, x._fit, x._trainer) : ''); }).join('')}
     ${FREE ? `<h3>外厩</h3><div class="lockmini" style="margin-top:6px"><b style="color:var(--red)">外厩の情報は会員限定です。</b><br>${LIMIT_NOTE}<br><a href="${JOIN_URL}" target="_blank" rel="noopener">T-AIの詳しいご案内を見る ›</a></div>` : ''}
@@ -1620,7 +1636,7 @@ function openVs(r) {
 }
 function vsBody(r) {
   const hs = [...VS.set].map((no) => r.horses.find((h) => h.no === no)).filter(Boolean).sort((a, b) => a.no - b.no);
-  const m = IDX.get(r.id), X = (h) => (m && m !== 'loading' ? m.get(h.no) || {} : {});
+  const m = IDX.get(r.id), X = (h) => (m instanceof Map ? m.get(h.no) || {} : {});
   const EV = { S: 5, A: 4, B: 3, C: 2, D: 1 }, ADV = { 有利: 3, 普通: 2, 不利: 1 };
   const g = ['稍重', '重', '不良'].includes(r.goingUsed || r.going) ? (r.goingUsed || r.going) : '良';
   // [ラベル, 値を出す関数, 比べる値（大きいほど良い。null は比べない）]
@@ -1696,7 +1712,7 @@ function mineVal(r, h, x, k) {
 function myRanks(r) {
   const m = IDX.get(r.id);
   if (m === undefined) { needIdx(r); return null; }
-  if (m === 'loading') return null;
+  if (!(m instanceof Map)) return null;
   const hs = r.horses.filter((h) => h.known !== false);
   const on = MINE.order.filter((k) => !MINE.off.includes(k)), W = {}; on.forEach((k, i) => { W[k] = 2 ** (on.length - 1 - i); });  // 重みは倍々（川崎さんの決定）
   const pts = {};  // k → 馬番 → 0〜1点
@@ -1769,7 +1785,7 @@ function cardPanes(sh) {
     const d = document.createElement('div');
     d.className = 'cpane';
     d.style.cssText = `top:${b.offsetTop}px;width:${b.offsetWidth}px;height:${b.offsetHeight}px`;
-    d.innerHTML = cardBody(sd.r, no);
+    d.innerHTML = cardSafe(sd.r, no);
     sh.appendChild(d); return d;
   };
   CS.W = b.offsetWidth;
@@ -1789,7 +1805,7 @@ function cardFinish(dir) {
   cardMove(dir === 1 ? -(CS.W + CGAP) : dir === -1 ? CS.W + CGAP : 0);
   setTimeout(() => {
     const sh = $('#sheet');
-    if (dir && sh) { const no = dir === 1 ? P.next : P.prev; sh.dataset.no = no; P.b.innerHTML = cardBody(P.r, no); }
+    if (dir && sh) { const no = dir === 1 ? P.next : P.prev; sh.dataset.no = no; P.b.innerHTML = cardSafe(P.r, no); }
     all.forEach((e) => { e.style.transition = ''; });
     P.b.style.transform = '';
     [P.p, P.n].forEach((e) => e && e.remove());
@@ -1839,7 +1855,7 @@ function cardStep(d) {
 })();
 function openCard(r, no) {
   closeSheet(true); needIdx(r);
-  document.body.insertAdjacentHTML('beforeend', `<div class="sheet-bg" id="sheetBg"></div><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetT" data-race="${r.id}" data-no="${no}"><div class="sh-h"><b id="sheetT">指数カード</b><span class="cnav"><button type="button" data-cnav="-1" aria-label="前の馬">‹</button><small>スワイプで前後の馬</small><button type="button" data-cnav="1" aria-label="次の馬">›</button></span><button type="button" class="sh-x" id="sheetX" aria-label="閉じる">×</button></div><div class="dbl" style="margin:8px var(--pad) 10px"></div><div id="sheetB" style="display:flex;flex-direction:column;min-height:0;flex:1 1 auto">${cardBody(r, no)}</div></div>`);
+  document.body.insertAdjacentHTML('beforeend', `<div class="sheet-bg" id="sheetBg"></div><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetT" data-race="${r.id}" data-no="${no}"><div class="sh-h"><b id="sheetT">指数カード</b><span class="cnav"><button type="button" data-cnav="-1" aria-label="前の馬">‹</button><small>スワイプで前後の馬</small><button type="button" data-cnav="1" aria-label="次の馬">›</button></span><button type="button" class="sh-x" id="sheetX" aria-label="閉じる">×</button></div><div class="dbl" style="margin:8px var(--pad) 10px"></div><div id="sheetB" style="display:flex;flex-direction:column;min-height:0;flex:1 1 auto">${cardSafe(r, no)}</div></div>`);
   document.body.classList.add('lock');
   requestAnimationFrame(() => { $('#sheetBg').classList.add('open'); $('#sheet').classList.add('open'); $('#sheetX').focus(); });
 }
@@ -2629,12 +2645,13 @@ document.addEventListener('click', (e) => {
   if (ds.ipatcopy) { const tx = ipatText(); if (!tx) { alert('先に馬を選んで、買い目を作ってください。'); return; } copyText(tx, t); return; }
   if (ds.install && INSTALL) { INSTALL.prompt(); INSTALL.userChoice.finally(() => { INSTALL = null; rerender(); }); return; }
   if (ds.cnav) { cardStep(+ds.cnav); return; }
+  if (ds.idxretry) { const r = byId.get(ds.idxretry); if (r) { IDX.delete(r.id); needIdx(r); idxRedraw(r); } return; }
   if (ds.pmode) { MINE.mode = ds.pmode; mineSave(); if (ds.pmode === 'mine') raceState.sort = 'prob'; rerender(); return; }
   if (ds.mineset) { openMine(); return; }
   if (ds.mp) { mineAct(ds.mp); return; }
   if (ds.jump) { const el = $(ds.jump), toc = $('#rtoc'), m = $('#mast'); if (el) { const off = (m ? m.offsetHeight : 0) + (toc ? toc.offsetHeight : 0) + 8; scrollTo({ top: el.getBoundingClientRect().top + scrollY - off, behavior: 'smooth' }); } return; }
-  if (ds.dkey) { distKey = ds.dkey; const sh = $('#sheet'), r = sh && byId.get(sh.dataset.race); if (r) { const ix = $('.ixs'), sc = ix && ix.scrollTop; $('#sheetB').innerHTML = cardBody(r, +sh.dataset.no); if ($('.ixs') && sc) $('.ixs').scrollTop = sc; } return; }
-  if (ds.ctab) { cardTab = ds.ctab; const sh = $('#sheet'), r = sh && byId.get(sh.dataset.race); if (r) { $('#sheetB').innerHTML = cardBody(r, +sh.dataset.no); const ix = $('.ixs'); if (ix) ix.scrollTop = 0; } return; }
+  if (ds.dkey) { distKey = ds.dkey; const sh = $('#sheet'), r = sh && byId.get(sh.dataset.race); if (r) { const ix = $('.ixs'), sc = ix && ix.scrollTop; $('#sheetB').innerHTML = cardSafe(r, +sh.dataset.no); if ($('.ixs') && sc) $('.ixs').scrollTop = sc; } return; }
+  if (ds.ctab) { cardTab = ds.ctab; const sh = $('#sheet'), r = sh && byId.get(sh.dataset.race); if (r) { $('#sheetB').innerHTML = cardSafe(r, +sh.dataset.no); const ix = $('.ixs'); if (ix) ix.scrollTop = 0; } return; }
   if (ds.ai) { aiAction(ds.ai); return; }
   if (t.id === 'raceOpen') { openSheet(); return; }
   if (t.id === 'resend') {
