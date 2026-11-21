@@ -818,10 +818,10 @@ async function guestData() {
 async function loadData() {
   if (GUEST) {
     const [rs, rn] = await guestData();
-    return useData({ data: { name: 'ゲスト', plan: '無料公開（11/23まで・全レース）', valid_until: FREE_UNTIL, is_admin: false, tier: 'free' }, error: null }, rs, { data: [] }, rn);
+    return useData({ data: { name: 'ゲスト', plan: '無料公開（11/23まで・午前のレース）', valid_until: FREE_UNTIL, is_admin: false, tier: 'free' }, error: null }, rs, { data: [] }, rn);
   }
   const [mem, rs, nt, rn] = await Promise.all([
-    GUEST ? Promise.resolve({ data: { name: 'ゲスト', plan: '無料公開（11/23まで・全レース）', valid_until: FREE_UNTIL, is_admin: false, tier: 'free' }, error: null }) : sb.from('members').select('name,plan,valid_until,is_admin,tier').maybeSingle(),
+    GUEST ? Promise.resolve({ data: { name: 'ゲスト', plan: '無料公開（11/23まで・午前のレース）', valid_until: FREE_UNTIL, is_admin: false, tier: 'free' }, error: null }) : sb.from('members').select('name,plan,valid_until,is_admin,tier').maybeSingle(),
     sb.from('races').select(`${RACE_COLS}, predictions(${HORSE_FULL}), ${ODDS_LITE}`).gte('date', jstDay(9)).order('date').order('venue').order('race_no'),
     GUEST ? Promise.resolve({ data: [] }) : sb.from('notices').select('*').order('published_at', { ascending: false }).limit(10),
     sb.from('runs').select('generated_at').order('generated_at', { ascending: false }).limit(1),
@@ -992,7 +992,7 @@ const MARK = ['', '◎', '○', '▲', '△'];
 const FREE_UNTIL = '2026-11-23', FREE_CUTOFF = '12:00';
 const CAMPAIGN = () => jstToday() <= FREE_UNTIL;
 const JOIN_URL = 'https://t-ai.clubkawasaki.net/';  // T-AI の LP
-const LIMIT_NOTE = '※無料公開では、外厩の情報と自動買い目生成を会員限定にしております。';
+const LIMIT_NOTE = '※無料公開は午前のレースです。外厩の情報と自動買い目生成は会員限定にしております。';
 let FREE = false, GUEST = false;  // GUEST：ログインせずに見ている人（無料公開の間だけ）
 const mk = (r, rank) => MARK[rank] || '';  // 無料公開でも印を出す（川崎さんの決定 11/22）
 const joinBox = (t) => `<div class="wait-box lockbox"><span class="stamp">会員限定</span><p class="h2">${t || 'このレースは<br>会員限定です'}</p><p class="note">${LIMIT_NOTE}</p><p class="note" style="margin-top:6px">会員になると、午後のレース・メインレース・重賞（マイルCSなど）と、T-AIの印（◎○▲△）が、すべて見られます。</p><div class="btns"><a class="btn" href="${JOIN_URL}" target="_blank" rel="noopener">T-AIの詳しいご案内を見る<span>▶</span></a>${GUEST ? '<button class="btn sub" type="button" data-go="#/login">会員の方はログイン</button>' : ''}</div></div>`;
@@ -1053,7 +1053,7 @@ function vLogin() {
     <div class="big"><b>T<i>-</i>AI新報</b><span class="seal">会員<br>専用</span></div>
     <div class="dbl"></div>
     <p class="lead" style="margin-top:12px">選択を科学する、会員専用の競馬新聞。<br>毎週の出馬表に、T-AIの確率を載せてお届けします。</p>
-    ${CAMPAIGN() ? `<div class="freebar" style="margin:14px 0 0"><b>3連休（11/21〜23）無料公開中</b><br>全レースの勝つ確率・指数・組み合わせ・展開・印などを、ログインなしでどなたでも見られます（外厩と自動買い目生成は会員限定）。<br><a href="#/guest">ログインせずに見る ›</a></div>` : ''}
+    ${CAMPAIGN() ? `<div class="freebar" style="margin:14px 0 0"><b>3連休（11/21〜23）無料公開中</b><br>午前のレース（12時より前に発走）は、勝つ確率・指数・組み合わせ・展開・印など、ログインなしでどなたでも全部見られます（外厩と自動買い目生成は会員限定）。<br><a href="#/guest">ログインせずに見る ›</a></div>` : ''}
     <form class="field" id="loginForm" novalidate>
       <label for="mail">ご登録のメールアドレス</label>
       <input id="mail" type="email" inputmode="email" autocomplete="email" placeholder="例）taro@example.com">
@@ -2171,7 +2171,7 @@ function recentBlock(rs) {
     const ups = [wu(x.wn, x.wnn, '次走で勝ち上がり'), wu(x.w3, x.w3n, '3走以内')].filter(Boolean).join('・');
     return `<details class="rc"><summary>
       <span class="rfin${fc}">${x.fin != null ? esc(String(x.fin)) : '－'}<small>${x.fin === '中止' ? '' : '着'}</small></span>
-      <span class="rmain"><b>${x.d ? esc(String(x.d).slice(2).replace(/-/g, '/')) : ''} ${esc(x.v || '')}${x.rn ? x.rn + 'R' : ''} ${esc(x.cls || x.race || '')}</b>
+      <span class="rmain"><b>${x.d ? esc(String(x.d).slice(2).replace(/-/g, '/')) : ''} ${esc(x.v || '')}${x.rn ? x.rn + 'R' : ''} ${esc(x.race ? normName(x.race) : x.cls || '')}</b>
         <small>${sfc(x.sf)}${x.dist || ''}・${esc(x.cond || '')}・${x.n || '－'}頭${x.mg ? `・${esc(x.mg)}` : ''}　${esc(x.jk || '')}${x.kg ? ` ${x.kg}` : ''}</small>
         <small>${x.pop != null ? `${x.pop}番人気` : ''}${x.odds != null ? ` ${x.odds}倍` : ''}${x.time ? `・${esc(x.time)}` : ''}${x.bw ? `・${x.bw}kg${x.bwd ? `(${esc(String(x.bwd))})` : ''}` : ''}${lv}</small></span>
       ${figR}</summary>
