@@ -378,6 +378,12 @@ body.lock { overflow: hidden; }
 .gkr.gkh { min-height: 0; padding: 5px 10px; border-top: 0; background: var(--ink); color: var(--paper); font-size: 11px; }
 .gkr .sc { font-size: 15px; }
 .gkr.up4 { grid-template-columns: minmax(0, 1fr) 70px 80px; }
+.memo .mrow { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(27, 24, 20, .25); }
+.memo .mtag { align-self: start; text-align: center; font-size: 11px; font-weight: 900; padding: 3px 0; border: 1.5px solid var(--ink); }
+.memo .mtag.now { background: var(--ink); color: var(--paper); }
+.memo p { margin: 0; font-size: 13.5px; line-height: 1.65; overflow-wrap: anywhere; }
+.memo .mres { display: block; margin-bottom: 3px; font-size: 11px; line-height: 1.45; color: var(--ink2); overflow-wrap: anywhere; }
+.memo .mres b { color: var(--red); }
 .ixs .ixsub { margin: 10px 0 0; font-size: 12px; font-weight: 900; color: var(--ink2); }
 .gkr span small { display: block; font-size: 10px; font-weight: 700; color: var(--ink3); line-height: 1.2; }
 .gkr.up .sc { color: var(--red); }
@@ -1123,9 +1129,9 @@ const IDX = new Map();  // レース → Map(馬番 → 指数)。開いたと�
 function needIdx(r) {
   if (SAMPLE || IDX.has(r.id)) return;
   IDX.set(r.id, 'loading');
-  sb.from('predictions').select('horse_no,idx,trainer,fit').eq('race_id', r.id).then(({ data, error }) => {
+  sb.from('predictions').select('horse_no,idx,trainer,fit,memo').eq('race_id', r.id).then(({ data, error }) => {
     if (error) { IDX.delete(r.id); return; }
-    IDX.set(r.id, new Map((data || []).filter((x) => x.idx).map((x) => [x.horse_no, { ...x.idx, _trainer: x.trainer || '', _fit: x.fit || null }])));
+    IDX.set(r.id, new Map((data || []).filter((x) => x.idx || x.memo).map((x) => [x.horse_no, { ...(x.idx || {}), _noidx: !x.idx, _trainer: x.trainer || '', _fit: x.fit || null, _memo: x.memo || null }])));
     const sh = $('#sheet'); if (sh && sh.dataset.race === r.id) $('#sheetB').innerHTML = cardBody(r, +sh.dataset.no);
   });
 }
@@ -1151,8 +1157,8 @@ function cardBody(r, no) {
   const m = IDX.get(r.id);
   if (m === undefined || m === 'loading') return top + '<div class="ixs"><p class="note" style="padding:20px 0;text-align:center">指数を読み込んでいます…</p></div>';
   const x = m.get(no);
-  if (!x) return top + '<div class="ixs"><p class="note" style="padding:16px 0">このレースの指数の内訳は、まだ届いていません。</p></div>';
-  const all = [...m.values()];
+  if (!x || x._noidx) return top + `<div class="ixs">${x ? memoBlock(x._memo) : ''}<p class="note" style="padding:16px 0">このレースの指数の内訳は、まだ届いていません。</p></div>`;
+  const all = [...m.values()].filter((y) => !y._noidx);
   const rank = (k, d, v) => { if (!d || v == null || typeof v !== 'number') return ''; const vs = all.map((y) => y[k]).filter((y) => y != null); const n = 1 + vs.filter((y) => (d > 0 ? y > v : y < v)).length; return `<span class="rk${n <= 3 ? ' top' : ''}">${n}位／${vs.length}頭</span>`; };
   const has = (k) => all.some((y) => y[k] != null);
   const fieldOf = (y) => y.last_field_size ?? y.last_field ?? y.last_n_runners;
@@ -1161,7 +1167,7 @@ function cardBody(r, no) {
   const val = (k, f, v, pre) => (f === 'lay' ? lay() : f === 'pcn' ? pct(v, 0) + '%' + cnt(pre) : f === 'fin' ? `${Math.round(v)}着${fieldOf(x) != null ? `／${Math.round(fieldOf(x))}頭` : ''}` : ixFmt(v, f));
   const redraw = () => { const sh = $('#sheet'); if (sh && sh.dataset.race === r.id && +sh.dataset.no === no) { const sc = $('.ixs') && $('.ixs').scrollTop; $('#sheetB').innerHTML = cardBody(r, no); if ($('.ixs') && sc) $('.ixs').scrollTop = sc; } };
   const naTxt = (k) => (k === 'gaikyu_name' || k === 'gaikyu_return_days' ? '利用なし' : k === 'layoff_starts' ? '該当なし' : /^farm_/.test(k) ? (x.gaikyu_name ? '出走30未満のため省略' : '－') : 'データなし');
-  return top + `<div class="ixs">${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return (rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}${t === '外厩' ? farmBlock(r, x, h, redraw) : ''}` : '') + (t === '脚質' ? paceBlock(h, x._trainer) : '') + (t === '騎手・厩舎' ? personMini(h, x._trainer, redraw) + fitBlock(r, h, x._fit, x._trainer) : ''); }).join('')}
+  return top + `<div class="ixs">${memoBlock(x._memo)}${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return (rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}${t === '外厩' ? farmBlock(r, x, h, redraw) : ''}` : '') + (t === '脚質' ? paceBlock(h, x._trainer) : '') + (t === '騎手・厩舎' ? personMini(h, x._trainer, redraw) + fitBlock(r, h, x._fit, x._trainer) : ''); }).join('')}
     ${x.gaikyu_name && farmKey(x) ? `<div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-go="#/gaikyu/${encodeURIComponent(farmKey(x))}">この外厩の集計を見る<span>▶</span></button></div>` : ''}
     <p class="note" style="margin-top:12px">指数は、T-AIが勝つ確率を計算するときの材料の一部です。順位は、このレースの出走馬の中での順位です。「データなし」は、過去の走りが無いなどで計算できない項目です。${x.gaikyu_name ? '外厩のスコアは参考の集計で、勝つ確率の計算には入っていません。全騎乗＝その外厩から帰ってきた後の全部の出走、直行＝帰ってきて最初のレースだけ。' : ''}</p></div>`;
 }
@@ -1557,6 +1563,18 @@ function personMini(h, trainer, redraw) {
   return rows ? `${rows}<div class="btns two" style="margin-top:8px">${btn('jockey', jk)}${btn('trainer', tk)}</div>` : '';
 }
 // 指数カード：今回のレースの条件に当てはめた騎手・調教師のスコア（川崎さんの strengths_apply）。初出走馬は新馬用の項目も
+// 指数カードのいちばん上：レースメモ（川崎さんの horse_memo。厩舎の話をリライトしたもの。前走・前々走は結果つき）
+function memoBlock(m) {
+  if (!m) return '';
+  const res = (p) => { const s = [p.date ? String(p.date).slice(5).replace('-', '/') : '', `${p.venue || ''}${p.race ? ' ' + p.race : ''}`, p.surface ? `${String(p.surface).slice(0, 1) === 'ダ' ? 'ダ' : String(p.surface).slice(0, 1)}${p.dist || ''}${p.cond ? '・' + p.cond : ''}` : ''].filter(Boolean).join(' ');
+    const r = [p.fin != null ? `<b>${p.fin}着</b>${p.field ? `／${p.field}頭` : ''}${p.margin ? `（${esc(p.margin)}）` : ''}` : '', p.jockey ? esc(p.jockey) : '', p.pop != null ? `${p.pop}番人気${p.odds != null ? ` ${p.odds}倍` : ''}` : ''].filter(Boolean).join('・');
+    return `<small class="mres">${esc(s)}${r ? `<br>${r}` : ''}</small>`; };
+  const one = (lab, p) => `<div class="mrow"><span class="mtag">${lab}</span><div>${res(p)}<p>${esc(p.memo)}</p></div></div>`;
+  return `<div class="memo"><h3 style="margin-top:12px">レースメモ</h3>
+    ${m.cur ? `<div class="mrow"><span class="mtag now">今回</span><div><p>${esc(m.cur)}</p></div></div>` : ''}
+    ${m.p1 ? one('前走', m.p1) : ''}${m.p2 ? one('前々走', m.p2) : ''}
+    <p class="dnote" style="margin-top:4px">厩舎の話をもとに、言い回しを整えたものです。</p></div>`;
+}
 function fitBlock(r, h, f, trainer) {
   if (!f) return '';
   const sc = (v) => `<span class="v${v >= 1.2 ? ' up' : v < 0.85 ? ' dn' : ''}">${Number(v).toFixed(3)}</span>`;
