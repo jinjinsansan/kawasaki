@@ -292,6 +292,26 @@ body.lock { overflow: hidden; }
 .pcmp .cr, .pcmp .cap4 { grid-template-columns: minmax(0, 1fr) 36px 44px 36px; }
 .pkv2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .pkv2 b { font-size: 15px; font-weight: 900; }
+.btns.two { grid-template-columns: 1fr 1fr; gap: 8px; }
+.btns.two .btn { min-width: 0; padding-left: 10px; padding-right: 10px; font-size: 13px; }
+.grade { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 4px; border: 2px solid var(--ink); font-family: var(--n); font-weight: 900; font-size: 15px; line-height: 1; }
+.grade.big { min-width: 52px; height: 52px; font-size: 28px; }
+.grade.gS { background: var(--red); border-color: var(--red); color: #fff; }
+.grade.gA { background: var(--ink); color: var(--paper); }
+.grade.g参考 { font-size: 11px; color: var(--ink3); border-color: var(--ink3); }
+.grade.big.g参考 { font-size: 15px; }
+.phead { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 3px double var(--ink); }
+.phead > div { min-width: 0; display: grid; gap: 2px; }
+.phead small { font-size: 11.5px; font-weight: 700; color: var(--ink2); overflow-wrap: anywhere; }
+.phead b { font-size: 24px; font-weight: 900; line-height: 1.2; overflow-wrap: anywhere; }
+.swg { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.swg > div > small { display: block; font-size: 11px; font-weight: 700; color: var(--ink2); margin-bottom: 4px; }
+.swl { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.swl li b { display: block; font-size: 13.5px; font-weight: 900; overflow-wrap: anywhere; }
+.swl.up li b { color: var(--red); }
+.swl li small { display: block; font-size: 10.5px; color: var(--ink2); overflow-wrap: anywhere; }
+.g1l { margin: 6px 0 0; padding-left: 18px; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+.g1l a { color: var(--ink); }
 .cmp .cap4 { display: grid; grid-template-columns: minmax(0, 1fr) 50px 58px 44px; gap: 6px; padding: 5px 10px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 11px; }
 .cmp .cap4 span:not(:first-child) { text-align: right; }
 .otime { margin: 6px var(--pad) 0; font-size: 11.5px; color: var(--ink2); }
@@ -1134,7 +1154,7 @@ function cardBody(r, no) {
   const val = (k, f, v, pre) => (f === 'lay' ? lay() : f === 'pcn' ? pct(v, 0) + '%' + cnt(pre) : f === 'fin' ? `${Math.round(v)}着${fieldOf(x) != null ? `／${Math.round(fieldOf(x))}頭` : ''}` : ixFmt(v, f));
   const redraw = () => { const sh = $('#sheet'); if (sh && sh.dataset.race === r.id && +sh.dataset.no === no) { const sc = $('.ixs') && $('.ixs').scrollTop; $('#sheetB').innerHTML = cardBody(r, no); if ($('.ixs') && sc) $('.ixs').scrollTop = sc; } };
   const naTxt = (k) => (k === 'gaikyu_name' || k === 'gaikyu_return_days' ? '利用なし' : k === 'layoff_starts' ? '該当なし' : /^farm_/.test(k) ? (x.gaikyu_name ? '出走30未満のため省略' : '－') : 'データなし');
-  return top + `<div class="ixs">${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return (rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}${t === '外厩' ? farmBlock(r, x, h, redraw) : ''}` : '') + (t === '脚質' ? paceBlock(h, x._trainer) : ''); }).join('')}
+  return top + `<div class="ixs">${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return (rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}${t === '外厩' ? farmBlock(r, x, h, redraw) : ''}` : '') + (t === '脚質' ? paceBlock(h, x._trainer) : '') + (t === '騎手・厩舎' ? personMini(h, x._trainer, redraw) : ''); }).join('')}
     ${x.gaikyu_name && farmKey(x) ? `<div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-go="#/gaikyu/${encodeURIComponent(farmKey(x))}">この外厩の集計を見る<span>▶</span></button></div>` : ''}
     <p class="note" style="margin-top:12px">指数は、T-AIが勝つ確率を計算するときの材料の一部です。順位は、このレースの出走馬の中での順位です。「データなし」は、過去の走りが無いなどで計算できない項目です。${x.gaikyu_name ? '外厩のスコアは参考の集計で、勝つ確率の計算には入っていません。全騎乗＝その外厩から帰ってきた後の全部の出走、直行＝帰ってきて最初のレースだけ。' : ''}</p></div>`;
 }
@@ -1397,6 +1417,96 @@ function updateBuild() {
   $('#tixB').innerHTML = list.length ? list.slice(0, 60).map((c, i) => `<div class="crow${wo ? ' wo' : ''}"><span class="rk">${i + 1}</span><span class="tk">${c.nums.map((n) => chip(r, BS.kind, n)).join(`<i>${ORD[BS.kind] ? '→' : '-'}</i>`)}</span>${wo ? oddsCell(r, BS.kind, c.nums, c.p) : ''}<span class="pr"><span class="pct" style="color:var(--ink)">${pct(c.p, c.p < .001 ? 2 : 1)}%</span></span></div>`).join('') + (list.length > 60 ? `<p class="note" style="padding:8px 12px">ほか${list.length - 60}点</p>` : '') : '<p class="note" style="padding:4px 12px 12px">まだ買い目がありません。</p>';
 }
 
+/* ─ 騎手・調教師（川崎さんの格付け・得意不得意・外国人騎手。会員限定・予測には使っていない記述的な集計） ─ */
+let PIDX = null;  // null → 'loading' → { jockey: [{pkey,label}], trainer: [...] } | 'err'
+const PREF = new Map();  // 'role|pkey' → data | 'loading' | 'err'
+const pnz = (s) => String(s || '').normalize('NFKC').replace(/^[▲△☆★◇◆]+/, '').replace(/[\s.・]+/g, '');
+const ROLE_JA = { jockey: '騎手', trainer: '調教師' };
+function needPIDX(cb) {
+  if (FREE || PIDX) return;
+  PIDX = 'loading';
+  sb.from('person_ref').select('role,pkey,label').limit(2000).then(({ data, error }) => {
+    if (error) { PIDX = 'err'; return; }
+    PIDX = { jockey: [], trainer: [] }; (data || []).forEach((x) => (PIDX[x.role] || []).push(x)); cb && cb();
+  });
+}
+// 出馬表の名前（「津村」）→ 正規キー（「津村明」）。正規キーが分かっていればそれ、無ければ完全一致か、前方一致で1人に決まるときだけ
+function personKey(role, name, key) {
+  if (!PIDX || typeof PIDX !== 'object') return null;
+  const ps = PIDX[role] || [];
+  if (key && ps.some((p) => p.pkey === key)) return key;
+  const m = pnz(name); if (!m) return null;
+  let c = ps.filter((p) => pnz(p.pkey) === m || pnz(p.label) === m);
+  if (!c.length) c = ps.filter((p) => pnz(p.pkey).startsWith(m) || pnz(p.label).startsWith(m));
+  const ks = [...new Set(c.map((p) => p.pkey))];
+  return ks.length === 1 ? ks[0] : null;
+}
+function needPerson(role, key, cb) {
+  const k = role + '|' + key;
+  if (FREE || !key || PREF.has(k)) return;
+  PREF.set(k, 'loading');
+  sb.from('person_ref').select('pkey,label,data').eq('role', role).eq('pkey', key).maybeSingle().then(({ data, error }) => { PREF.set(k, error || !data ? 'err' : data); cb && cb(); });
+}
+const swTxt = (x) => `${esc(x.cat)}${x.sc != null ? `（${Number(x.sc).toFixed(2)}）` : ''}`;
+const gradeOf = (lv) => (!lv ? '' : lv.grade || (lv.grade_status === 'reference' ? '参考' : ''));
+// 指数カードの「騎手・厩舎」の下：格付けと得意・不得意の要約、人物ページへのボタン
+function personMini(h, trainer, redraw) {
+  if (FREE) return '';
+  if (!PIDX) { needPIDX(redraw); return ''; }
+  if (PIDX === 'loading' || PIDX === 'err') return '';
+  const one = (role, name, key) => {
+    const pk = personKey(role, name, key); if (!pk) return '';
+    const d = PREF.get(role + '|' + pk);
+    if (!d) { needPerson(role, pk, redraw); return ''; }
+    if (d === 'loading' || d === 'err') return '';
+    const lv = (d.data || {}).lv, sw = (d.data || {}).sw, g = gradeOf(lv);
+    const sub = [lv && lv.all_score != null ? `市場対比 ${Number(lv.all_score).toFixed(2)}` : '', sw && sw.s[0] ? `得意：${swTxt(sw.s[0])}` : '', sw && sw.w[0] ? `不得意：${swTxt(sw.w[0])}` : ''].filter(Boolean).join('・');
+    return `<div class="ixr"><span class="k">${ROLE_JA[role]}（${esc(name)}）の格付け${sub ? `<small class="gks">${sub}</small>` : ''}</span><span class="v">${g ? `<span class="grade g${esc(g)}">${esc(g)}</span>` : '－'}</span><span></span></div>`;
+  };
+  const p = h.pace || {}, rows = one('jockey', h.jockey, p.jkkey) + one('trainer', trainer, p.trkey);
+  const jk = personKey('jockey', h.jockey, p.jkkey), tk = personKey('trainer', trainer, p.trkey);
+  const btn = (role, k) => (k ? `<button class="btn sub" type="button" data-go="#/person/${role}/${encodeURIComponent(k)}">${ROLE_JA[role]}のページ<span>▶</span></button>` : '');
+  return rows ? `${rows}<div class="btns two" style="margin-top:8px">${btn('jockey', jk)}${btn('trainer', tk)}</div>` : '';
+}
+function vPerson(role, key) {
+  role = role === 'trainer' ? 'trainer' : 'jockey';
+  const re = () => { if (/^#\/person\//.test(location.hash)) rerender(); };
+  if (!PIDX) needPIDX(re);
+  const d = PREF.get(role + '|' + key);
+  if (!d) needPerson(role, key, re);
+  if (!d || d === 'loading') return '<section class="sec"><p class="note" style="padding:40px 0;text-align:center">読み込んでいます…</p></section>';
+  if (d === 'err') return '<section class="sec"><p class="note" style="padding:40px 0;text-align:center">この人物のデータは、まだありません。</p></section>';
+  const x = d.data || {}, lv = x.lv, sw = x.sw, st = x.st || {}, fj = x.fj, g = gradeOf(lv);
+  const name = (fj && fj.display_name) || d.label || d.pkey;
+  const blocks = [['all', '全期間'], ['recent1y', '直近1年'], ['recent90d', '直近90日'], ['turf', '芝'], ['dirt', 'ダート'], ['class_new', '新馬・未勝利'], ['class_cond', '条件戦（1〜3勝）'], ['class_open', 'オープン・重賞']];
+  const lvRows = lv ? blocks.filter(([b]) => lv[b + '_starts']).map(([b, t]) => ({ item: t, starts: lv[b + '_starts'], wins: lv[b + '_wins'], win_rate: lv[b + '_win_rate'], top3_rate: lv[b + '_top3_rate'], score: lv[b + '_score'] })) : [];
+  const swList = (arr, cls) => (arr && arr.length ? `<ol class="swl ${cls}">${arr.map((y) => `<li><b>${esc(y.cat)}</b><small>${esc(y.dim)}・${y.n}走・${Number(y.sc).toFixed(3)}</small></li>`).join('')}</ol>` : '<p class="note">該当なし（30走以上の条件で目立つものなし）</p>');
+  const dims = Object.keys(st);
+  const stHtml = dims.map((dm, i) => { const rs = st[dm].filter((y) => y.starts).map((y) => ({ item: y.category, starts: y.starts, wins: y.wins, top3: y.top3, win_rate: y.win_rate, top3_rate: y.top3_rate, score: y.score })); return rs.length ? `<details class="gkmore"${i < 2 ? ' open' : ''}><summary>${esc(dm)}</summary>${gkTable(rs, esc(dm))}</details>` : ''; }).join('');
+  const links = (s) => String(s || '').split(';').map((u) => u.trim()).filter((u) => /^https?:\/\//.test(u)).map((u) => `<li><a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(u.replace(/^https?:\/\//, '').slice(0, 60))}</a></li>`).join('');
+  const g1 = fj && fj.g1_races ? String(fj.g1_races).split(';').map((s) => s.trim()).filter(Boolean) : [];
+  return `<section class="sec">
+    <div class="phead"><div><small>${ROLE_JA[role]}</small><b>${esc(name)}</b>${fj && fj.full_name ? `<small>${esc(fj.full_name)}${fj.nationality ? `・${esc(fj.nationality)}` : ''}</small>` : lv && lv.full_name ? `<small>${esc(lv.full_name)}</small>` : ''}</div>${g ? `<span class="grade big g${esc(g)}">${esc(g)}</span>` : ''}</div>
+    ${lv ? `<p class="note" style="margin-top:8px">格付けは「市場（単勝オッズ）の想定と比べて、どれだけ勝たせてきたか」で付けたもの（S上位5%・A〜20%・B〜50%・C〜80%・D下位20%、50走未満は「参考」）。スコア1.0が市場並みです。</p>` : ''}
+  </section>
+  ${lvRows.length ? `<section class="sec"><div class="label"><b>成績と格付け</b><span>期間・条件別</span></div>${gkTable(lvRows, '期間・条件')}<p class="dnote">30走未満の欄は、率とスコアを出していません。</p></section>` : ''}
+  ${sw ? `<section class="sec"><div class="label"><b>得意・不得意</b><span>市場対比の上位・下位</span></div><div class="swg"><div><small>得意</small>${swList(sw.s, 'up')}</div><div><small>不得意</small>${swList(sw.w, 'dn')}</div></div></section>` : ''}
+  ${stHtml ? `<section class="sec"><div class="label"><b>条件別の成績</b><span>切り口ごと</span></div>${stHtml}</section>` : ''}
+  ${fj ? `<section class="sec"><div class="label"><b>プロフィール</b><span>外国人騎手</span></div>
+    <div class="box pacebox">
+      <div class="pkv2"><div><small>日本（JRA）成績</small><b>${fj.starts ?? '－'}戦${fj.wins ?? '－'}勝</b></div><div><small>勝率・複勝率</small><b>${fj.win_rate != null ? pct(fj.win_rate, 1) + '%' : '－'}・${fj.top3_rate != null ? pct(fj.top3_rate, 1) + '%' : '－'}</b></div></div>
+      <div class="pkv2"><div><small>JRAのG1</small><b>${fj.g1_wins ?? 0}勝</b></div><div><small>重賞</small><b>${fj.graded_wins ?? 0}勝</b></div></div>
+      ${fj.first_year ? `<div><small>初来日（記録上）</small><b>${esc(fj.first_year)}年</b></div>` : ''}
+      ${fj.yearly ? `<div><small>年別</small><p class="note">${esc(fj.yearly)}</p></div>` : ''}
+      ${fj.overseas_summary ? `<div><small>海外での成績</small><p class="note">${esc(fj.overseas_summary)}</p></div>` : ''}
+      ${fj.reputation_summary ? `<div><small>評判・騎乗スタイル</small><p class="note">${esc(fj.reputation_summary)}</p></div>` : ''}
+      ${g1.length ? `<details class="gkmore"><summary>G1の勝ち鞍（${g1.length}）</summary><ul class="g1l">${g1.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></details>` : ''}
+      ${fj.note ? `<p class="note">${esc(fj.note)}</p>` : ''}
+      ${links(fj.sources) ? `<details class="gkmore"><summary>出典</summary><ul class="g1l">${links(fj.sources)}</ul></details>` : ''}
+    </div></section>` : ''}
+  <section class="sec"><p class="note">2016年1月からのJRA全レースの集計です。騎手・調教師の力はオッズにほぼ織り込まれていて、過去に得意だった条件が先でも得意とは限りません（検証で持続性はほとんど確認できませんでした）。買い目の根拠ではなく、参考としてご覧ください。T-AIの勝つ確率の計算には入っていません。</p></section>`;
+}
+
 /* ─ 外厩データ（川崎さんの集計表。会員限定） ─ */
 const GK_COLS = 'kind,farm,item,starts,wins,top3,win_rate,top3_rate,score,flag';
 let GK = null;  // 一覧：null → 'loading' → { farms, vs, top } / 'err'
@@ -1423,7 +1533,7 @@ function loadGKD(farm) {
 }
 function gkTable(rows, head) {
   const n = (v) => (v == null ? '－' : v);
-  return `<div class="box gkt"><div class="gkr gkh"><span>${head}</span><span>出走</span><span>勝率</span><span>複勝率</span><span>スコア</span></div>${rows.map((x) => `<div class="gkr${x.score >= 1.2 ? ' up' : x.score < 0.85 ? ' dn' : ''}"><span>${esc(x.item.split('|').pop())}</span><span>${n(x.starts)}${x.wins != null ? `<small>${x.wins}勝</small>` : ''}</span><span>${x.win_rate == null ? '－' : pct(x.win_rate) + '%'}</span><span>${x.top3_rate == null ? '－' : pct(x.top3_rate) + '%'}${x.top3 != null ? `<small>${x.top3}回</small>` : ''}</span><span class="sc">${Number(x.score).toFixed(3)}</span></div>`).join('')}</div>`;
+  return `<div class="box gkt"><div class="gkr gkh"><span>${head}</span><span>出走</span><span>勝率</span><span>複勝率</span><span>スコア</span></div>${rows.map((x) => `<div class="gkr${x.score == null ? '' : x.score >= 1.2 ? ' up' : x.score < 0.85 ? ' dn' : ''}"><span>${esc(x.item.split('|').pop())}</span><span>${n(x.starts)}${x.wins != null ? `<small>${x.wins}勝</small>` : ''}</span><span>${x.win_rate == null ? '－' : pct(x.win_rate) + '%'}</span><span>${x.top3_rate == null ? '－' : pct(x.top3_rate) + '%'}${x.top3 != null ? `<small>${x.top3}回</small>` : ''}</span><span class="sc">${x.score == null ? '－' : Number(x.score).toFixed(3)}</span></div>`).join('')}</div>`;
 }
 // 長い表は、先頭だけ出して残りはたたむ
 function gkLong(rows, head, first) {
@@ -1587,6 +1697,7 @@ function route() {
   else if (name === 'build') { const r = byId.get(arg); const bl = buildable(); if (r && bl.includes(r) && r.id !== BS.raceId) { BS.raceId = r.id; BS.axis = null; BS.sel.clear(); } if (!BS.raceId || !byId.has(BS.raceId)) BS.raceId = (bl.find((x) => /G1/.test(x.name)) || bl[0] || {}).id; html = BS.raceId ? vBuild() : (DATA.races.length ? vBuildWait() : vEmpty()); }
   else if (name === 'results') { html = vResults(); if (histState === 'no') loadHistory(); }
   else if (name === 'gaikyu') { tab = 'results'; html = vGaikyu(arg ? decodeURIComponent(arg) : ''); mopts = { back: 'results', backLabel: '成績', sub: '外厩データ' }; }
+  else if (name === 'person') { tab = 'races'; const [, , ro, ...rest] = location.hash.split('/'); html = vPerson(ro, decodeURIComponent(rest.join('/'))); mopts = { back: 'races', backLabel: '出馬表', sub: ro === 'trainer' ? '調教師' : '騎手' }; }
   else if (name === 'my') html = vMy();
   else { tab = 'home'; html = vHome(); mopts = { sub: fd(homeDayOf()) + ' 開催' }; }
   curTab = tab;
