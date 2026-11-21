@@ -1677,7 +1677,7 @@ function recentBlock(rs) {
   const row = (x, i) => {
     const fc = typeof x.fin === 'number' ? (x.fin <= 3 ? ' f' + x.fin : x.fin <= 5 ? ' f45' : '') : '';
     // レースのレベルの目安：その後の勝ち上がり率（3走以内）。分母3頭以上のときだけ、行にも出す（判定の基準は川崎さんと決める）
-    const lv = x.race_level ? `・レースレベル <b class="rl">${esc(String(x.race_level))}</b>${x.race_level_pct != null ? `（勝ち上がり ${pct(x.race_level_pct, 0)}%${x.race_level_class_avg != null ? `・クラス平均 ${pct(x.race_level_class_avg, 0)}%` : ''}）` : ''}`
+    const lv = x.race_level ? `・レースレベル <b class="rl">${esc(String(x.race_level))}</b>${x.w3 != null ? `（勝ち上がり ${pct(x.w3, 0)}%${x.race_level_class_avg != null ? `・クラス平均 ${pct(x.race_level_class_avg, 0)}%` : ''}）` : ''}`
       : x.w3 != null && x.w3n >= 3 ? `・勝ち上がり ${pct(x.w3, 0)}%（${x.w3n}頭）` : '';
     // 指数：評価（S〜D）・偏差値・レース内順位があればそれを主に、生の値はタップの中へ（川崎さんの fig_eval / fig_dev / fig_rank_in_race）
     const ev = x.fig_eval ? String(x.fig_eval) : '';
