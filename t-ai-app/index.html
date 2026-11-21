@@ -377,6 +377,8 @@ body.lock { overflow: hidden; }
 .gkr span:first-child { min-width: 0; overflow-wrap: anywhere; line-height: 1.35; font-weight: 700; }
 .gkr.gkh { min-height: 0; padding: 5px 10px; border-top: 0; background: var(--ink); color: var(--paper); font-size: 11px; }
 .gkr .sc { font-size: 15px; }
+.gkr.up4 { grid-template-columns: minmax(0, 1fr) 70px 80px; }
+.ixs .ixsub { margin: 10px 0 0; font-size: 12px; font-weight: 900; color: var(--ink2); }
 .gkr span small { display: block; font-size: 10px; font-weight: 700; color: var(--ink3); line-height: 1.2; }
 .gkr.up .sc { color: var(--red); }
 .gkr.dn { color: var(--ink3); }
@@ -1121,9 +1123,9 @@ const IDX = new Map();  // レース → Map(馬番 → 指数)。開いたと�
 function needIdx(r) {
   if (SAMPLE || IDX.has(r.id)) return;
   IDX.set(r.id, 'loading');
-  sb.from('predictions').select('horse_no,idx,trainer').eq('race_id', r.id).then(({ data, error }) => {
+  sb.from('predictions').select('horse_no,idx,trainer,fit').eq('race_id', r.id).then(({ data, error }) => {
     if (error) { IDX.delete(r.id); return; }
-    IDX.set(r.id, new Map((data || []).filter((x) => x.idx).map((x) => [x.horse_no, { ...x.idx, _trainer: x.trainer || '' }])));
+    IDX.set(r.id, new Map((data || []).filter((x) => x.idx).map((x) => [x.horse_no, { ...x.idx, _trainer: x.trainer || '', _fit: x.fit || null }])));
     const sh = $('#sheet'); if (sh && sh.dataset.race === r.id) $('#sheetB').innerHTML = cardBody(r, +sh.dataset.no);
   });
 }
@@ -1159,7 +1161,7 @@ function cardBody(r, no) {
   const val = (k, f, v, pre) => (f === 'lay' ? lay() : f === 'pcn' ? pct(v, 0) + '%' + cnt(pre) : f === 'fin' ? `${Math.round(v)}着${fieldOf(x) != null ? `／${Math.round(fieldOf(x))}頭` : ''}` : ixFmt(v, f));
   const redraw = () => { const sh = $('#sheet'); if (sh && sh.dataset.race === r.id && +sh.dataset.no === no) { const sc = $('.ixs') && $('.ixs').scrollTop; $('#sheetB').innerHTML = cardBody(r, no); if ($('.ixs') && sc) $('.ixs').scrollTop = sc; } };
   const naTxt = (k) => (k === 'gaikyu_name' || k === 'gaikyu_return_days' ? '利用なし' : k === 'layoff_starts' ? '該当なし' : /^farm_/.test(k) ? (x.gaikyu_name ? '出走30未満のため省略' : '－') : 'データなし');
-  return top + `<div class="ixs">${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return (rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}${t === '外厩' ? farmBlock(r, x, h, redraw) : ''}` : '') + (t === '脚質' ? paceBlock(h, x._trainer) : '') + (t === '騎手・厩舎' ? personMini(h, x._trainer, redraw) : ''); }).join('')}
+  return top + `<div class="ixs">${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return (rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}${t === '外厩' ? farmBlock(r, x, h, redraw) : ''}` : '') + (t === '脚質' ? paceBlock(h, x._trainer) : '') + (t === '騎手・厩舎' ? personMini(h, x._trainer, redraw) + fitBlock(r, h, x._fit, x._trainer) : ''); }).join('')}
     ${x.gaikyu_name && farmKey(x) ? `<div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-go="#/gaikyu/${encodeURIComponent(farmKey(x))}">この外厩の集計を見る<span>▶</span></button></div>` : ''}
     <p class="note" style="margin-top:12px">指数は、T-AIが勝つ確率を計算するときの材料の一部です。順位は、このレースの出走馬の中での順位です。「データなし」は、過去の走りが無いなどで計算できない項目です。${x.gaikyu_name ? '外厩のスコアは参考の集計で、勝つ確率の計算には入っていません。全騎乗＝その外厩から帰ってきた後の全部の出走、直行＝帰ってきて最初のレースだけ。' : ''}</p></div>`;
 }
@@ -1546,13 +1548,37 @@ function personMini(h, trainer, redraw) {
     if (!d) { needPerson(role, pk, redraw); return ''; }
     if (d === 'loading' || d === 'err') return '';
     const lv = (d.data || {}).lv, sw = (d.data || {}).sw, g = gradeOf(lv);
-    const sub = [lv && lv.all_score != null ? `市場対比 ${Number(lv.all_score).toFixed(2)}` : '', sw && sw.s[0] ? `得意：${swTxt(sw.s[0])}` : '', sw && sw.w[0] ? `不得意：${swTxt(sw.w[0])}` : ''].filter(Boolean).join('・');
+    const sub = [lv && lv.uplift_all != null ? `勝たせ度 ${Number(lv.uplift_all).toFixed(2)}` : '', lv && lv.all_score != null ? `市場対比 ${Number(lv.all_score).toFixed(2)}` : '', sw && sw.s[0] ? `得意：${swTxt(sw.s[0])}` : '', sw && sw.w[0] ? `不得意：${swTxt(sw.w[0])}` : ''].filter(Boolean).join('・');
     return `<div class="ixr"><span class="k">${ROLE_JA[role]}（${esc(name)}）の格付け${sub ? `<small class="gks">${sub}</small>` : ''}</span><span class="v">${g ? `<span class="grade g${esc(g)}">${esc(g)}</span>` : '－'}</span><span></span></div>`;
   };
   const p = h.pace || {}, rows = one('jockey', h.jockey, p.jkkey) + one('trainer', trainer, p.trkey);
   const jk = personKey('jockey', h.jockey, p.jkkey), tk = personKey('trainer', trainer, p.trkey);
   const btn = (role, k) => (k ? `<button class="btn sub" type="button" data-go="#/person/${role}/${encodeURIComponent(k)}">${ROLE_JA[role]}のページ<span>▶</span></button>` : '');
   return rows ? `${rows}<div class="btns two" style="margin-top:8px">${btn('jockey', jk)}${btn('trainer', tk)}</div>` : '';
+}
+// 指数カード：今回のレースの条件に当てはめた騎手・調教師のスコア（川崎さんの strengths_apply）。初出走馬は新馬用の項目も
+function fitBlock(r, h, f, trainer) {
+  if (!f) return '';
+  const sc = (v) => `<span class="v${v >= 1.2 ? ' up' : v < 0.85 ? ' dn' : ''}">${Number(v).toFixed(3)}</span>`;
+  const line = (label, score, n, extra) => (score == null && !n ? '' : `<div class="ixr"><span class="k">${label}${n ? `<small class="gks">${n}走${extra ? '・' + extra : ''}</small>` : ''}</span>${score == null ? '<span class="v na">少ないため参考外</span>' : sc(score)}<span></span></div>`);
+  const dist = r.distance ? (r.distance <= 1400 ? '〜1400m' : r.distance <= 1800 ? '1500-1800m' : r.distance <= 2200 ? '1900-2200m' : '2300m〜') : '';
+  const field = f.field_size ? (f.field_size <= 10 ? '10頭以下' : f.field_size <= 14 ? '11-14頭' : '15頭以上') : '';
+  const mo = +String(r.date || '').slice(5, 7), season = mo ? ([3, 4, 5].includes(mo) ? '春' : [6, 7, 8].includes(mo) ? '夏' : [9, 10, 11].includes(mo) ? '秋' : '冬') : '';
+  const rec = (p) => [f[p + '_wins'] != null ? `${f[p + '_wins']}勝` : '', f[p + '_win_rate'] != null ? `勝率${pct(f[p + '_win_rate'], 1)}%` : '', f[p + '_top3_rate'] != null ? `複勝率${pct(f[p + '_top3_rate'], 0)}%` : ''].filter(Boolean).join('・');
+  const jk = [line(`距離（${esc(r.surface || '')}${dist}）`, f.jk_dist_score, f.jk_dist_starts), line(`脚質（${esc(f.style || '')}）`, f.jk_style_score, f.jk_style_starts),
+    line(`展開（${esc(f.pace_scenario || '')}）`, f.jk_pace_score, f.jk_pace_starts), line(`頭数（${field}）`, f.jk_field_score, f.jk_field_starts),
+    line(`クラス（${esc(f.class_band || '')}）`, f.jk_class_score, f.jk_class_starts), line(`人気（予想${esc(f.exp_pop_band || '')}）`, f.jk_pop_score, f.jk_pop_starts)].join('');
+  const tr = [line(esc(f.tr_gaikyu_class || '直行・在厩'), f.tr_gaikyu_score, f.tr_gaikyu_starts), line(`季節（${season}）`, f.tr_season_score, f.tr_season_starts), line('遠征・ホーム', f.tr_expedition_score, f.tr_expedition_starts)].join('');
+  const deb = f.is_debut === 1 ? [line(`騎手×新馬戦`, f.new_jockey_score, f.new_jockey_starts, rec('new_jockey')), line(`調教師×新馬戦`, f.new_trainer_score, f.new_trainer_starts, rec('new_trainer')),
+    f.new_trainer_first_starts ? `<div class="ixr"><span class="k">調教師の初出走馬<small class="gks">${f.new_trainer_first_starts}走</small></span><span class="v">${f.new_trainer_first_win_rate != null ? pct(f.new_trainer_first_win_rate, 1) + '%' : '－'}</span><span class="rk">勝率</span></div>` : '',
+    f.new_sire_name ? line(`父 ${esc(f.new_sire_name)} の初出走`, f.new_sire_score, f.new_sire_starts, rec('new_sire')) : '', f.new_damsire_name ? line(`母父 ${esc(f.new_damsire_name)} の初出走`, f.new_damsire_score, f.new_damsire_starts, rec('new_damsire')) : '',
+    f.new_farm_name ? line(`外厩 ${esc(f.new_farm_name)} から初出走`, f.new_farm_score, f.new_farm_starts, rec('new_farm')) : ''].join('') : '';
+  if (!jk && !tr && !deb) return '';
+  return `<h3>今回の条件での騎手・調教師</h3>
+    ${jk ? `<p class="ixsub">騎手（${esc(h.jockey)}）${f.jockey_fit_score != null ? `　合成 ${Number(f.jockey_fit_score).toFixed(3)}` : ''}</p>${jk}` : ''}
+    ${tr ? `<p class="ixsub">調教師（${esc(trainer || '')}）${f.trainer_fit_score != null ? `　合成 ${Number(f.trainer_fit_score).toFixed(3)}` : ''}</p>${tr}` : ''}
+    ${deb ? `<p class="ixsub">初出走の材料</p>${deb}` : ''}
+    <p class="dnote" style="margin-top:6px">過去の同じ条件での市場対比スコア（1.0が市場並み、30走未満は参考外）。「人気」はT-AIの順位から見た予想の人気帯です。記述的な集計で、勝つ確率の計算には入っていません。</p>`;
 }
 function vPerson(role, key) {
   role = role === 'trainer' ? 'trainer' : 'jockey';
@@ -1566,6 +1592,7 @@ function vPerson(role, key) {
   const name = (fj && fj.display_name) || d.label || d.pkey;
   const blocks = [['all', '全期間'], ['recent1y', '直近1年'], ['recent90d', '直近90日'], ['turf', '芝'], ['dirt', 'ダート'], ['class_new', '新馬・未勝利'], ['class_cond', '条件戦（1〜3勝）'], ['class_open', 'オープン・重賞']];
   const lvRows = lv ? blocks.filter(([b]) => lv[b + '_starts']).map(([b, t]) => ({ item: t, starts: lv[b + '_starts'], wins: lv[b + '_wins'], win_rate: lv[b + '_win_rate'], top3_rate: lv[b + '_top3_rate'], score: lv[b + '_score'] })) : [];
+  const upRows = lv && lv.uplift_all != null ? [['all', '全期間'], ['recent1y', '直近1年'], ['turf', '芝'], ['dirt', 'ダート']].filter(([k]) => lv['uplift_' + k + '_starts'] || lv['uplift_' + k] != null).map(([k, t]) => { const v = lv['uplift_' + k]; return `<div class="gkr up4${v == null ? '' : v >= 1.15 ? ' up' : v < 0.9 ? ' dn' : ''}"><span>${t}</span><span>${lv['uplift_' + k + '_starts'] ?? '－'}</span><span class="sc">${v == null ? '－' : Number(v).toFixed(3)}</span></div>`; }).join('') : '';
   const swList = (arr, cls) => (arr && arr.length ? `<ol class="swl ${cls}">${arr.map((y) => `<li><b>${esc(y.cat)}</b><small>${esc(y.dim)}・${y.n}走・${Number(y.sc).toFixed(3)}</small></li>`).join('')}</ol>` : '<p class="note">該当なし（30走以上の条件で目立つものなし）</p>');
   const dims = Object.keys(st);
   const stHtml = dims.map((dm, i) => { const rs = st[dm].filter((y) => y.starts).map((y) => ({ item: y.category, starts: y.starts, wins: y.wins, top3: y.top3, win_rate: y.win_rate, top3_rate: y.top3_rate, score: y.score })); return rs.length ? `<details class="gkmore"${i < 2 ? ' open' : ''}><summary>${esc(dm)}</summary>${gkTable(rs, esc(dm))}</details>` : ''; }).join('');
@@ -1573,8 +1600,12 @@ function vPerson(role, key) {
   const g1 = fj && fj.g1_races ? String(fj.g1_races).split(';').map((s) => s.trim()).filter(Boolean) : [];
   return `<section class="sec">
     <div class="phead"><div><small>${ROLE_JA[role]}</small><b>${esc(name)}</b>${fj && fj.full_name ? `<small>${esc(fj.full_name)}${fj.nationality ? `・${esc(fj.nationality)}` : ''}</small>` : lv && lv.full_name ? `<small>${esc(lv.full_name)}</small>` : ''}</div>${g ? `<span class="grade big g${esc(g)}">${esc(g)}</span>` : ''}</div>
-    ${lv ? `<p class="note" style="margin-top:8px">格付けは「市場（単勝オッズ）の想定と比べて、どれだけ勝たせてきたか」で付けたもの（S上位5%・A〜20%・B〜50%・C〜80%・D下位20%、50走未満は「参考」）。スコア1.0が市場並みです。</p>` : ''}
+    ${lv && lv.uplift_all != null ? `<div class="pkv2" style="margin-top:10px"><div><small>勝たせ度（全期間）</small><b>${Number(lv.uplift_all).toFixed(3)}</b></div><div><small>市場対比</small><b>${lv.all_score != null ? Number(lv.all_score).toFixed(3) : '－'}</b></div></div>` : ''}
+    ${lv ? (lv.uplift_all != null || role === 'jockey' && lv.composite_score != null
+      ? `<p class="note" style="margin-top:8px"><b>勝たせ度</b>は、その馬が他のレースで見せてきた力を基準に、この騎手が乗ったときにどれだけ上に持っていったか（1.0がその馬なり、大きいほど勝たせている）。格付けは勝たせ度6：市場対比4で付けたもの（S上位5%・A〜20%・B〜50%・C〜80%・D下位20%、50走未満は「参考」）。${lv.grade_v1 && lv.grade_v1 !== lv.grade ? `市場対比だけの旧格付けでは ${esc(lv.grade_v1)} でした。` : ''}</p>`
+      : `<p class="note" style="margin-top:8px">格付けは「市場（単勝オッズ）の想定と比べて、どれだけ勝たせてきたか」で付けたもの（S上位5%・A〜20%・B〜50%・C〜80%・D下位20%、50走未満は「参考」）。スコア1.0が市場並みです。</p>`) : ''}
   </section>
+  ${upRows ? `<section class="sec"><div class="label"><b>勝たせ度</b><span>期間・馬場別</span></div><div class="box gkt"><div class="gkr gkh up4"><span>区分</span><span>対象</span><span>勝たせ度</span></div>${upRows}</div><p class="dnote">対象は勝たせ度の計算に使えた出走数（30走未満は空欄）。期間を分けても順位がよく保たれる、持続する特性でした。ただし市場（オッズ）もこれを織り込んでいます。</p></section>` : ''}
   ${lvRows.length ? `<section class="sec"><div class="label"><b>成績と格付け</b><span>期間・条件別</span></div>${gkTable(lvRows, '期間・条件')}<p class="dnote">30走未満の欄は、率とスコアを出していません。</p></section>` : ''}
   ${sw ? `<section class="sec"><div class="label"><b>得意・不得意</b><span>市場対比の上位・下位</span></div><div class="swg"><div><small>得意</small>${swList(sw.s, 'up')}</div><div><small>不得意</small>${swList(sw.w, 'dn')}</div></div></section>` : ''}
   ${stHtml ? `<section class="sec"><div class="label"><b>条件別の成績</b><span>切り口ごと</span></div>${stHtml}</section>` : ''}
