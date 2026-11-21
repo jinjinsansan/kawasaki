@@ -400,6 +400,24 @@ body.lock { overflow: hidden; }
 .memo p { margin: 0; font-size: 13.5px; line-height: 1.65; overflow-wrap: anywhere; }
 .memo .mres { display: block; margin-bottom: 3px; font-size: 11px; line-height: 1.45; color: var(--ink2); overflow-wrap: anywhere; }
 .memo .mres b { color: var(--red); }
+.recent .rc { border-bottom: 1px solid rgba(27, 24, 20, .25); }
+.recent .rc summary { display: grid; grid-template-columns: 38px minmax(0, 1fr) 44px 12px; gap: 6px; align-items: center; padding: 7px 0; cursor: pointer; list-style: none; }
+.recent .rc summary::-webkit-details-marker { display: none; }
+.recent .rc summary::after { font-size: 12px; text-align: right; }
+.recent .rfin { text-align: center; font-family: var(--n); font-weight: 900; font-size: 20px; line-height: 1; }
+.recent .rfin small { font-size: 10px; }
+.recent .rfin.w { color: var(--red); }
+.recent .rfin.t { color: var(--ink); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.recent .rmain { min-width: 0; display: grid; gap: 1px; }
+.recent .rmain b { font-size: 12.5px; font-weight: 900; overflow-wrap: anywhere; }
+.recent .rmain small { font-size: 10.5px; color: var(--ink2); overflow-wrap: anywhere; line-height: 1.4; }
+.recent .rfig { text-align: right; font-family: var(--n); font-weight: 700; font-size: 14px; line-height: 1.1; }
+.recent .rfig small { display: block; font-size: 9.5px; color: var(--ink3); }
+.recent .rbody { padding: 0 0 8px 46px; display: grid; gap: 6px; }
+.recent .rbody p { margin: 0; font-size: 12.5px; line-height: 1.6; overflow-wrap: anywhere; }
+.recent .rbody .mtag { display: inline-block; margin-right: 6px; padding: 0 5px; font-size: 10.5px; font-weight: 900; border: 1.5px solid var(--ink); }
+.recent .rbody .mtag.now { background: var(--ink); color: var(--paper); }
+.recent .rup { font-size: 11px !important; color: var(--ink2); }
 .ixs .ixsub { margin: 10px 0 0; font-size: 12px; font-weight: 900; color: var(--ink2); }
 .gkr span small { display: block; font-size: 10px; font-weight: 700; color: var(--ink3); line-height: 1.2; }
 .gkr.up .sc { color: var(--red); }
@@ -1146,9 +1164,9 @@ const IDX = new Map();  // レース → Map(馬番 → 指数)。開いたと�
 function needIdx(r) {
   if (SAMPLE || IDX.has(r.id)) return;
   IDX.set(r.id, 'loading');
-  sb.from('predictions').select('horse_no,idx,trainer,fit,memo').eq('race_id', r.id).then(({ data, error }) => {
+  sb.from('predictions').select('horse_no,idx,trainer,fit,memo,recent').eq('race_id', r.id).then(({ data, error }) => {
     if (error) { IDX.delete(r.id); return; }
-    IDX.set(r.id, new Map((data || []).filter((x) => x.idx || x.memo).map((x) => [x.horse_no, { ...(x.idx || {}), _noidx: !x.idx, _trainer: x.trainer || '', _fit: x.fit || null, _memo: x.memo || null }])));
+    IDX.set(r.id, new Map((data || []).filter((x) => x.idx || x.memo || x.recent).map((x) => [x.horse_no, { ...(x.idx || {}), _noidx: !x.idx, _trainer: x.trainer || '', _fit: x.fit || null, _memo: x.memo || null, _recent: x.recent || null }])));
     const sh = $('#sheet'); if (sh && sh.dataset.race === r.id) $('#sheetB').innerHTML = cardBody(r, +sh.dataset.no);
   });
 }
@@ -1174,7 +1192,7 @@ function cardBody(r, no) {
   const m = IDX.get(r.id);
   if (m === undefined || m === 'loading') return top + '<div class="ixs"><p class="note" style="padding:20px 0;text-align:center">指数を読み込んでいます…</p></div>';
   const x = m.get(no);
-  if (!x || x._noidx) return top + `<div class="ixs">${x ? memoBlock(x._memo) : ''}<p class="note" style="padding:16px 0">このレースの指数の内訳は、まだ届いていません。</p></div>`;
+  if (!x || x._noidx) return top + `<div class="ixs">${x ? memoBlock(x._memo) + recentBlock(x._recent) : ''}<p class="note" style="padding:16px 0">このレースの指数の内訳は、まだ届いていません。</p></div>`;
   const all = [...m.values()].filter((y) => !y._noidx);
   const rank = (k, d, v) => { if (!d || v == null || typeof v !== 'number') return ''; const vs = all.map((y) => y[k]).filter((y) => y != null); const n = 1 + vs.filter((y) => (d > 0 ? y > v : y < v)).length; return `<span class="rk${n <= 3 ? ' top' : ''}">${n}位／${vs.length}頭</span>`; };
   const has = (k) => all.some((y) => y[k] != null);
@@ -1184,7 +1202,7 @@ function cardBody(r, no) {
   const val = (k, f, v, pre) => (f === 'lay' ? lay() : f === 'pcn' ? pct(v, 0) + '%' + cnt(pre) : f === 'fin' ? `${Math.round(v)}着${fieldOf(x) != null ? `／${Math.round(fieldOf(x))}頭` : ''}` : ixFmt(v, f));
   const redraw = () => { const sh = $('#sheet'); if (sh && sh.dataset.race === r.id && +sh.dataset.no === no) { const sc = $('.ixs') && $('.ixs').scrollTop; $('#sheetB').innerHTML = cardBody(r, no); if ($('.ixs') && sc) $('.ixs').scrollTop = sc; } };
   const naTxt = (k) => (k === 'gaikyu_name' || k === 'gaikyu_return_days' ? '利用なし' : k === 'layoff_starts' ? '該当なし' : /^farm_/.test(k) ? (x.gaikyu_name ? '出走30未満のため省略' : '－') : 'データなし');
-  return top + `<div class="ixs">${memoBlock(x._memo)}${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return (rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}${t === '外厩' ? farmBlock(r, x, h, redraw) : ''}` : '') + (t === '脚質' ? paceBlock(h, x._trainer) : '') + (t === '騎手・厩舎' ? personMini(h, x._trainer, redraw) + fitBlock(r, h, x._fit, x._trainer) : ''); }).join('')}
+  return top + `<div class="ixs">${memoBlock(x._memo)}${recentBlock(x._recent)}${IDXF.map(([t, fs]) => { const rows = fs.filter(([k, , , , alt]) => has(k) && !(alt && has(alt))); return (rows.length ? `<h3>${t}</h3>${rows.map(([k, label, d, f, , pre]) => { const v = x[k]; return `<div class="ixr"><span class="k">${label}</span>${v == null ? `<span class="v na">${naTxt(k)}</span><span></span>` : `<span class="v">${val(k, f, v, pre)}</span>${rank(k, d, v) || '<span></span>'}`}</div>`; }).join('')}${t === '外厩' ? farmBlock(r, x, h, redraw) : ''}` : '') + (t === '脚質' ? paceBlock(h, x._trainer) : '') + (t === '騎手・厩舎' ? personMini(h, x._trainer, redraw) + fitBlock(r, h, x._fit, x._trainer) : ''); }).join('')}
     ${x.gaikyu_name && farmKey(x) ? `<div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-go="#/gaikyu/${encodeURIComponent(farmKey(x))}">この外厩の集計を見る<span>▶</span></button></div>` : ''}
     <p class="note" style="margin-top:12px">指数は、T-AIが勝つ確率を計算するときの材料の一部です。順位は、このレースの出走馬の中での順位です。「データなし」は、過去の走りが無いなどで計算できない項目です。${x.gaikyu_name ? '外厩のスコアは参考の集計で、勝つ確率の計算には入っていません。全騎乗＝その外厩から帰ってきた後の全部の出走、直行＝帰ってきて最初のレースだけ。' : ''}</p></div>`;
 }
@@ -1638,6 +1656,25 @@ function memoBlock(m) {
     ${m.cur ? `<div class="mrow"><span class="mtag now">今回</span><div><p>${esc(m.cur)}</p></div></div>` : ''}
     ${m.p1 ? one('前走', m.p1) : ''}${m.p2 ? one('前々走', m.p2) : ''}
     <p class="dnote" style="margin-top:4px">厩舎の話をもとに、言い回しを整えたものです。</p></div>`;
+}
+// 指数カード：近走成績（馬柱。川崎さんの horse_recent）。行をタップすると回顧・厩舎コメント・勝ち上がり率が開く
+function recentBlock(rs) {
+  if (!rs || !rs.length) return '';
+  const sfc = (x) => (x === 'ダート' ? 'ダ' : x === '障害' ? '障' : x || '');
+  const row = (x, i) => {
+    const won = x.fin === 1, top3 = typeof x.fin === 'number' && x.fin <= 3;
+    const wu = (r, n, lab) => (r != null && n ? `${lab} ${pct(r, 0)}%（${n}頭中）` : '');
+    const ups = [wu(x.wn, x.wnn, '次走で勝ち上がり'), wu(x.w3, x.w3n, '3走以内')].filter(Boolean).join('・');
+    return `<details class="rc"><summary>
+      <span class="rfin${won ? ' w' : top3 ? ' t' : ''}">${x.fin != null ? esc(String(x.fin)) : '－'}<small>${x.fin === '中止' ? '' : '着'}</small></span>
+      <span class="rmain"><b>${x.d ? esc(String(x.d).slice(2).replace(/-/g, '/')) : ''} ${esc(x.v || '')}${x.rn ? x.rn + 'R' : ''} ${esc(x.cls || x.race || '')}</b>
+        <small>${sfc(x.sf)}${x.dist || ''}・${esc(x.cond || '')}・${x.n || '－'}頭${x.mg ? `・${esc(x.mg)}` : ''}　${esc(x.jk || '')}${x.kg ? ` ${x.kg}` : ''}</small>
+        <small>${x.pop != null ? `${x.pop}番人気` : ''}${x.odds != null ? ` ${x.odds}倍` : ''}${x.time ? `・${esc(x.time)}` : ''}${x.bw ? `・${x.bw}kg${x.bwd ? `(${esc(String(x.bwd))})` : ''}` : ''}</small></span>
+      <span class="rfig">${x.fig != null ? Number(x.fig).toFixed(1) : '－'}<small>指数</small></span></summary>
+      <div class="rbody">${x.rv ? `<p><span class="mtag">回顧</span>${esc(x.rv)}</p>` : ''}${x.cm ? `<p><span class="mtag now">厩舎</span>${esc(x.cm)}</p>` : ''}${ups ? `<p class="rup">このレースの出走馬の${ups}</p>` : ''}${x.race && x.cls ? `<p class="rup">${esc(x.race)}</p>` : ''}</div></details>`;
+  };
+  return `<div class="recent"><h3 style="margin-top:12px">近走成績</h3>${rs.slice(0, 5).map(row).join('')}
+    <p class="dnote" style="margin-top:4px">指数はT-AIのスピード指数（高いほど速い）。行をタップすると、回顧と、そのときの厩舎の話、そのレースに出た馬がその後どれだけ勝ち上がったか（レースのレベルの目安）が開きます。</p></div>`;
 }
 function fitBlock(r, h, f, trainer) {
   if (!f) return '';
