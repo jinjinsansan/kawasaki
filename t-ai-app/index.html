@@ -990,7 +990,7 @@ function vCompare(r) {
 // 数字は紙面のデータ（predictions.going）に入っているので、レースを開くたびの問い合わせはしない
 function renderGoing(r) {
   const sec = $('#goingSec'); if (!sec) return;
-  if (raceState.gvFor !== r.id) { raceState.gvFor = r.id; const ag = r.goingUsed || r.going; if (['稍重', '重', '不良'].includes(ag)) raceState.gv = ag; }
+  if (raceState.gvFor !== r.id) { raceState.gvFor = r.id; const ag = r.goingUsed || r.going; raceState.gv = ['稍重', '重', '不良'].includes(ag) ? ag : '稍重'; }
   const g = raceState.gv, hs = r.horses.filter((h) => h.going && h.going[g] != null && h.going['良'] != null);
   if (!hs.length) { sec.innerHTML = ''; return; }
   const v = (h, k) => h.going[k];
