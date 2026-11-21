@@ -245,7 +245,7 @@ p, h1, h2, h3 { margin: 0; }
 .pickbtn .pt b { font-weight: 900; font-size: 15px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pickbtn .chg { padding: 3px 8px; border: 2px solid var(--red); color: var(--red); font-weight: 900; font-size: 12px; white-space: nowrap; transform: rotate(-3deg); }
 .sheet-bg { position: fixed; inset: 0; z-index: 40; background: rgba(27, 24, 20, .55); opacity: 0; transition: opacity .2s; }
-.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 41; max-width: 480px; max-height: 86dvh; margin: 0 auto; display: flex; flex-direction: column; background: var(--paper); border-top: 3px solid var(--ink); box-shadow: 0 -8px 30px rgba(27, 24, 20, .3); transform: translateY(100%); transition: transform .26s cubic-bezier(.2, .8, .2, 1); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 41; max-width: 480px; max-height: 86dvh; margin: 0 auto; display: flex; flex-direction: column; overflow: hidden; background: var(--paper); border-top: 3px solid var(--ink); box-shadow: 0 -8px 30px rgba(27, 24, 20, .3); transform: translateY(100%); transition: transform .26s cubic-bezier(.2, .8, .2, 1); padding-bottom: env(safe-area-inset-bottom, 0px); }
 .sheet.open { transform: none; }
 .sheet-bg.open { opacity: 1; }
 .sheet .sh-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px var(--pad) 0; }
@@ -257,13 +257,13 @@ p, h1, h2, h3 { margin: 0; }
 .sheet .cnav small { font-size: 10px; color: var(--ink3); line-height: 1.2; width: 4.2em; text-align: center; }
 .sheet .sh-h b { white-space: nowrap; }
 @media (max-width: 359px) { .sheet .cnav small { display: none; } }
-@keyframes cslideL { from { transform: translateX(28%); opacity: .2; } to { transform: none; opacity: 1; } }
-@keyframes cslideR { from { transform: translateX(-28%); opacity: .2; } to { transform: none; opacity: 1; } }
 @keyframes cbump { 0%, 100% { transform: none; } 40% { transform: translateX(10px); } 70% { transform: translateX(-6px); } }
-#sheetB.slideL { animation: cslideL .22s ease-out; }
-#sheetB.slideR { animation: cslideR .22s ease-out; }
+#sheetB, .sheet .cpane { background: var(--paper); will-change: transform; }
+.sheet .cpane { position: absolute; left: 0; display: flex; flex-direction: column; overflow: hidden; pointer-events: none; }
+#sheetB { position: relative; }
+#sheetB::before, .sheet .cpane::before { content: ''; position: absolute; top: 0; bottom: 0; left: -7px; width: 2px; background: var(--ink); opacity: .55; }
 #sheetB.bump { animation: cbump .25s; }
-@media (prefers-reduced-motion: reduce) { #sheetB.slideL, #sheetB.slideR, #sheetB.bump { animation: none; } }
+@media (prefers-reduced-motion: reduce) { #sheetB.bump { animation: none; } }
 .sheet .sh-top { padding: 0 var(--pad) 10px; }
 .sheet .sh-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 0 var(--pad) 16px; border-top: 2px solid var(--ink); }
 .sheet .rrow.cur { background: var(--card); box-shadow: inset 4px 0 0 var(--red); }
@@ -1549,30 +1549,89 @@ function mineAct(a) {
   const ix = $('.ixs'), sc = ix && ix.scrollTop; $('#sheetB').innerHTML = mineBody(); if ($('.ixs') && sc) $('.ixs').scrollTop = sc;
 }
 // 指数カードを左右のスワイプ（または ‹ › ）で、前後の馬（馬番順）へ移る（川崎さんの依頼）
-function cardStep(d) {
-  const sh = $('#sheet'); if (!sh || sh.dataset.vs || sh.dataset.mine || !sh.dataset.no) return;
-  const r = byId.get(sh.dataset.race); if (!r) return;
+// 指に合わせてカードが動き、となりの馬のカードが継ぎ目ごと見えながら入ってくる（離したときに、半分ほど動いていれば移る）
+const CS = { x0: null, y0: 0, t0: 0, mode: null, dx: 0, P: null, W: 0, busy: false };
+const CGAP = 12;
+function cardSides(sh) {
+  const r = byId.get(sh.dataset.race); if (!r) return null;
   const list = r.horses.filter((h) => h.known !== false).map((h) => h.no).sort((a, b) => a - b);
-  const j = list.indexOf(+sh.dataset.no) + d;
+  const i = list.indexOf(+sh.dataset.no);
+  return { r, prev: list[i - 1], next: list[i + 1] };
+}
+function cardPanes(sh) {
+  const b = $('#sheetB'), sd = cardSides(sh); if (!sd) return null;
+  const mk = (no) => {
+    if (no == null) return null;
+    const d = document.createElement('div');
+    d.className = 'cpane';
+    d.style.cssText = `top:${b.offsetTop}px;width:${b.offsetWidth}px;height:${b.offsetHeight}px`;
+    d.innerHTML = cardBody(sd.r, no);
+    sh.appendChild(d); return d;
+  };
+  CS.W = b.offsetWidth;
+  return { ...sd, b, p: mk(sd.prev), n: mk(sd.next) };
+}
+function cardMove(dx) {
+  const P = CS.P, W = CS.W; if (!P) return;
+  P.b.style.transform = `translate3d(${dx}px,0,0)`;
+  if (P.p) P.p.style.transform = `translate3d(${dx - W - CGAP}px,0,0)`;
+  if (P.n) P.n.style.transform = `translate3d(${dx + W + CGAP}px,0,0)`;
+}
+function cardFinish(dir) {
+  const P = CS.P; if (!P) return;
+  const all = [P.b, P.p, P.n].filter(Boolean), reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  CS.busy = true;
+  all.forEach((e) => { e.style.transition = reduce ? 'none' : 'transform .28s cubic-bezier(.2,.75,.25,1)'; });
+  cardMove(dir === 1 ? -(CS.W + CGAP) : dir === -1 ? CS.W + CGAP : 0);
+  setTimeout(() => {
+    const sh = $('#sheet');
+    if (dir && sh) { const no = dir === 1 ? P.next : P.prev; sh.dataset.no = no; P.b.innerHTML = cardBody(P.r, no); }
+    all.forEach((e) => { e.style.transition = ''; });
+    P.b.style.transform = '';
+    [P.p, P.n].forEach((e) => e && e.remove());
+    CS.P = null; CS.busy = false;
+  }, reduce ? 0 : 290);
+}
+function cardStep(d) {
+  const sh = $('#sheet'); if (!sh || sh.dataset.vs || sh.dataset.mine || !sh.dataset.no || CS.busy || CS.P) return;
+  const sd = cardSides(sh); if (!sd) return;
   const b = $('#sheetB');
-  if (j < 0 || j >= list.length) { b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump'); return; }
-  sh.dataset.no = list[j];
-  b.innerHTML = cardBody(r, list[j]);
-  b.classList.remove('slideL', 'slideR', 'bump'); void b.offsetWidth; b.classList.add(d > 0 ? 'slideL' : 'slideR');
+  if ((d > 0 ? sd.next : sd.prev) == null) { b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump'); return; }
+  CS.P = cardPanes(sh); cardMove(0);
+  requestAnimationFrame(() => requestAnimationFrame(() => cardFinish(d)));
 }
 (() => {
-  let x0 = null, y0 = 0, skip = false;
+  let skip = false;
   document.addEventListener('touchstart', (e) => {
     const sh = e.target.closest && e.target.closest('#sheet');
-    x0 = null; if (!sh || sh.dataset.vs || sh.dataset.mine || e.touches.length !== 1) return;
-    skip = !!e.target.closest('.scroll, .lapbars, .seg, input, select, textarea, details summary');  // 横に動かす部品の上では、馬を移らない
-    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+    CS.x0 = null; CS.mode = null;
+    if (!sh || sh.dataset.vs || sh.dataset.mine || !sh.dataset.no || CS.busy || CS.P || e.touches.length !== 1) return;
+    skip = !!e.target.closest('.scroll, .lapbars, .seg, input, select, textarea, .sh-h');  // 横に動かす部品や見出しの上では、馬を移らない
+    CS.x0 = e.touches[0].clientX; CS.y0 = e.touches[0].clientY; CS.t0 = Date.now(); CS.dx = 0;
   }, { passive: true });
-  document.addEventListener('touchend', (e) => {
-    if (x0 == null || skip) return;
-    const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0; x0 = null;
-    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.6) cardStep(dx < 0 ? 1 : -1);
-  }, { passive: true });
+  document.addEventListener('touchmove', (e) => {
+    if (CS.x0 == null || skip) return;
+    const t = e.touches[0], dx = t.clientX - CS.x0, dy = t.clientY - CS.y0;
+    if (!CS.mode) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      CS.mode = Math.abs(dx) > Math.abs(dy) * 1.2 ? 'h' : 'v';
+      if (CS.mode === 'h') { CS.P = cardPanes($('#sheet')); if (!CS.P) { CS.mode = 'v'; return; } }
+    }
+    if (CS.mode !== 'h') return;
+    e.preventDefault();
+    const edge = (dx < 0 && CS.P.next == null) || (dx > 0 && CS.P.prev == null);
+    CS.dx = edge ? dx * 0.3 : dx;  // 端の馬では、引っぱっても少ししか動かない
+    cardMove(CS.dx);
+  }, { passive: false });
+  const end = () => {
+    if (CS.mode !== 'h' || !CS.P) { CS.x0 = null; CS.mode = null; return; }
+    const v = CS.dx / Math.max(1, Date.now() - CS.t0), W = CS.W;
+    const dir = (CS.dx < -W * 0.22 || v < -0.45) && CS.P.next != null ? 1 : (CS.dx > W * 0.22 || v > 0.45) && CS.P.prev != null ? -1 : 0;
+    CS.x0 = null; CS.mode = null;
+    cardFinish(dir);
+  };
+  document.addEventListener('touchend', end, { passive: true });
+  document.addEventListener('touchcancel', end, { passive: true });
 })();
 function openCard(r, no) {
   closeSheet(true); needIdx(r);
