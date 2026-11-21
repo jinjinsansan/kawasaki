@@ -453,6 +453,17 @@ body.lock { overflow: hidden; }
 .mrow2 .mbtn button:disabled { opacity: .3; }
 .mrow2 .mbtn .tg { min-width: 52px; font-size: 12.5px; }
 .mrow2 .mbtn .tg[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.trow { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; margin-top: 8px; }
+.trow .tg { display: grid; place-items: center; width: 36px; height: 36px; border: 2px solid var(--ink); font-family: var(--n); font-size: 20px; font-weight: 900; }
+.trow .tg.gA { background: var(--red); border-color: var(--red); color: #fff; }
+.trow .tg.gB { background: var(--ink); color: var(--paper); }
+.trow b { display: block; font-size: 13.5px; font-weight: 900; }
+.trow small, .tmid { display: block; font-size: 12px; color: var(--ink2); margin-top: 2px; }
+.trow p { margin: 4px 0 0; font-size: 13px; }
+.taw { display: inline-block; margin-right: 6px; padding: 0 5px; border: 1.5px solid var(--ink); font-size: 11.5px; font-weight: 900; }
+.taw.up { border-color: var(--red); color: var(--red); }
+.taw.dn { color: var(--ink3); border-color: var(--ink3); }
+.tmid { margin-top: 6px; }
 .memo .mrow { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(27, 24, 20, .25); }
 .memo .mtag { align-self: start; text-align: center; font-size: 11px; font-weight: 900; padding: 3px 0; border: 1.5px solid var(--ink); }
 .memo .mtag.now { background: var(--ink); color: var(--paper); }
@@ -1277,9 +1288,9 @@ const IDX = new Map();  // レース → Map(馬番 → 指数)。開いたと�
 function needIdx(r) {
   if (SAMPLE || IDX.has(r.id)) return;
   IDX.set(r.id, 'loading');
-  sb.from('predictions').select('horse_no,idx,trainer,fit,memo,recent').eq('race_id', r.id).then(({ data, error }) => {
+  sb.from('predictions').select('horse_no,idx,trainer,fit,memo,recent,training').eq('race_id', r.id).then(({ data, error }) => {
     if (error) { IDX.delete(r.id); return; }
-    IDX.set(r.id, new Map((data || []).filter((x) => x.idx || x.memo || x.recent).map((x) => [x.horse_no, { ...(x.idx || {}), _noidx: !x.idx, _trainer: x.trainer || '', _fit: x.fit || null, _memo: x.memo || null, _recent: x.recent || null }])));
+    IDX.set(r.id, new Map((data || []).filter((x) => x.idx || x.memo || x.recent || x.training).map((x) => [x.horse_no, { ...(x.idx || {}), _noidx: !x.idx, _trainer: x.trainer || '', _fit: x.fit || null, _memo: x.memo || null, _recent: x.recent || null, _trn: x.training || null }])));
     const sh = $('#sheet'); if (sh && sh.dataset.race === r.id) $('#sheetB').innerHTML = sh.dataset.vs ? vsBody(r) : cardBody(r, +sh.dataset.no);
     else if (MINE.mode === 'mine' && $('#view') && $('#view').dataset.race === r.id && /^#\/race\//.test(location.hash)) rerender();
   });
@@ -1301,7 +1312,7 @@ function ixFmt(v, f) {
 }
 // 指数カードのタブ：左「指数」（もともとの内訳）／右「近走・メモ」（レースメモと近走成績）。川崎さんの指定
 let cardTab = 'idx';
-const cardTabs = (x) => (x && (x._memo || (x._recent && x._recent.length)) ? `<div class="seg sm ctabs" role="group" aria-label="カードの表示">${[['idx', '指数'], ['memo', '近走・メモ']].map(([k, t]) => `<button type="button" data-ctab="${k}" aria-pressed="${cardTab === k}">${t}</button>`).join('')}</div>` : '');
+const cardTabs = (x) => (x && (x._memo || x._trn || (x._recent && x._recent.length)) ? `<div class="seg sm ctabs" role="group" aria-label="カードの表示">${[['idx', '指数'], ['memo', '近走・メモ']].map(([k, t]) => `<button type="button" data-ctab="${k}" aria-pressed="${cardTab === k}">${t}</button>`).join('')}</div>` : '');
 function cardBody(r, no) {
   const h = r.horses.find((x) => x.no === no), w = r.odds && r.odds.win && r.odds.win[String(no)], pl = CALC.place(r, no);
   const top = `<div class="card-h">${hn(h)}<div><b>${esc(h.name)}</b><small>${esc(h.jockey)}・${h.weight}kg・${esc(h.last)}</small></div></div>
@@ -1309,8 +1320,8 @@ function cardBody(r, no) {
   const m = IDX.get(r.id);
   if (m === undefined || m === 'loading') return top + '<div class="ixs"><p class="note" style="padding:20px 0;text-align:center">指数を読み込んでいます…</p></div>';
   const x = m.get(no);
-  const memoTab = x && (x._memo || (x._recent && x._recent.length)) && cardTab === 'memo';
-  if (memoTab) return top + cardTabs(x) + `<div class="ixs">${memoBlock(x._memo)}${recentBlock(x._recent)}</div>`;
+  const memoTab = x && (x._memo || x._trn || (x._recent && x._recent.length)) && cardTab === 'memo';
+  if (memoTab) return top + cardTabs(x) + `<div class="ixs">${trnBlock(x._trn)}${memoBlock(x._memo)}${recentBlock(x._recent)}</div>`;
   if (!x || x._noidx) return top + cardTabs(x) + `<div class="ixs"><p class="note" style="padding:16px 0">このレースの指数の内訳は、まだ届いていません。${x ? '右の「近走・メモ」は見られます。' : ''}</p></div>`;
   const all = [...m.values()].filter((y) => !y._noidx);
   const rank = (k, d, v) => { if (!d || v == null || typeof v !== 'number') return ''; const vs = all.map((y) => y[k]).filter((y) => y != null); const n = 1 + vs.filter((y) => (d > 0 ? y > v : y < v)).length; return `<span class="rk${n <= 3 ? ' top' : ''}">${n}位／${vs.length}頭</span>`; };
@@ -1913,6 +1924,19 @@ function personMini(h, trainer, redraw) {
 }
 // 指数カード：今回のレースの条件に当てはめた騎手・調教師のスコア（川崎さんの strengths_apply）。初出走馬は新馬用の項目も
 // 指数カードのいちばん上：レースメモ（川崎さんの horse_memo。厩舎の話をリライトしたもの。前走・前々走は結果つき）
+// 指数カード：調教（川崎さんの training_YYYYMMDD。掲載元の評価・時計そのまま。参考情報）
+function trnBlock(t) {
+  if (!t) return '';
+  const md = (d) => (d ? String(d).slice(5).replace('-', '/') : '');
+  const g = t.final_grade ? String(t.final_grade) : '';
+  const aw = t.awase_result ? `<span class="taw${t.awase_result === '先着' ? ' up' : t.awase_result === '遅れ' ? ' dn' : ''}">併せ ${esc(t.awase_result)}</span>` : '';
+  return `<div class="trn"><h3 style="margin-top:12px">調教</h3>
+    <div class="trow">${g ? `<span class="tg g${esc(g)}">${esc(g)}</span>` : ''}<div><b>最終追切 ${md(t.final_date)}　${esc(t.final_course || '')}${t.final_condition ? `（${esc(t.final_condition)}）` : ''}</b>
+      <small>${t.final_t_4f != null ? `全体 ${t.final_t_4f}秒` : ''}${t.final_lap_1f != null ? `・終い1F ${t.final_lap_1f}秒` : ''}${t.final_rider ? `・${esc(t.final_rider)}` : ''}</small>
+      ${t.final_comment || aw ? `<p>${aw}${esc(t.final_comment || '')}</p>` : ''}${t.awase_partners ? `<small>併せた相手：${esc(t.awase_partners)}</small>` : ''}</div></div>
+    ${t.n_intermediate ? `<small class="tmid">中間の調教 ${t.n_intermediate}本${t.mid_latest_date ? `（最新 ${md(t.mid_latest_date)}${t.mid_latest_t_4f != null ? `・全体 ${t.mid_latest_t_4f}秒` : ''}）` : ''}</small>` : ''}
+    <p class="dnote" style="margin-top:6px">評価（A〜D）・時計は掲載元のままです。コースや馬場が違う時計は単純に比べられません。参考情報で、勝つ確率の計算には入っていません。</p></div>`;
+}
 function memoBlock(m) {
   if (!m) return '';
   const res = (p) => { const s = [p.date ? String(p.date).slice(5).replace('-', '/') : '', `${p.venue || ''}${p.race ? ' ' + p.race : ''}`, p.surface ? `${String(p.surface).slice(0, 1) === 'ダ' ? 'ダ' : String(p.surface).slice(0, 1)}${p.dist || ''}${p.cond ? '・' + p.cond : ''}` : ''].filter(Boolean).join(' ');
