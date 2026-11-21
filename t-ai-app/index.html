@@ -405,10 +405,12 @@ body.lock { overflow: hidden; }
 .recent .rc summary { display: grid; grid-template-columns: 38px minmax(0, 1fr) 44px 12px; gap: 6px; align-items: center; padding: 7px 0; cursor: pointer; list-style: none; }
 .recent .rc summary::-webkit-details-marker { display: none; }
 .recent .rc summary::after { font-size: 12px; text-align: right; }
-.recent .rfin { text-align: center; font-family: var(--n); font-weight: 900; font-size: 20px; line-height: 1; }
+.recent .rfin { align-self: stretch; display: grid; place-content: center; text-align: center; font-family: var(--n); font-weight: 900; font-size: 19px; line-height: 1; border: 1.5px solid rgba(27, 24, 20, .3); color: var(--ink3); }
 .recent .rfin small { font-size: 10px; }
-.recent .rfin.w { color: var(--red); }
-.recent .rfin.t { color: var(--ink); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.recent .rfin.f1 { background: #c8102e; border-color: #c8102e; color: #fff; }
+.recent .rfin.f2 { background: #1f4fa3; border-color: #1f4fa3; color: #fff; }
+.recent .rfin.f3 { background: #1f7a3a; border-color: #1f7a3a; color: #fff; }
+.recent .rfin.f45 { border-color: var(--ink); color: var(--ink); }
 .recent .rmain { min-width: 0; display: grid; gap: 1px; }
 .recent .rmain b { font-size: 12.5px; font-weight: 900; overflow-wrap: anywhere; }
 .recent .rmain small { font-size: 10.5px; color: var(--ink2); overflow-wrap: anywhere; line-height: 1.4; }
@@ -1667,19 +1669,21 @@ function recentBlock(rs) {
   if (!rs || !rs.length) return '';
   const sfc = (x) => (x === 'ダート' ? 'ダ' : x === '障害' ? '障' : x || '');
   const row = (x, i) => {
-    const won = x.fin === 1, top3 = typeof x.fin === 'number' && x.fin <= 3;
+    const fc = typeof x.fin === 'number' ? (x.fin <= 3 ? ' f' + x.fin : x.fin <= 5 ? ' f45' : '') : '';
+    // レースのレベルの目安：その後の勝ち上がり率（3走以内）。分母3頭以上のときだけ、行にも出す（判定の基準は川崎さんと決める）
+    const lv = x.w3 != null && x.w3n >= 3 ? `・勝ち上がり ${pct(x.w3, 0)}%（${x.w3n}頭）` : '';
     const wu = (r, n, lab) => (r != null && n ? `${lab} ${pct(r, 0)}%（${n}頭中）` : '');
     const ups = [wu(x.wn, x.wnn, '次走で勝ち上がり'), wu(x.w3, x.w3n, '3走以内')].filter(Boolean).join('・');
     return `<details class="rc"><summary>
-      <span class="rfin${won ? ' w' : top3 ? ' t' : ''}">${x.fin != null ? esc(String(x.fin)) : '－'}<small>${x.fin === '中止' ? '' : '着'}</small></span>
+      <span class="rfin${fc}">${x.fin != null ? esc(String(x.fin)) : '－'}<small>${x.fin === '中止' ? '' : '着'}</small></span>
       <span class="rmain"><b>${x.d ? esc(String(x.d).slice(2).replace(/-/g, '/')) : ''} ${esc(x.v || '')}${x.rn ? x.rn + 'R' : ''} ${esc(x.cls || x.race || '')}</b>
         <small>${sfc(x.sf)}${x.dist || ''}・${esc(x.cond || '')}・${x.n || '－'}頭${x.mg ? `・${esc(x.mg)}` : ''}　${esc(x.jk || '')}${x.kg ? ` ${x.kg}` : ''}</small>
-        <small>${x.pop != null ? `${x.pop}番人気` : ''}${x.odds != null ? ` ${x.odds}倍` : ''}${x.time ? `・${esc(x.time)}` : ''}${x.bw ? `・${x.bw}kg${x.bwd ? `(${esc(String(x.bwd))})` : ''}` : ''}</small></span>
+        <small>${x.pop != null ? `${x.pop}番人気` : ''}${x.odds != null ? ` ${x.odds}倍` : ''}${x.time ? `・${esc(x.time)}` : ''}${x.bw ? `・${x.bw}kg${x.bwd ? `(${esc(String(x.bwd))})` : ''}` : ''}${lv}</small></span>
       <span class="rfig">${x.fig != null ? Number(x.fig).toFixed(1) : '－'}<small>指数</small></span></summary>
       <div class="rbody">${x.rv ? `<p><span class="mtag">回顧</span>${esc(x.rv)}</p>` : ''}${x.cm ? `<p><span class="mtag now">厩舎</span>${esc(x.cm)}</p>` : ''}${ups ? `<p class="rup">このレースの出走馬の${ups}</p>` : ''}${x.race && x.cls ? `<p class="rup">${esc(x.race)}</p>` : ''}</div></details>`;
   };
   return `<div class="recent"><h3 style="margin-top:12px">近走成績</h3>${rs.slice(0, 5).map(row).join('')}
-    <p class="dnote" style="margin-top:4px">指数はT-AIのスピード指数（高いほど速い）。行をタップすると、回顧と、そのときの厩舎の話、そのレースに出た馬がその後どれだけ勝ち上がったか（レースのレベルの目安）が開きます。</p></div>`;
+    <p class="dnote" style="margin-top:4px">着順の色は、1着＝赤・2着＝青・3着＝緑、4〜5着は枠だけ。「勝ち上がり」は、そのレースに出た馬が3走以内に勝った割合（レースのレベルの目安）。指数はT-AIのスピード指数（高いほど速い）。行をタップすると、回顧と、そのときの厩舎の話、そのレースに出た馬がその後どれだけ勝ち上がったか（レースのレベルの目安）が開きます。</p></div>`;
 }
 function fitBlock(r, h, f, trainer) {
   if (!f) return '';
