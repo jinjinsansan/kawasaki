@@ -1447,9 +1447,10 @@ function aiPrompt(key) {
   return `T-AI（競馬の勝つ確率を予測する会員サイト）のデータを読んで、私の質問に答えてください。
 
 ■ データの場所（読み取り専用・JSON）
-・その日の全レース・全馬：${SITE_URL}/api/agent?key=${key}&date=${d}
+・その日の全レース・全馬：${SITE_URL}/api/agent?key=${key}&date=${d}&view=summary
   （日付の部分を変えると別の日。YYYY-MM-DD）
 ・レースを決めたら、全券種のオッズつき：上のURLの最後に &race=<race_id> を付ける
+・1頭の指数の内訳をすべて見たいとき：&view=summary を外したURL（大きいので必要なときだけ）
 
 ■ 読み方
 ・win_prob … T-AIの勝つ確率（レース内の合計が1）。rank … その順位
