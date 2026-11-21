@@ -252,6 +252,18 @@ p, h1, h2, h3 { margin: 0; }
 .sheet .sh-h b { font-family: var(--m, inherit); font-weight: 900; font-size: 20px; letter-spacing: .04em; }
 .sheet .sh-x { width: 40px; height: 40px; border: 2px solid var(--ink); background: var(--card); font-size: 20px; font-weight: 900; line-height: 1; }
 .sheet .sh-x:active { background: var(--paper2); }
+.sheet .cnav { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.sheet .cnav button { width: 40px; height: 40px; border: 2px solid var(--ink); background: var(--card); font-size: 22px; font-weight: 900; line-height: 1; }
+.sheet .cnav small { font-size: 10px; color: var(--ink3); line-height: 1.2; width: 4.2em; text-align: center; }
+.sheet .sh-h b { white-space: nowrap; }
+@media (max-width: 359px) { .sheet .cnav small { display: none; } }
+@keyframes cslideL { from { transform: translateX(28%); opacity: .2; } to { transform: none; opacity: 1; } }
+@keyframes cslideR { from { transform: translateX(-28%); opacity: .2; } to { transform: none; opacity: 1; } }
+@keyframes cbump { 0%, 100% { transform: none; } 40% { transform: translateX(10px); } 70% { transform: translateX(-6px); } }
+#sheetB.slideL { animation: cslideL .22s ease-out; }
+#sheetB.slideR { animation: cslideR .22s ease-out; }
+#sheetB.bump { animation: cbump .25s; }
+@media (prefers-reduced-motion: reduce) { #sheetB.slideL, #sheetB.slideR, #sheetB.bump { animation: none; } }
 .sheet .sh-top { padding: 0 var(--pad) 10px; }
 .sheet .sh-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 0 var(--pad) 16px; border-top: 2px solid var(--ink); }
 .sheet .rrow.cur { background: var(--card); box-shadow: inset 4px 0 0 var(--red); }
@@ -1498,7 +1510,7 @@ function myRanks(r) {
   if (m === undefined) { needIdx(r); return null; }
   if (m === 'loading') return null;
   const hs = r.horses.filter((h) => h.known !== false);
-  const on = MINE.order.filter((k) => !MINE.off.includes(k)), W = {}; on.forEach((k, i) => { W[k] = on.length - i; });
+  const on = MINE.order.filter((k) => !MINE.off.includes(k)), W = {}; on.forEach((k, i) => { W[k] = 2 ** (on.length - 1 - i); });  // 重みは倍々（川崎さんの決定）
   const pts = {};  // k → 馬番 → 0〜1点
   on.forEach((k) => {
     const vals = hs.map((h) => ({ no: h.no, v: mineVal(r, h, m.get(h.no) || {}, k) })).filter((y) => y.v != null);
@@ -1524,7 +1536,7 @@ function mineBody() {
     <p class="ixsub">自分で並べる（上ほど重視・使わない項目はオフ）</p>
     <div class="mlist">${MINE.order.map((k, i) => { const off = MINE.off.includes(k), pos = on.indexOf(k); return `<div class="mrow2${off ? ' off' : ''}"><span class="mno">${off ? '－' : pos + 1}</span><b>${mineName(k)}</b><span class="mbtn"><button type="button" data-mp="up:${k}" aria-label="${mineName(k)}を上へ"${i === 0 ? ' disabled' : ''}>↑</button><button type="button" data-mp="down:${k}" aria-label="${mineName(k)}を下へ"${i === MINE.order.length - 1 ? ' disabled' : ''}>↓</button><button type="button" class="tg" data-mp="off:${k}" aria-pressed="${!off}">${off ? 'オフ' : 'オン'}</button></span></div>`; }).join('')}</div>
     <div class="btns" style="margin-top:12px"><button type="button" class="btn" data-mp="done:1">この重視順で見る<span>▶</span></button></div>
-    <p class="note" style="margin-top:10px">項目ごとに出走馬の中の順位を点にし、上の項目ほど大きな重みで足した合計で「あなたの順位」を決めます（同点はT-AIの勝つ確率の高い順）。T-AIの勝つ確率の数字は変わりません。設定はこの端末に保存されます。</p>
+    <p class="note" style="margin-top:10px">項目ごとに出走馬の中の順位を点にし、重みをかけて足した合計で「あなたの順位」を決めます。重みは倍々で、1つ上の項目はすぐ下の項目の2倍効きます（同点はT-AIの勝つ確率の高い順）。T-AIの勝つ確率の数字は変わりません。設定はこの端末に保存されます。</p>
     <p class="dnote">確率＝T-AIの勝つ確率、指数＝スピード指数（近3走の平均）、近走＝近3走の評価、騎手・厩舎＝勝率、展開＝有利不利、外厩＝外厩のスコア、馬場別＝発表の馬場での勝率。</p></div>`;
 }
 function mineAct(a) {
@@ -1536,9 +1548,35 @@ function mineAct(a) {
   if (op === 'done') { MINE.mode = 'mine'; raceState.sort = 'prob'; mineSave(); closeSheet(); rerender(); return; }
   const ix = $('.ixs'), sc = ix && ix.scrollTop; $('#sheetB').innerHTML = mineBody(); if ($('.ixs') && sc) $('.ixs').scrollTop = sc;
 }
+// 指数カードを左右のスワイプ（または ‹ › ）で、前後の馬（馬番順）へ移る（川崎さんの依頼）
+function cardStep(d) {
+  const sh = $('#sheet'); if (!sh || sh.dataset.vs || sh.dataset.mine || !sh.dataset.no) return;
+  const r = byId.get(sh.dataset.race); if (!r) return;
+  const list = r.horses.filter((h) => h.known !== false).map((h) => h.no).sort((a, b) => a - b);
+  const j = list.indexOf(+sh.dataset.no) + d;
+  const b = $('#sheetB');
+  if (j < 0 || j >= list.length) { b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump'); return; }
+  sh.dataset.no = list[j];
+  b.innerHTML = cardBody(r, list[j]);
+  b.classList.remove('slideL', 'slideR', 'bump'); void b.offsetWidth; b.classList.add(d > 0 ? 'slideL' : 'slideR');
+}
+(() => {
+  let x0 = null, y0 = 0, skip = false;
+  document.addEventListener('touchstart', (e) => {
+    const sh = e.target.closest && e.target.closest('#sheet');
+    x0 = null; if (!sh || sh.dataset.vs || sh.dataset.mine || e.touches.length !== 1) return;
+    skip = !!e.target.closest('.scroll, .lapbars, .seg, input, select, textarea, details summary');  // 横に動かす部品の上では、馬を移らない
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (x0 == null || skip) return;
+    const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0; x0 = null;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.6) cardStep(dx < 0 ? 1 : -1);
+  }, { passive: true });
+})();
 function openCard(r, no) {
   closeSheet(true); needIdx(r);
-  document.body.insertAdjacentHTML('beforeend', `<div class="sheet-bg" id="sheetBg"></div><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetT" data-race="${r.id}" data-no="${no}"><div class="sh-h"><b id="sheetT">指数カード</b><button type="button" class="sh-x" id="sheetX" aria-label="閉じる">×</button></div><div class="dbl" style="margin:8px var(--pad) 10px"></div><div id="sheetB" style="display:flex;flex-direction:column;min-height:0;flex:1 1 auto">${cardBody(r, no)}</div></div>`);
+  document.body.insertAdjacentHTML('beforeend', `<div class="sheet-bg" id="sheetBg"></div><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetT" data-race="${r.id}" data-no="${no}"><div class="sh-h"><b id="sheetT">指数カード</b><span class="cnav"><button type="button" data-cnav="-1" aria-label="前の馬">‹</button><small>スワイプで前後の馬</small><button type="button" data-cnav="1" aria-label="次の馬">›</button></span><button type="button" class="sh-x" id="sheetX" aria-label="閉じる">×</button></div><div class="dbl" style="margin:8px var(--pad) 10px"></div><div id="sheetB" style="display:flex;flex-direction:column;min-height:0;flex:1 1 auto">${cardBody(r, no)}</div></div>`);
   document.body.classList.add('lock');
   requestAnimationFrame(() => { $('#sheetBg').classList.add('open'); $('#sheet').classList.add('open'); $('#sheetX').focus(); });
 }
@@ -2292,6 +2330,7 @@ document.addEventListener('click', (e) => {
   const t = e.target.closest('button, a'); if (!t) return;
   const ds = t.dataset;
   if (ds.copy != null) { copyText(ds.copy, t); return; }
+  if (ds.cnav) { cardStep(+ds.cnav); return; }
   if (ds.pmode) { MINE.mode = ds.pmode; mineSave(); if (ds.pmode === 'mine') raceState.sort = 'prob'; rerender(); return; }
   if (ds.mineset) { openMine(); return; }
   if (ds.mp) { mineAct(ds.mp); return; }
