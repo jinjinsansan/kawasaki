@@ -293,6 +293,11 @@ body.lock { overflow: hidden; }
 .pkv2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .pkv2 b { font-size: 15px; font-weight: 900; }
 .btns.two { grid-template-columns: 1fr 1fr; gap: 8px; }
+.btns.three { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+.btns.three .btn { min-width: 0; padding-left: 6px; padding-right: 6px; justify-content: center; font-size: 13px; }
+.aikey { margin-top: 10px; padding: 12px; }
+.aikey code { display: block; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; font-weight: 700; overflow-wrap: anywhere; word-break: break-all; }
+.aisteps { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 6px; font-size: 13.5px; line-height: 1.6; }
 .btns.two .btn { min-width: 0; padding-left: 10px; padding-right: 10px; font-size: 13px; }
 .grade { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 4px; border: 2px solid var(--ink); font-family: var(--n); font-weight: 900; font-size: 15px; line-height: 1; }
 .grade.big { min-width: 52px; height: 52px; font-size: 28px; }
@@ -1417,6 +1422,86 @@ function updateBuild() {
   $('#tixB').innerHTML = list.length ? list.slice(0, 60).map((c, i) => `<div class="crow${wo ? ' wo' : ''}"><span class="rk">${i + 1}</span><span class="tk">${c.nums.map((n) => chip(r, BS.kind, n)).join(`<i>${ORD[BS.kind] ? '→' : '-'}</i>`)}</span>${wo ? oddsCell(r, BS.kind, c.nums, c.p) : ''}<span class="pr"><span class="pct" style="color:var(--ink)">${pct(c.p, c.p < .001 ? 2 : 1)}%</span></span></div>`).join('') + (list.length > 60 ? `<p class="note" style="padding:8px 12px">ほか${list.length - 60}点</p>` : '') : '<p class="note" style="padding:4px 12px 12px">まだ買い目がありません。</p>';
 }
 
+/* ─ AIとつなぐ（会員ごとのキー。川崎さんの ai_connect_kit） ─ */
+const SITE_URL = 'https://t-ai-app.clubkawasaki.net';
+let AIK = null;  // null → 'loading' → { key } | 'err'
+let aiShow = false;
+function copyText(text, btn) {
+  const done = () => { if (!btn) return; const o = btn.dataset.label || btn.innerHTML; btn.dataset.label = o; btn.innerHTML = 'コピーしました'; setTimeout(() => { btn.innerHTML = o; }, 1600); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, () => fallback());
+  else fallback();
+  function fallback() { const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch (e) { /* 手でコピー */ } ta.remove(); }
+}
+const aiRe = () => { if (/^#\/ai/.test(location.hash)) rerender(); };
+function loadAiKey(reissue) {
+  AIK = 'loading'; aiRe();
+  sb.rpc('my_agent_key', { reissue: !!reissue }).then(({ data, error }) => { AIK = error || !data ? 'err' : { key: data }; aiRe(); });
+}
+function aiAction(a) {
+  if (a === 'show') { aiShow = !aiShow; aiRe(); return; }
+  if (a === 'retry') { loadAiKey(false); return; }
+  if (a === 'reissue' && confirm('キーを作り直します。今のキーは、すぐに使えなくなります（AIに登録してある接続も、新しいキーで登録し直しが必要です）。よろしいですか？')) loadAiKey(true);
+}
+function aiPrompt(key) {
+  const d = jstToday();
+  return `T-AI（競馬の勝つ確率を予測する会員サイト）のデータを読んで、私の質問に答えてください。
+
+■ データの場所（読み取り専用・JSON）
+・その日の全レース・全馬：${SITE_URL}/api/agent?key=${key}&date=${d}
+  （日付の部分を変えると別の日。YYYY-MM-DD）
+・レースを決めたら、全券種のオッズつき：上のURLの最後に &race=<race_id> を付ける
+
+■ 読み方
+・win_prob … T-AIの勝つ確率（レース内の合計が1）。rank … その順位
+・win_odds … 単勝オッズ、popularity … 人気、result … 着順（確定後）
+・期待値 … win_prob × win_odds（1を超えると、オッズがT-AIの見立てより高い）
+・idx … 指数の内訳、pace … 展開（脚質・有利不利）、going_win_pct … 馬場状態別の勝率（%）
+・status … ready は発走前、done は結果確定
+
+今日は ${d} です。まずデータを読み、読めたら「読み込みました」と答えてください。そのあと質問します。
+（このURLには私専用のキーが入っています。ほかの人に見せないでください）`;
+}
+function vAi() {
+  const m = DATA.member;
+  if (m.guest || m.free) return `<section class="sec"><div class="label"><b>AIとつなぐ</b><span>会員限定</span></div><p class="note" style="margin-top:12px">会員の方だけが使えます。</p></section>`;
+  if (!AIK) loadAiKey(false);
+  if (!AIK || AIK === 'loading') return '<section class="sec"><p class="note" style="padding:40px 0;text-align:center">キーを用意しています…</p></section>';
+  if (AIK === 'err') return `<section class="sec"><p class="note" style="padding:24px 0;text-align:center">キーを用意できませんでした。</p><div class="btns"><button class="btn sub" type="button" data-ai="retry">もう一度</button></div></section>`;
+  const k = AIK.key, mcp = `${SITE_URL}/api/mcp?key=${k}`, shown = aiShow ? k : k.slice(0, 8) + '•'.repeat(16) + k.slice(-4);
+  return `<section class="sec">
+    <div class="label"><b>AIとつなぐ</b><span>自分の生成AIで使う</span></div>
+    <p class="note" style="margin-top:10px">T-AIのデータ（勝つ確率・指数の内訳・オッズ・結果・展開）を、ChatGPTやClaudeなどに読ませて、自分の言葉で質問できます。読み取り専用で、AIから買い目の登録などはできません。</p>
+  </section>
+  <section class="sec">
+    <div class="label"><b>あなたのキー</b><span>パスワードと同じ扱い</span></div>
+    <div class="box aikey"><code>${esc(shown)}</code></div>
+    <div class="btns three"><button class="btn sub" type="button" data-ai="show">${aiShow ? '隠す' : '表示'}</button><button class="btn sub" type="button" data-copy="${esc(k)}">コピー</button><button class="btn sub" type="button" data-ai="reissue">再発行</button></div>
+    <p class="dnote">キーは人に見せたり、SNSに貼ったりしないでください。漏れたかもしれないときは「再発行」を押すと、古いキーはすぐ使えなくなります。会員の期限が切れると、キーも使えなくなります。使える回数は、1分に60回・1日に3,000回までです。</p>
+  </section>
+  <section class="sec">
+    <div class="label"><b>Claude</b><span>いちばん簡単・初回だけ登録</span></div>
+    <ol class="aisteps">
+      <li>下の「接続URLをコピー」を押す。</li>
+      <li>Claude（claude.ai またはアプリ）の「設定」→「コネクタ」→「カスタムコネクタを追加」を開く。</li>
+      <li>名前に「T-AI」、URLにコピーした接続URLを貼って「追加」。</li>
+      <li>チャットの「＋」→ コネクタで T-AI をオンにして、「今日の京都11Rの注目馬を、指数の内訳つきで教えて」のように聞く。</li>
+    </ol>
+    <div class="btns"><button class="btn" type="button" data-copy="${esc(mcp)}">接続URLをコピー<span>⧉</span></button></div>
+    <p class="dnote">2回目からは、聞くだけで使えます。接続URLにはキーが入っているので、キーと同じように扱ってください。カスタムコネクタは、Claude の有料プランで使えます。</p>
+  </section>
+  <section class="sec">
+    <div class="label"><b>ChatGPT・そのほかのAI</b><span>接続用テキストを貼る</span></div>
+    <ol class="aisteps">
+      <li>下の「接続用テキストをコピー」を押す。</li>
+      <li>ChatGPT（またはGeminiなど）の新しいチャットに貼り付けて送る。</li>
+      <li>「読み込みました」と返ってきたら、そのチャットで質問する。</li>
+    </ol>
+    <div class="btns"><button class="btn" type="button" data-copy="${esc(aiPrompt(k))}">接続用テキストをコピー<span>⧉</span></button></div>
+    <p class="dnote">URLを開いて読める（ウェブ検索・ブラウジングが使える）AIでだけ動きます。新しいチャットでは、もう一度貼ってください。テキストの日付は、コピーした日になります。共有のパソコンでは使わないでください。</p>
+  </section>
+  <section class="sec"><p class="note">AIの答えは、T-AIのデータをもとにしたAIの説明です。確率は的中を保証するものではありません。</p></section>`;
+}
+
 /* ─ 騎手・調教師（川崎さんの格付け・得意不得意・外国人騎手。会員限定・予測には使っていない記述的な集計） ─ */
 let PIDX = null;  // null → 'loading' → { jockey: [{pkey,label}], trainer: [...] } | 'err'
 const PREF = new Map();  // 'role|pkey' → data | 'loading' | 'err'
@@ -1644,6 +1729,7 @@ function vMy() {
     </div>
   </section>
   ${freeBox}
+  ${m.free ? '' : `<section class="sec"><div class="label"><b>AIとつなぐ</b><span>自分の生成AIで使う</span></div><p class="note" style="margin-top:10px">ChatGPTやClaudeなど、ふだん使っている生成AIにT-AIのデータを読ませて、自分の言葉で質問できます。</p><div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-go="#/ai">AIとつなぐ<span>▶</span></button></div></section>`}
   <section class="sec">
     <div class="label"><b>紙面の読み方</b><span>はじめての方へ</span></div>
     <div class="guide">
@@ -1698,6 +1784,7 @@ function route() {
   else if (name === 'results') { html = vResults(); if (histState === 'no') loadHistory(); }
   else if (name === 'gaikyu') { tab = 'results'; html = vGaikyu(arg ? decodeURIComponent(arg) : ''); mopts = { back: 'results', backLabel: '成績', sub: '外厩データ' }; }
   else if (name === 'person') { tab = 'races'; const [, , ro, ...rest] = location.hash.split('/'); html = vPerson(ro, decodeURIComponent(rest.join('/'))); mopts = { back: 'races', backLabel: '出馬表', sub: ro === 'trainer' ? '調教師' : '騎手' }; }
+  else if (name === 'ai') { tab = 'my'; html = vAi(); mopts = { back: 'my', backLabel: '会員', sub: 'AIとつなぐ' }; }
   else if (name === 'my') html = vMy();
   else { tab = 'home'; html = vHome(); mopts = { sub: fd(homeDayOf()) + ' 開催' }; }
   curTab = tab;
@@ -1726,6 +1813,8 @@ document.addEventListener('click', (e) => {
   if (cardRow) { const r = byId.get($('#view').dataset.race); if (r) openCard(r, +cardRow.dataset.card); return; }
   const t = e.target.closest('button, a'); if (!t) return;
   const ds = t.dataset;
+  if (ds.copy != null) { copyText(ds.copy, t); return; }
+  if (ds.ai) { aiAction(ds.ai); return; }
   if (t.id === 'raceOpen') { openSheet(); return; }
   if (t.id === 'resend') {
     const msg = $('#resendMsg');
