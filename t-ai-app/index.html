@@ -579,7 +579,7 @@ body.lock { overflow: hidden; }
 .sxi .smk { text-align: center; font-weight: 900; color: var(--red); font-size: 14px; }
 .sxi .snm { min-width: 0; padding: 4px 6px 4px 0; }
 .sxi .snm b { display: block; font-size: 13px; letter-spacing: -.03em; font-weight: 900; line-height: 1.25; word-break: break-all; white-space: normal; }
-.sxi .snm small { display: block; font-size: 10.5px; color: var(--ink2); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sxi .snm small { display: block; font-size: 10.5px; line-height: 1.3; color: var(--ink2); white-space: normal; word-break: break-all; }
 .sxi .snm small em { font-style: normal; color: var(--red); font-weight: 700; }
 .st tr.lo td:not(.sx) { color: var(--ink3); }
 .st .shi { color: var(--red); font-size: 16px; }
@@ -626,6 +626,22 @@ body.lock { overflow: hidden; }
 .pmf b { color: var(--ink2); }
 .more2 { margin-top: 10px; }
 .more2 > summary { font-size: 13px; font-weight: 900; padding: 8px 0; cursor: pointer; color: var(--ink2); }
+.bvs { margin-top: 10px; }
+.bvh { display: flex; align-items: baseline; gap: 8px; }
+.bvh small { font-size: 12px; font-weight: 900; color: var(--ink2); }
+.bvh b { font-size: 15px; font-weight: 900; }
+.bvh b.hot { color: var(--red); }
+.bvh em { font-style: normal; font-size: 11px; color: var(--ink3); margin-left: auto; }
+.bvb { display: flex; margin-top: 4px; border: 2px solid var(--ink); height: 34px; }
+.bvb span { display: flex; align-items: center; justify-content: center; min-width: 64px; padding: 0 6px; font-size: 12.5px; font-weight: 900; background: #e6e3de; color: var(--ink2); white-space: nowrap; }
+.bvb span + span { border-left: 2px solid var(--ink); }
+.bvb span.on { background: var(--red); color: #fff; }
+.ltg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 6px; }
+.ltc { border: 1.5px solid var(--ink); background: var(--paper); padding: 4px; min-height: 80px; }
+.ltc.on { background: #fbe3e6; border-color: var(--red); }
+.ltc small { display: block; text-align: center; font-size: 12px; font-weight: 900; line-height: 1.3; }
+.ltc small span { font-size: 9.5px; font-weight: 700; color: var(--ink3); }
+.ltc.on small { color: var(--red); }
 .memo .mrow { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(27, 24, 20, .25); }
 .memo .mtag { align-self: start; text-align: center; font-size: 11px; font-weight: 900; padding: 3px 0; border: 1.5px solid var(--ink); }
 .memo .mtag.now { background: var(--ink); color: var(--paper); }
@@ -1037,7 +1053,10 @@ function oddsOne(r, kind, nums) {
   const t = oddsTbl(r, kind); if (!t) return null;
   const v = t[kind === 'tan' ? String(nums[0]) : CALC.keyOf(kind, nums)];
   if (v == null) return null;
-  return kind === 'tan' ? v[0] : v;  // ワイドは [下, 上]
+  const x = kind === 'tan' ? v[0] : v;  // ワイドは [下, 上]
+  // netkeiba は、取消・発売なしのオッズを 9999.9 で返す。オッズが無いものとして扱う
+  if ((Array.isArray(x) ? x[0] : x) >= 9999) return null;
+  return x;
 }
 function needOdds(r, kind) {
   if (SAMPLE || !r || kind === 'tan' || !r.odds) return;
@@ -1557,7 +1576,14 @@ function renderLap(r) {
   const typeCol = (t) => (t === '前傾' ? 'var(--red)' : t === '後傾' ? '#1f4fa3' : 'var(--ink)');
   const horses = hs.length ? `<p class="ixsub">出走馬の前走のラップ型</p><div class="box cmp pcmp lapt"><div class="cap4"><span>馬（馬番順）</span><span>型</span><span>4角</span><span>着順</span></div>${hs.slice().sort((a, b) => a.no - b.no).map((h) => { const l = h.lap; return `<div class="cr"><span class="n">${hn(h)}<span><b>${esc(h.name)}</b><small>${l.prev_date ? String(l.prev_date).slice(5).replace('-', '/') : ''} ${esc(l.prev_venue || '')}${l.prev_surface ? (String(l.prev_surface).startsWith('ダ') ? 'ダ' : '芝') : ''}${l.prev_distance || ''}・ペース${esc(l.prev_pace_call || '－')}</small></span></span><span class="v" style="color:${typeCol(l.prev_lap_type)}">${esc(l.prev_lap_type || '－')}</span><span class="v">${esc(l.prev_pos_4c || '－')}</span><span class="e" style="font-size:14px">${l.prev_finish_pos != null ? l.prev_finish_pos + '着' : '－'}</span></div>`; }).join('')}</div>` : '';
   const lj = r.judge, lapConcl = lj && lj.commentary ? esc(String(lj.commentary).split('。')[0] + '。') : c && c !== 'loading' ? `${esc(r.venue)}${sf}${band}mは、${(() => { const t = [['前傾', c.share_front_tilt], ['平均', c.share_even], ['後傾', c.share_back_tilt]].sort((a, b) => (b[1] || 0) - (a[1] || 0))[0]; return t[0]; })()}ラップになりやすいコース。` : '出走馬の前走のラップ型。';
-  setFold(sec, 'lap', 'ラップ傾向', lapConcl, `<section class="sec" style="padding-top:4px">${needBlock(r)}${course || horses ? `<details class="more2"${needBlock(r) ? '' : ' open'}><summary>くわしく見る（コースのラップ・脚質と位置の成績・前走のラップ型）</summary>${course}${horses}</details>` : ''}
+  const lapTypes = (() => {
+    if (!hs.length) return '';
+    const mainT = c && c !== 'loading' ? [['前傾', c.share_front_tilt], ['平均', c.share_even], ['後傾', c.share_back_tilt]].sort((a, b) => (b[1] || 0) - (a[1] || 0))[0][0] : '';
+    const G = ['前傾', '平均', '後傾'].map((t) => [t, hs.filter((h) => h.lap.prev_lap_type === t).sort((a, b) => a.no - b.no)]);
+    return `<p class="ixsub" style="margin-top:12px">出走馬の前走のラップ型${mainT ? `（このコースは<b style="color:var(--red)">${mainT}</b>が多い）` : ''}</p>
+      <div class="ltg">${G.map(([t, xs]) => `<div class="ltc${t === mainT ? ' on' : ''}"><small>${t}<br><span>${t === '前傾' ? '前半が速い流れ' : t === '後傾' ? '後半が速い流れ' : '平均的な流れ'}</span></small><div class="pmh">${xs.map((h) => hn(h)).join('') || '<em>－</em>'}</div></div>`).join('')}</div>`;
+  })();
+  setFold(sec, 'lap', 'ラップ傾向', lapConcl, `<section class="sec" style="padding-top:4px">${needBlock(r)}${lapTypes}${course || horses ? `<details class="more2"${needBlock(r) ? '' : ' open'}><summary>くわしく見る（コースのラップ・脚質と位置の成績・前走のラップ型）</summary>${course}${horses}</details>` : ''}
     <p class="note" style="margin-top:6px" hidden>ラップは200mごとの区間タイム。前傾＝前半が速い流れ、後傾＝後半が速い流れ。4角の位置は「残り400m地点の走行位置」で見た近似です。過去の傾向を示すもので、勝つ確率の計算には入っていません。前走のラップが無い馬（初出走・集計前のレース）は入っていません。</p></section>`);
 }
 // 指数カードの「展開」の行（その馬の脚質・有利不利・騎手と調教師のその脚質での成績）
@@ -2122,12 +2148,12 @@ function vBuild() {
       <div class="seg sm" role="group" aria-label="買い方"><button type="button" data-bm="box" aria-pressed="${!BS.auto && (BS.kind === 'tan' || BS.method === 'box')}">${BS.kind === 'tan' ? '選んだ馬すべて' : 'ボックス'}</button><button type="button" data-bm="nagashi" aria-pressed="${nagashi}"${BS.kind === 'tan' ? ' disabled' : ''}>${ORD[BS.kind] ? '流し（1着固定）' : BS.kind === 'waku' ? '流し（軸1枠）' : '流し（軸1頭）'}</button></div>
     </div>
   </section>
-  ${vAuto()}
   <p class="hint" id="hint"></p>
   <div class="grid" id="grid">${BS.kind === 'waku' ? gatesOf(r).map((g) => { const hs = r.horses.filter((h) => h.gate === g), pg = hs.reduce((a, h) => a + h.prob, 0); return `<button type="button" class="hb gk" data-h="${g}" aria-pressed="false" aria-label="${g}枠 ${hs.map((h) => h.no).join('・')}番 ${pct(pg)}%"><span class="gs" style="background:${GATE_BG[g]}"></span><b>${g}枠</b><small>${hs.map((h) => h.no).join('・')}番</small><span class="tag"></span></button>`; }).join('') : r.horses.map((h) => `<button type="button" class="hb" data-h="${h.no}" aria-pressed="false" aria-label="${h.no}番 ${esc(h.name)} ${pct(h.prob)}%"><span class="gs" style="background:${GATE_BG[h.gate]}"></span><b>${h.no}</b><small>${pct(h.prob)}%</small><span class="tag"></span></button>`).join('')}</div>
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px var(--pad) 0"><span class="note">${BS.kind === 'waku' ? '枠の下は、その枠の馬番です' : '数字の下は単勝の確率です'}</span><button type="button" class="clear" id="clear">選び直す</button></div>
   <div class="budbox sb2"><label for="bud">予算</label><input id="bud" type="number" inputmode="numeric" min="100" step="100" value="${BS.budget}"><span>円</span><span class="per" id="per"></span></div>
   <details class="tix" id="tix"><summary><span id="tixT">買い目の一覧</span></summary><div id="tixB"></div></details>
+  ${vAuto()}
   ${ipatBox(r)}
   <div class="sumbar" data-pen id="sum">
     <div class="sb1"><span><small>この買い目が当たる確率</small><span class="big"><span id="hitV">0.0</span><small>%</small>${under()}</span></span><span class="pts"><small>点数</small><b id="ptsV">0</b> 点<span class="perS" id="perS"></span></span></div>
@@ -2213,6 +2239,15 @@ function needBias(d, cb) {
   sb.from('today_bias').select('part,rows').eq('date', d).then(({ data, error }) => { BIAS.set(d, error ? 'err' : Object.fromEntries((data || []).map((x) => [x.part, x.rows]))); cb(); });
   if (!BIAS_DAYS) { BIAS_DAYS = []; sb.from('today_bias').select('date').eq('part', 'main').order('date', { ascending: false }).limit(8).then(({ data }) => { BIAS_DAYS = (data || []).map((x) => x.date); cb(); }); }
 }
+// 当日の傾向：左右を見比べる帯（複勝率の大きさの割合で左右に分ける。有利な側を赤）
+function bvs(lab, ln, lv, rn, rv, verdict, trend) {
+  const pc = (x) => (x == null ? '－' : pct(x, 0) + '%');
+  if (lv == null && rv == null) return '';
+  const a = lv || 0, b = rv || 0, t = a + b, w = t > 0 ? Math.round(a / t * 100) : 50;
+  const win = verdict && verdict !== '偏りなし' ? (verdict.startsWith(ln.slice(0, 1)) ? 'l' : 'r') : '';
+  return `<div class="bvs"><div class="bvh"><small>${lab}</small><b class="${win ? 'hot' : ''}">${esc(verdict || '－')}</b>${trend ? `<em>前日から${esc(trend)}</em>` : ''}</div>
+    <div class="bvb"><span class="${win === 'l' ? 'on' : ''}" style="flex-basis:${w}%">${ln} ${pc(lv)}</span><span class="${win === 'r' ? 'on' : ''}" style="flex-basis:${100 - w}%">${rn} ${pc(rv)}</span></div></div>`;
+}
 function vBias(d, v) {
   const re = () => { if (/^#\/bias/.test(location.hash)) rerender(); };
   d = /^\d{4}-\d{2}-\d{2}$/.test(d || '') ? d : (DATA.week.includes(jstToday()) ? jstToday() : (BIAS_DAYS && BIAS_DAYS[0]) || jstToday());
@@ -2235,12 +2270,12 @@ function vBias(d, v) {
   const cold = (rows, nameKey, nKey, lab) => { const c = rows.filter((x) => x[nKey] >= 3 && !x.top3).sort((a, b) => b[nKey] - a[nKey]).slice(0, 4); return c.length ? `<p class="ixsub bcold">来ていない${lab}</p>${c.map((x) => `<div class="bt"><span>${esc(x[nameKey])}</span><span>${x[nKey]}走 3着内0</span></div>`).join('')}` : ''; };
   const block = (m) => {
     if (!m.races_done) return `<section class="sec"><div class="label"><b>${esc(m.surface)}</b><span>${esc(m.track_condition || '')}${m.weather ? '・' + esc(m.weather) : ''}</span></div><p class="note" style="margin-top:8px">まだ終わったレースがありません。レースが終わるごとに更新されます。</p></section>`;
-    const sf = m.surface, cross = of('cross', sf), cell = (pb, fb) => { const c = cross.find((x) => x.pos_band === pb && x.frame_band === fb); return c ? `<span class="${c.starts >= 3 && c.top3_rate >= 0.4 ? 'hot' : ''}">${pc(c.top3_rate)}<small>${c.starts}頭</small></span>` : '<span>－</span>'; };
+    const sf = m.surface, cross = of('cross', sf), cell = (pb, fb) => { const c = cross.find((x) => x.pos_band === pb && x.frame_band === fb); return c ? `<span class="${c.starts >= 3 && c.top3_rate >= 0.4 ? 'hot' : ''}" style="background:rgba(200,16,46,${c.starts >= 2 ? (Math.min(1, c.top3_rate) * 0.55).toFixed(2) : 0})">${pc(c.top3_rate)}<small>${c.starts}頭</small></span>` : '<span>－</span>'; };
     const times = of('times', sf);
     return `<section class="sec"><div class="label"><b>${esc(sf)}</b><span>${m.races_done || 0}レース終了・${esc(m.track_condition || '')}${m.weather ? '・' + esc(m.weather) : ''}</span></div>
-      <div class="box bbox">
-        <div class="bk"><small>脚質</small><b>${dir(m.style_bias_ratio, '先行が有利', '差しが有利') || '－'}</b><span>先行 ${pc(m.front_top3_rate)}・差し ${pc(m.sashi_top3_rate)}（複勝率）${m.style_bias_trend ? `・前日から${esc(m.style_bias_trend)}` : ''}</span></div>
-        <div class="bk"><small>枠</small><b>${dir(m.frame_bias_ratio, '内枠が有利', '外枠が有利') || '－'}</b><span>内 ${pc(m.inside_top3_rate)}・外 ${pc(m.outside_top3_rate)}${m.frame_bias_trend ? `・前日から${esc(m.frame_bias_trend)}` : ''}</span></div>
+      ${bvs('脚質', '先行', m.front_top3_rate, '差し', m.sashi_top3_rate, dir(m.style_bias_ratio, '先行が有利', '差しが有利'), m.style_bias_trend)}
+      ${bvs('枠', '内枠', m.inside_top3_rate, '外枠', m.outside_top3_rate, dir(m.frame_bias_ratio, '内枠が有利', '外枠が有利'), m.frame_bias_trend)}
+      <div class="box bbox" style="margin-top:8px">
         <div class="bk"><small>人気</small><b>${m.fav123_top3_rate == null ? '－' : m.fav123_top3_rate >= 0.6 ? '堅め' : m.fav123_top3_rate <= 0.4 ? '荒れ気味' : 'ふつう'}</b><span>1〜3番人気の複勝率 ${pc(m.fav123_top3_rate)}</span></div>
         <div class="bk"><small>時計</small><b>${m.time_diff_avg_sec == null ? '－' : m.time_diff_avg_sec > 0.5 ? 'かかっている' : m.time_diff_avg_sec < -0.5 ? '出ている' : 'ふつう'}</b><span>${m.time_diff_avg_sec == null ? '比べられるレースなし' : `標準より${m.time_diff_avg_sec > 0 ? '+' : ''}${m.time_diff_avg_sec}秒（${m.time_compared_races}レース平均）`}</span></div>
       </div>
