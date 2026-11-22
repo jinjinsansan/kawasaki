@@ -863,7 +863,7 @@ const jstToday = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 
 const normName = (n) => String(n || '').replace(/\((G[123]|L|OP|Jpn[123])\)/g, '（$1）');
 // 読み込みは2段：開いたときは「直近9日（今週と先週末）」だけ、成績の面を開いたら「過去70日」を軽い列で足す
 const RACE_COLS = 'race_id,date,venue,race_no,race_name,start_time,surface,distance,field_size,status,going,going_used,pace,judge';
-const HORSE_FULL = 'horse_no,gate,horse_name,jockey,weight,last_run,prob,rank,note,result,going,pace,lap,judge';
+const HORSE_FULL = 'horse_no,gate,horse_name,jockey,weight,last_run,prob,rank,note,result,going,pace,lap,judge,bw,bwd';
 const ODDS_LITE = 'odds(win,place,fetched_at,official_at,final)';
 const jstDay = (back) => new Date(Date.now() + 9 * 3600e3 - back * 864e5).toISOString().slice(0, 10);
 function toRace(r, lite) {
@@ -874,7 +874,7 @@ function toRace(r, lite) {
     surface: r.surface === 'ダ' ? 'ダート' : (r.surface || ''), distance: r.distance, field: r.field_size || n, status: r.status, lite: !!lite, going: r.going || '', goingUsed: r.going_used || '', pace: r.pace || null, judge: r.judge || null,
     odds: (Array.isArray(r.odds) ? r.odds[0] : r.odds) || null,
     numbered: ps.every((h) => h.horse_no != null),
-    horses: ps.map((h, i) => { const known = h.horse_no != null, no = known ? h.horse_no : 101 + i; return { no, known, gate: known ? (h.gate ?? gateOf(no, n)) : 0, name: h.horse_name, jockey: h.jockey || '', weight: h.weight, last: h.last_run || '', prob: h.prob, rank: h.rank, note: h.note, result: h.result, going: h.going || null, pace: h.pace || null, lap: h.lap || null, judge: h.judge || null }; }),
+    horses: ps.map((h, i) => { const known = h.horse_no != null, no = known ? h.horse_no : 101 + i; return { no, known, gate: known ? (h.gate ?? gateOf(no, n)) : 0, name: h.horse_name, jockey: h.jockey || '', weight: h.weight, last: h.last_run || '', prob: h.prob, rank: h.rank, note: h.note, result: h.result, going: h.going || null, pace: h.pace || null, lap: h.lap || null, judge: h.judge || null, bw: h.bw || null, bwd: h.bwd ?? null }; }),
   };
 }
 let histState = 'no', HIST_BINS = [];  // no → loading → ok
