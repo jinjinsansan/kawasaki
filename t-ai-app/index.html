@@ -560,6 +560,9 @@ body.lock { overflow: hidden; }
 .stwrap.end .stfade { opacity: 0; }
 .st { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 13px; }
 .st th small { display: block; font-size: 9px; font-weight: 700; opacity: .75; }
+.st td .evl { display: block; font-family: var(--n); font-size: 13px; font-weight: 700; color: var(--ink2); }
+.st td .evl.hi { color: var(--red); font-weight: 900; }
+.st td .cheap { margin-top: 2px; }
 .st td .mo { display: block; margin-top: 2px; font-family: inherit; font-size: 11px; font-weight: 700; color: var(--ink2); white-space: nowrap; }
 .st td .mo b { font-family: var(--n); font-size: 12px; color: var(--ink2); }
 .st td .mo i { font-style: normal; font-size: 10px; color: var(--ink3); margin-left: 3px; }
@@ -1414,7 +1417,7 @@ function vRace(r) {
   <div class="dctl"><div class="seg sm" role="group" aria-label="並び順" id="sortSeg"><button type="button" data-sort="no" aria-pressed="${raceState.sort === 'no'}">馬番順</button><button type="button" data-sort="prob" aria-pressed="${raceState.sort === 'prob'}">${MY ? 'あなたの順' : '確率順'}</button></div><small>表は左へスワイプ →</small></div>
   <div id="tbl">${shutuba(r)}</div>
   ${goingNote(r)}
-  ${r.numbered === false ? '' : `<p class="dnote">行をタップで指数カード。左端の赤＝追い風、青＝向い風。「割安」＝単勝オッズがT-AI換算より1割以上高い馬。</p>`}
+  ${r.numbered === false ? '' : `<p class="dnote">行をタップで指数カード。左端の赤＝追い風、青＝向い風。期待値＝確率×オッズ（複勝はオッズの下限で計算）、1を超えると赤。「割安」＝単勝の期待値が1.1以上。</p>`}
   ${over ? '<p class="dnote">※海外から来た馬など、日本での出走歴がない馬は、確率が低く出ることがあります。</p>' : ''}
   ${r.numbered === false ? '' : '<div id="paceSec"></div><div id="lapSec"></div><div id="goingSec"></div>'}
   ${r.numbered === false ? '<section class="sec"><div class="wait-box"><span class="stamp">枠順待ち</span><p class="h2">馬番は、枠順が<br>確定してから載せます。</p><p class="note">組み合わせの確率と買い目は、枠順の確定後に使えます。各馬の勝つ確率は、もう計算済みです。</p></div></section>' : `<div id="comboSec"><details class="fold" data-fold="combo"${raceState.open.has('combo') ? ' open' : ''}><summary><span class="ft"><b>組み合わせ</b><span class="fc" id="comboC"></span></span><i class="fi"></i></summary><section class="sec" style="padding-top:4px">
@@ -1447,9 +1450,10 @@ function shutuba(r) {
     // 確率のすぐ下に市場のオッズ（川崎さんの依頼：スワイプしなくても見比べられるように）
     [`${my ? 'T-AI勝率' : '勝率'}<small>単勝オッズ</small>`, (h) => `<b class="${my ? 'sdim' : h.prob >= .3 ? 'shi' : ''}">${pct(h.prob)}%</b><span class="mo">${odd(h) ? `単 <b>${o1(odd(h))}</b>${pop(h) ? `<i>${pop(h)}人気</i>` : ''}` : `<i>${h.rank}位</i>`}</span>`],
     ['複勝率<small>複勝オッズ</small>', (h) => `${pcv(CALC.place(r, h.no))}<span class="mo">${plc(h) ? `複 <b>${plc(h)}</b>` : ''}</span>`],
+    // 期待値＝確率×オッズ（単勝は勝率×単勝オッズ、複勝は複勝率×複勝オッズの下限）。1を超えると赤。単勝が1割以上の馬に「割安」
+    ['期待値<small>単勝／複勝</small>', (h) => { const ew = odd(h) ? h.prob * odd(h) : null, p = r.odds && r.odds.place && r.odds.place[String(h.no)], ep = p && p[0] && p[0] < 9999 ? CALC.place(r, h.no) * p[0] : null; return ew == null && ep == null ? '－' : `<span class="evl${ew >= 1 ? ' hi' : ''}">単 ${ew == null ? '－' : ew.toFixed(2)}</span><span class="evl${ep >= 1 ? ' hi' : ''}">複 ${ep == null ? '－' : ep.toFixed(2)}</span>${ew >= 1.1 ? '<b class="cheap">割安</b>' : ''}`; }],
     ['連対率', (h) => pcv(rentaiOf(r, h.no))],
     ['T-AI換算', (h) => fair(h.prob)],
-    ['比較', (h) => (odd(h) && h.prob > 0 && odd(h) >= 1.1 / h.prob ? '<b class="cheap">割安</b>' : '')],
     ['判定', (h) => (windOf(h) ? `<span class="sjw ${windOf(h)}"><i>${windOf(h) === 'up' ? '追い風' : '向い風'}</i>${windTag(r, h) ? `<b>${windTag(r, h)}</b>` : ''}<small>${esc(h.judge.wind_reason || '')}</small></span>` : '')],
     ['馬体重', (h) => (h.bw ? `${h.bw}<small>${h.bwd != null ? `(${h.bwd > 0 ? '+' : ''}${h.bwd})` : ''}</small>` : '<small>発表前</small>')],
   ];
