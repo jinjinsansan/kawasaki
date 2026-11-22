@@ -552,13 +552,18 @@ body.lock { overflow: hidden; }
 .vsw .seg button { min-height: 44px; font-size: 15px; }
 .vnote { margin: 6px 0 0; font-size: 11.5px; color: var(--ink2); }
 .dctl small { white-space: nowrap; }
-.stw { margin: 10px var(--pad) 0; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 2px solid var(--ink); background: var(--card); }
+.stw { position: relative; margin: 10px 0 0; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 2px solid var(--ink); background: var(--card); scroll-snap-type: x mandatory; overscroll-behavior-x: contain; }
+.st th:not(.sx), .st td:not(.sx) { scroll-snap-align: start; }
+.st td.sx, .st th.sx { box-shadow: 4px 0 6px -3px rgba(27, 24, 20, .35); }
+.stwrap { position: relative; margin: 0 var(--pad); }
+.stwrap .stfade { position: absolute; top: 2px; bottom: 2px; right: 2px; width: 22px; pointer-events: none; background: linear-gradient(to right, rgba(250, 247, 240, 0), rgba(250, 247, 240, .95)); transition: opacity .2s; }
+.stwrap.end .stfade { opacity: 0; }
 .st { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 13px; }
 .st th { position: sticky; top: 0; background: var(--ink); color: var(--paper); font-size: 11px; font-weight: 700; padding: 6px 8px; white-space: nowrap; text-align: right; }
 .st th.sx { text-align: left; z-index: 2; left: 0; }
 .st td { padding: 6px 8px; border-bottom: 1px solid rgba(27, 24, 20, .2); text-align: right; white-space: nowrap; vertical-align: middle; font-family: var(--n); font-size: 14px; font-weight: 700; }
 .st td small { display: block; font-family: inherit; font-size: 10px; font-weight: 700; color: var(--ink3); }
-.st td.sx { position: sticky; left: 0; z-index: 1; background: var(--card); text-align: left; padding: 0; border-right: 2px solid var(--ink); font-family: inherit; font-size: 13px; width: 52vw; max-width: 236px; min-width: 176px; }
+.st td.sx { position: sticky; left: 0; z-index: 1; background: var(--card); text-align: left; padding: 0; border-right: 2px solid var(--ink); font-family: inherit; font-size: 13px; width: 48vw; max-width: 220px; min-width: 164px; }
 .st tr.win td.sx, .st tr.win td { background: #fff; }
 .st tr[data-card] { cursor: pointer; }
 .st tr[data-card]:active td { background: var(--paper2); }
@@ -1413,11 +1418,11 @@ function shutuba(r) {
     ['馬体重', (h) => (h.bw ? `${h.bw}<small>${h.bwd != null ? `(${h.bwd > 0 ? '+' : ''}${h.bwd})` : ''}</small>` : '<small>発表前</small>')],
   ];
   const mk1 = (h) => (my ? MARK[my.get(h.no)] || '' : mk(r, h.rank));
-  return `<div class="stw" id="stw"><table class="st"><thead><tr><th class="sx">馬番・馬名</th>${cols.map(([t]) => `<th>${t}</th>`).join('')}</tr></thead><tbody>
+  return `<div class="stwrap"><div class="stw" id="stw"><table class="st"><thead><tr><th class="sx">馬番・馬名</th>${cols.map(([t]) => `<th>${t}</th>`).join('')}</tr></thead><tbody>
     ${order.map((h) => `<tr class="${h.prob < .05 && !my ? 'lo' : ''}${h.result === 1 ? ' win' : ''}"${h.known === false ? '' : ` data-card="${h.no}" role="button" tabindex="0" aria-label="${esc(h.name)}の指数カードを開く"`}>
       <td class="sx"><span class="sxi">${h.known === false ? '<span class="ck0"></span>' : `<span class="ck${vsOn(r, h.no) ? ' on' : ''}" data-chk="${h.no}" role="checkbox" aria-checked="${vsOn(r, h.no)}" aria-label="${esc(h.name)}を比べる"><i>✓</i></span>`}<span class="sg" style="background:${GATE_BG[h.gate]}"></span><span class="sno">${dno(h)}</span><span class="smk">${mk1(h)}</span><span class="snm"><b>${esc(h.name)}</b><small>${esc(h.jockey)} ${h.weight}・${h.note ? `<em>${esc(h.last)}</em>` : esc(h.last)}</small></span></span></td>
       ${cols.map(([, f]) => `<td>${f(h)}</td>`).join('')}</tr>`).join('')}
-  </tbody></table></div>`;
+  </tbody></table></div><span class="stfade" aria-hidden="true"></span></div>`;
 }
 // 閉じたセクション（川崎さんの依頼：最初は出馬表だけ。ほかは見出しの下に結論1行、タップで詳細）
 function setFold(sec, key, title, concl, inner) {
@@ -1972,9 +1977,16 @@ function openCard(r, no) {
   document.body.classList.add('lock');
   requestAnimationFrame(() => { $('#sheetBg').classList.add('open'); $('#sheet').classList.add('open'); $('#sheetX').focus(); });
 }
+function stwFit() {
+  const w = $('#stw'), sx = w && w.querySelector('td.sx'); if (!w || !sx) return;
+  w.style.scrollPaddingLeft = sx.offsetWidth + 'px';
+  const end = () => w.parentNode.classList.toggle('end', w.scrollLeft + w.clientWidth >= w.scrollWidth - 2);
+  w.onscroll = end; end();
+}
 function placeRows(r) {
   const t = $('#tbl'); if (!t) return;
   const sx = $('#stw') && $('#stw').scrollLeft; t.innerHTML = shutuba(r); if (sx && $('#stw')) $('#stw').scrollLeft = sx;
+  stwFit();
   document.querySelectorAll('#sortSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.sort === raceState.sort)));
 }
 function hitOf(r, kind, nums) {
@@ -2005,7 +2017,7 @@ function renderCombos(r) {
 }
 function mountRace(r) {
   if (r.status === 'waiting' || r.locked) return;
-  renderCombos(r); renderPace(r); renderLap(r); renderGoing(r); tocSync(); vsBar();
+  renderCombos(r); renderPace(r); renderLap(r); renderGoing(r); tocSync(); vsBar(); stwFit();
   const calc = $('#calc'); if (calc) { calc.classList.add('ok'); if (r.status === 'ready') $('#calcT').textContent = '計算済み'; }
   seen.add(r.id);
 }
