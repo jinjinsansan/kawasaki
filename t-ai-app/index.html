@@ -548,6 +548,74 @@ body.lock { overflow: hidden; }
 .ipr b { display: block; font-size: 15px; color: var(--ink); }
 .ipr small { font-size: 12px; font-weight: 700; }
 .ipat .btns { display: grid; gap: 8px; margin-top: 10px; }
+.vsw { padding: 10px var(--pad) 0; }
+.vsw .seg button { min-height: 44px; font-size: 15px; }
+.vnote { margin: 6px 0 0; font-size: 11.5px; color: var(--ink2); }
+.dctl small { white-space: nowrap; }
+.stw { margin: 10px var(--pad) 0; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 2px solid var(--ink); background: var(--card); }
+.st { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 13px; }
+.st th { position: sticky; top: 0; background: var(--ink); color: var(--paper); font-size: 11px; font-weight: 700; padding: 6px 8px; white-space: nowrap; text-align: right; }
+.st th.sx { text-align: left; z-index: 2; left: 0; }
+.st td { padding: 6px 8px; border-bottom: 1px solid rgba(27, 24, 20, .2); text-align: right; white-space: nowrap; vertical-align: middle; font-family: var(--n); font-size: 14px; font-weight: 700; }
+.st td small { display: block; font-family: inherit; font-size: 10px; font-weight: 700; color: var(--ink3); }
+.st td.sx { position: sticky; left: 0; z-index: 1; background: var(--card); text-align: left; padding: 0; border-right: 2px solid var(--ink); font-family: inherit; font-size: 13px; width: 52vw; max-width: 236px; min-width: 176px; }
+.st tr.win td.sx, .st tr.win td { background: #fff; }
+.st tr[data-card] { cursor: pointer; }
+.st tr[data-card]:active td { background: var(--paper2); }
+.sxi { display: grid; grid-template-columns: 24px 4px 24px 16px minmax(0, 1fr); align-items: center; min-height: 52px; }
+.sxi .ck, .sxi .ck0 { align-self: stretch; display: grid; place-items: center; cursor: pointer; }
+.sxi .ck i { display: grid; place-items: center; width: 18px; height: 18px; border: 2px solid var(--ink3); background: var(--card); font-style: normal; font-size: 12px; font-weight: 900; color: transparent; }
+.sxi .ck.on i { border-color: var(--red); background: var(--red); color: #fff; }
+.sxi .sg { align-self: stretch; }
+.sxi .sno { text-align: center; font-family: var(--n); font-size: 17px; font-weight: 700; }
+.sxi .smk { text-align: center; font-weight: 900; color: var(--red); font-size: 14px; }
+.sxi .snm { min-width: 0; padding: 4px 6px 4px 0; }
+.sxi .snm b { display: block; font-size: 13.5px; letter-spacing: -.02em; font-weight: 900; line-height: 1.25; overflow-wrap: anywhere; }
+.sxi .snm small { display: block; font-size: 10.5px; color: var(--ink2); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sxi .snm small em { font-style: normal; color: var(--red); font-weight: 700; }
+.st tr.lo td:not(.sx) { color: var(--ink3); }
+.st .shi { color: var(--red); font-size: 16px; }
+.st .sdim { color: var(--ink3); font-weight: 700; }
+.st .sme { color: var(--red); font-size: 16px; }
+.st .sfin.f1 { color: var(--red); }
+.st .cheap { display: inline-block; padding: 1px 6px; border: 1.5px solid var(--red); color: var(--red); font-family: inherit; font-size: 11.5px; }
+.st .sjw { display: block; text-align: left; white-space: normal; width: 168px; font-family: inherit; font-size: 11px; font-weight: 700; }
+.st .sjw i { font-style: normal; color: #fff; padding: 0 5px; font-size: 10.5px; font-weight: 900; }
+.st .sjw.up i { background: #c8102e; }
+.st .sjw.dn i { background: #1f4fa3; }
+.st .sjw b { margin-left: 4px; font-size: 10.5px; padding: 0 4px; border: 1.5px solid currentColor; }
+.st .sjw.up b { color: #c8102e; }
+.st .sjw.dn b { color: #1f4fa3; }
+.st .sjw small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px; color: var(--ink2); font-weight: 400; }
+.fold { margin: 12px var(--pad) 0; border: 2px solid var(--ink); background: var(--card); }
+.fold > summary { list-style: none; display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; }
+.fold > summary::-webkit-details-marker { display: none; }
+.fold .ft { flex: 1 1 auto; min-width: 0; }
+.fold .ft b { display: block; font-size: 15px; font-weight: 900; }
+.fold .fc { display: block; margin-top: 2px; font-size: 12.5px; color: var(--ink2); line-height: 1.5; }
+.fold[open] > summary { border-bottom: 1px solid var(--ink); }
+.fold > .sec { padding-left: 10px; padding-right: 10px; }
+.gch { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 8px; align-items: center; padding: 8px 10px; border-bottom: 1px solid rgba(27, 24, 20, .15); font-size: 13px; }
+.gch b { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.gch span { font-size: 12px; color: var(--ink2); white-space: nowrap; }
+.gch em { font-style: normal; font-weight: 900; color: var(--ink); }
+.gch i { font-style: normal; font-weight: 900; }
+.gch.up i, .gch.up em { color: var(--red); }
+.gch.dn i { color: #1f4fa3; }
+.pmap { margin-top: 6px; }
+.pmz { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.pmc { border: 1.5px solid var(--ink); background: var(--paper); padding: 4px; min-height: 96px; }
+.pmc.adv { background: #fbe3e6; border-color: var(--red); }
+.pmc.dis { background: #e6e3de; }
+.pmc small { display: block; text-align: center; font-size: 10px; font-weight: 900; color: var(--ink2); line-height: 1.3; }
+.pmc.adv small { color: var(--red); }
+.pmh { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; margin-top: 4px; }
+.pmh em { font-style: normal; color: var(--ink3); }
+.pmd { display: inline-block; outline: 2px solid transparent; outline-offset: 1px; }
+.pmd.adv { outline-color: var(--red); }
+.pmd.dis { opacity: .55; }
+.pmf { display: flex; justify-content: space-between; margin-top: 4px; font-size: 10.5px; color: var(--ink3); }
+.pmf b { color: var(--ink2); }
 .memo .mrow { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(27, 24, 20, .25); }
 .memo .mtag { align-self: start; text-align: center; font-size: 11px; font-weight: 900; padding: 3px 0; border: 1.5px solid var(--ink); }
 .memo .mtag.now { background: var(--ink); color: var(--paper); }
@@ -990,7 +1058,7 @@ async function oddsTick() {
   r.odds = data;
   const e = ODDS.get(r.id); if (e) Object.keys(e).filter((k) => k[0] === '@').forEach((k) => { e[k] = 0; });  // 組み合わせのオッズも読み直させる
   if (onRace && $('#view').dataset.race === r.id) {
-    document.querySelectorAll('#rows .row[data-no]').forEach((row) => { const h = r.horses.find((x) => x.no === +row.dataset.no), rk = row.querySelector('.pc .rk'), o = h && oddsOne(r, 'tan', [h.no]); if (rk && h) rk.textContent = `${h.rank}位${o ? `・${o1(o)}倍` : ''}`; });
+    placeRows(r);
     const ot = $('.otime'); if (ot) ot.textContent = `オッズ ${oddsWhen(r)}・netkeibaより`;
     renderCompare(r); needOdds(r, raceState.kind);
   } else if (onBuild) { needOdds(r, BS.kind); updateBuild(); }
@@ -1250,7 +1318,7 @@ function vRaces() {
 }
 
 /* ─ レース詳細 ─ */
-let raceState = { sort: 'no', kind: 'uma', limit: 20, ck: 'tan', gv: '不良' };
+let raceState = { sort: 'no', kind: 'uma', limit: 20, ck: 'tan', gv: '不良', open: new Set() };
 const ROW = 60, WROW = 34;
 // 追い風／向い風（川崎さんの統合判定 judge：確率とは別の物差しの表示用の参考情報）。出馬表には両端の馬だけ、理由は1行
 const windOf = (h) => (h.judge && h.judge.wind === '追い風' ? 'up' : h.judge && h.judge.wind === '向い風' ? 'dn' : '');
@@ -1298,32 +1366,63 @@ function vRace(r) {
   if (r.locked) return `${head}${blurRace(r)}`;
   if (r.status === 'waiting') return `${head}<div class="wait-box"><span class="stamp">出馬表待ち</span><p class="h2">出馬表が確定すると、<br>T-AIが計算します。</p><p class="note">JRAの枠順は、前日の午前10時30分ごろに確定します。計算が終わると、一面の「計算済み」に加わります。</p></div>`;
   const done = r.status === 'done', over = r.horses.some((h) => h.note === 'overseas');
+  const ot = r.odds && r.odds.win ? `オッズは${oddsWhen(r)}。` : '';
   return `${head}
-  <nav class="rtoc" id="rtoc" aria-label="このページの目次">${[['#tbl', '出馬表'], ['#cmpSeg', 'オッズ'], ['#paceSec', '展開'], ['#lapSec', 'ラップ'], ['#goingSec', '馬場'], ['#kindSeg', '組み合わせ']].map(([t, l]) => `<button type="button" data-jump="${t}">${l}</button>`).join('')}</nav>
-  <div class="calc" id="calc"><span>${done ? 'レース終了' : 'T-AI'}</span><span class="rot"><i></i></span><b id="calcT">${done ? 'RESULT' : 'READY'}</b></div>
-  <div class="dctl"><div class="seg sm" role="group" aria-label="並び順" id="sortSeg"><button type="button" data-sort="no" aria-pressed="${raceState.sort === 'no'}">馬番順</button><button type="button" data-sort="prob" aria-pressed="${raceState.sort === 'prob'}">${MY ? 'あなた順' : '確率順'}</button></div><div class="seg sm" role="group" aria-label="予想" id="pmodeSeg"><button type="button" data-pmode="std" aria-pressed="${MINE.mode !== 'mine'}">標準</button><button type="button" data-pmode="mine" aria-pressed="${MINE.mode === 'mine'}">あなた</button></div></div>
+  <div class="vsw"><div class="seg" role="group" aria-label="見解" id="pmodeSeg"><button type="button" data-pmode="std" aria-pressed="${!MY && MINE.mode !== 'mine'}">T-AIの見解</button><button type="button" data-pmode="mine" aria-pressed="${MINE.mode === 'mine'}">あなたの見解</button></div>
+    <p class="vnote">${MINE.mode === 'mine' ? `あなたの重視順で並べた見解です（T-AIの勝率は参考）。${ot}` : `T-AIの見解は全員共通です。${ot}`}</p></div>
   ${MINE.mode === 'mine' ? `<div class="mybar">${MY ? `<span><b>あなたの重視順</b>${mineLabel()}</span>` : '<span>あなたの順位を計算しています…</span>'}<button type="button" class="btn sub" data-mineset="1">変更</button></div>` : ''}
-  <div class="tbl box" id="tbl">
-    <div class="th"><span style="text-align:center">比</span><span></span><span style="text-align:center">馬番</span><span style="text-align:center">印</span><span>馬名・騎手・斤量・前走${done ? '・着順' : ''}</span><span>勝つ確率</span></div>
-    <div class="rows" id="rows" style="height:${r.horses.reduce((a, h) => a + rowH(h), 0)}px">
-      ${r.horses.map((h) => `<div class="row${h.prob >= .3 ? ' hi' : ''}${h.prob < .05 ? ' lo' : ''}${h.result === 1 ? ' win' : ''}${windOf(h) ? ' w' + windOf(h) : ''}" style="height:${rowH(h)}px" data-no="${h.no}"${h.known === false ? '' : ` data-card="${h.no}" role="button" tabindex="0" aria-label="${esc(h.name)}の指数カードを開く"`}>
-        ${h.known === false ? '<span></span>' : `<span class="ck${vsOn(r, h.no) ? ' on' : ''}" data-chk="${h.no}" role="checkbox" aria-checked="${vsOn(r, h.no)}" aria-label="${esc(h.name)}を比べる"><i>✓</i></span>`}<span class="gt" style="background:${GATE_BG[h.gate]}"></span><span class="no">${dno(h)}</span><span class="mk">${MY ? (MARK[MY.get(h.no)] || '') : mk(r, h.rank)}</span>
-        <span class="nm"><b>${esc(h.name)}${done ? `<span class="fin">${h.result === 1 ? `<span class="ring">1着${ring()}</span>` : finTxt(h)}</span>` : ''}</b><small>${esc(h.jockey)}・${h.weight}kg・${h.note ? `<em>${esc(h.last)}</em>` : esc(h.last)}</small></span>
-        <span class="pc"><span class="rk">${MY ? `あなた${MY.get(h.no)}位・T-AI ` : ''}${h.rank}位${oddsOne(r, 'tan', [h.no]) ? `・${o1(oddsOne(r, 'tan', [h.no]))}倍` : ''}</span><span class="pct"><span class="ring">${h.prob >= .3 ? ring() : ''}<em style="font-style:normal" data-v="${pct(h.prob)}">${pct(h.prob)}</em>%</span></span><span class="bar"><i data-w="${h.prob / top(r).prob * 100}"></i></span></span>${windLine(r, h)}
-      </div>`).join('')}
-    </div>
-  </div>
+  <nav class="rtoc" id="rtoc" aria-label="このページの目次">${[['#tbl', '出馬表'], ['#paceSec', '展開'], ['#lapSec', 'ラップ'], ['#goingSec', '馬場'], ['#comboSec', '組み合わせ']].map(([t, l]) => `<button type="button" data-jump="${t}">${l}</button>`).join('')}</nav>
+  <div class="dctl"><div class="seg sm" role="group" aria-label="並び順" id="sortSeg"><button type="button" data-sort="no" aria-pressed="${raceState.sort === 'no'}">馬番順</button><button type="button" data-sort="prob" aria-pressed="${raceState.sort === 'prob'}">${MY ? 'あなたの順' : '確率順'}</button></div><small>表は左へスワイプ →</small></div>
+  <div id="tbl">${shutuba(r)}</div>
   ${goingNote(r)}
-  ${r.numbered === false ? '' : '<p class="dnote">馬の行をタップすると、その馬の「指数カード」が開きます。</p>'}
+  ${r.numbered === false ? '' : `<p class="dnote">馬の行をタップすると、その馬の「指数カード」が開きます。「割安」は、実際の単勝オッズがT-AI換算（1÷勝率）より1割以上高い＝市場がT-AIより低く見ている馬だけに出しています。</p>`}
   ${over ? '<p class="dnote">※海外から来た馬など、日本での出走歴がない馬は、確率が低く出ることがあります。</p>' : ''}
-  ${vCompare(r)}
   ${r.numbered === false ? '' : '<div id="paceSec"></div><div id="lapSec"></div><div id="goingSec"></div>'}
-  ${r.numbered === false ? '<section class="sec"><div class="wait-box"><span class="stamp">枠順待ち</span><p class="h2">馬番は、枠順が<br>確定してから載せます。</p><p class="note">組み合わせの確率と買い目は、枠順の確定後に使えます。各馬の勝つ確率は、もう計算済みです。</p></div></section>' : `<section class="sec">
-    <div class="label"><b>組み合わせ</b><span>確率の高い順</span></div>
-    <div class="seg sm k6 scroll" role="group" aria-label="券種" id="kindSeg" style="margin-top:12px">${kindsFor(r).filter((k) => k !== 'tan').map((k) => `<button type="button" data-kind="${k}" aria-pressed="${raceState.kind === k}">${KIND[k]}</button>`).join('')}</div>
+  ${r.numbered === false ? '<section class="sec"><div class="wait-box"><span class="stamp">枠順待ち</span><p class="h2">馬番は、枠順が<br>確定してから載せます。</p><p class="note">組み合わせの確率と買い目は、枠順の確定後に使えます。各馬の勝つ確率は、もう計算済みです。</p></div></section>' : `<div id="comboSec"><details class="fold" data-fold="combo"${raceState.open.has('combo') ? ' open' : ''}><summary><span class="ft"><b>組み合わせ</b><span class="fc" id="comboC"></span></span><i class="fi"></i></summary><section class="sec" style="padding-top:4px">
+    <div class="seg sm k6 scroll" role="group" aria-label="券種" id="kindSeg" style="margin-top:4px">${kindsFor(r).filter((k) => k !== 'tan').map((k) => `<button type="button" data-kind="${k}" aria-pressed="${raceState.kind === k}">${KIND[k]}</button>`).join('')}</div>
     <div class="box" style="margin-top:8px" id="combos"></div>
-    ${done ? '' : `<div class="btns"><button class="btn" type="button" data-go="#/build/${r.id}">このレースで買い目をつくる<span>▶</span></button></div>`}
-  </section>`}${rnav(r)}`;
+  </section></details></div>
+  ${done ? '' : `<div class="btns" style="margin:12px var(--pad) 0"><button class="btn" type="button" data-go="#/build/${r.id}">このレースで買い目をつくる<span>▶</span></button></div>`}`}${rnav(r)}`;
+}
+// 出馬表（川崎さんのデモ第3版：1頭1行。左の馬番・馬名・騎手・斤量は固定し、右を左へスワイプすると数字が出てくる）
+const RENTAI = new Map();  // レース → 馬番 → 連対率（サイトの馬連の確率と同じ式から：その馬を含む馬連の確率の合計）
+function rentaiOf(r, no) {
+  let m = RENTAI.get(r.id);
+  if (!m || m._n !== r.horses.length) {
+    m = new Map(); m._n = r.horses.length;
+    try { CALC.combos(r, 'uma').forEach((c) => c.nums.forEach((x) => m.set(x, (m.get(x) || 0) + c.prob))); } catch (e) { /* 枠順の前など */ }
+    RENTAI.set(r.id, m);
+  }
+  return m.get(no);
+}
+function shutuba(r) {
+  const done = r.status === 'done', my = MY;
+  const order = r.horses.slice().sort(raceState.sort === 'prob' ? (my ? (a, b) => my.get(a.no) - my.get(b.no) : (a, b) => b.prob - a.prob) : (a, b) => a.no - b.no);
+  const pcv = (x) => (x == null ? '－' : pct(x) + '%');
+  const odd = (h) => oddsOne(r, 'tan', [h.no]);
+  const cols = [
+    ...(done ? [['着順', (h) => (h.result != null ? `<b class="sfin${h.result <= 3 ? ' f' + h.result : ''}">${h.result}着</b>` : '－')]] : []),
+    ...(my ? [['あなた', (h) => `<b class="sme">${my.get(h.no)}位</b>`]] : []),
+    [my ? 'T-AI勝率' : '勝率', (h) => `<b class="${my ? 'sdim' : h.prob >= .3 ? 'shi' : ''}">${pct(h.prob)}%</b><small>${h.rank}位</small>`],
+    ['連対率', (h) => pcv(rentaiOf(r, h.no))],
+    ['複勝率', (h) => pcv(CALC.place(r, h.no))],
+    ['単勝', (h) => (odd(h) ? `${o1(odd(h))}<small>${r.odds.win[String(h.no)] && r.odds.win[String(h.no)][1] ? r.odds.win[String(h.no)][1] + '番人気' : ''}</small>` : '－')],
+    ['T-AI換算', (h) => fair(h.prob)],
+    ['比較', (h) => (odd(h) && h.prob > 0 && odd(h) >= 1.1 / h.prob ? '<b class="cheap">割安</b>' : '')],
+    ['判定', (h) => (windOf(h) ? `<span class="sjw ${windOf(h)}"><i>${windOf(h) === 'up' ? '追い風' : '向い風'}</i>${windTag(r, h) ? `<b>${windTag(r, h)}</b>` : ''}<small>${esc(h.judge.wind_reason || '')}</small></span>` : '')],
+    ['馬体重', (h) => (h.bw ? `${h.bw}<small>${h.bwd != null ? `(${h.bwd > 0 ? '+' : ''}${h.bwd})` : ''}</small>` : '<small>発表前</small>')],
+  ];
+  const mk1 = (h) => (my ? MARK[my.get(h.no)] || '' : mk(r, h.rank));
+  return `<div class="stw" id="stw"><table class="st"><thead><tr><th class="sx">馬番・馬名</th>${cols.map(([t]) => `<th>${t}</th>`).join('')}</tr></thead><tbody>
+    ${order.map((h) => `<tr class="${h.prob < .05 && !my ? 'lo' : ''}${h.result === 1 ? ' win' : ''}"${h.known === false ? '' : ` data-card="${h.no}" role="button" tabindex="0" aria-label="${esc(h.name)}の指数カードを開く"`}>
+      <td class="sx"><span class="sxi">${h.known === false ? '<span class="ck0"></span>' : `<span class="ck${vsOn(r, h.no) ? ' on' : ''}" data-chk="${h.no}" role="checkbox" aria-checked="${vsOn(r, h.no)}" aria-label="${esc(h.name)}を比べる"><i>✓</i></span>`}<span class="sg" style="background:${GATE_BG[h.gate]}"></span><span class="sno">${dno(h)}</span><span class="smk">${mk1(h)}</span><span class="snm"><b>${esc(h.name)}</b><small>${esc(h.jockey)} ${h.weight}・${h.note ? `<em>${esc(h.last)}</em>` : esc(h.last)}</small></span></span></td>
+      ${cols.map(([, f]) => `<td>${f(h)}</td>`).join('')}</tr>`).join('')}
+  </tbody></table></div>`;
+}
+// 閉じたセクション（川崎さんの依頼：最初は出馬表だけ。ほかは見出しの下に結論1行、タップで詳細）
+function setFold(sec, key, title, concl, inner) {
+  if (!inner) { sec.innerHTML = ''; return; }
+  sec.innerHTML = `<details class="fold" data-fold="${key}"${raceState.open.has(key) ? ' open' : ''}><summary><span class="ft"><b>${title}</b><span class="fc">${concl}</span></span><i class="fi"></i></summary>${inner}</details>`;
 }
 const fair = (p) => (p > 0 ? (1 / p >= 100 ? (1 / p).toFixed(0) : (1 / p).toFixed(1)) : '-');  // T-AIオッズ＝1÷確率
 function vCompare(r) {
@@ -1339,25 +1438,37 @@ function vCompare(r) {
 // 数字は紙面のデータ（predictions.going）に入っているので、レースを開くたびの問い合わせはしない
 function renderGoing(r) {
   const sec = $('#goingSec'); if (!sec) return;
-  if (raceState.gvFor !== r.id) { raceState.gvFor = r.id; const ag = r.goingUsed || r.going; raceState.gv = ['稍重', '重', '不良'].includes(ag) ? ag : '稍重'; }
+  if (raceState.gvFor !== r.id) { raceState.gvFor = r.id; const ag = r.goingUsed || r.going; raceState.gv = ['稍重', '重', '不良'].includes(ag) ? ag : '重'; }
   const g = raceState.gv, hs = r.horses.filter((h) => h.going && h.going[g] != null && h.going['良'] != null);
   if (!hs.length) { sec.innerHTML = ''; return; }
   const v = (h, k) => h.going[k];
   const rk = (k) => { const o = hs.slice().sort((a, b) => v(b, k) - v(a, k)); return new Map(o.map((h, i) => [h.no, i + 1])); };
   const r0 = rk('良'), r1 = rk(g);
-  const rows = hs.slice().sort((a, b) => v(b, g) - v(a, g)).map((h) => {
-    const d = Math.round((v(h, g) - v(h, '良')) * 10) / 10, big = Math.abs(d) >= 1;
-    return `<div class="cr${big && d > 0 ? ' ev' : ''}"><span class="n">${hn(h)}<span><b>${esc(h.name)}</b><small>${r0.get(h.no) === r1.get(h.no) ? `${r1.get(h.no)}位のまま` : `${r0.get(h.no)}位→${r1.get(h.no)}位`}</small></span></span><span class="v">${v(h, '良').toFixed(1)}%</span><span class="v">${v(h, g).toFixed(1)}%</span><span class="e" style="color:${big ? (d > 0 ? 'var(--red)' : 'var(--ink3)') : 'var(--ink)'}">${d > 0 ? '+' : d < 0 ? '−' : '±'}${Math.abs(d).toFixed(1)}</span></div>`;
-  }).join('');
-  sec.innerHTML = `<section class="sec">
-    <div class="label"><b>馬場が変わったら</b><span>馬場状態別の勝率</span></div>
-    <div class="seg sm scroll" role="group" aria-label="馬場" id="goSeg" style="margin-top:12px">${['稍重', '重', '不良'].map((k) => `<button type="button" data-gv="${k}" aria-pressed="${g === k}">${k}</button>`).join('')}</div>
-    <div class="box cmp"><div class="cap4"><span>馬（順位：良→${g}）</span><span>良</span><span>${g}</span><span>差</span></div>${rows}</div>
-    <p class="note" style="margin-top:6px">馬場の状態ごとに計算し直した勝率です（馬場の4区分を入れたT-AIのモデル）。上の「勝つ確率」とは別の計算なので、良の数字も少し違います。差が1ポイント以上の馬を、上がるものは赤、下がるものは灰色にしています。</p>
-  </section>`;
+  // 上位5番手の中で入れ替わる馬だけ（5番手より下どうしの入れ替わりは出さない）
+  const ch = hs.filter((h) => r0.get(h.no) !== r1.get(h.no) && Math.min(r0.get(h.no), r1.get(h.no)) <= 5).sort((a, b) => r1.get(a.no) - r1.get(b.no));
+  const any = (k) => hs.some((h) => { const a = rk('良'), b = rk(k); return a.get(h.no) !== b.get(h.no) && Math.min(a.get(h.no), b.get(h.no)) <= 5; });
+  const allSame = !['稍重', '重', '不良'].some(any);
+  const concl = allSame ? '馬場が悪くなっても、上位の順位の入れ替わりはありません。' : `${g}になると、${ch.slice(0, 2).map((h) => `${h.no}番 ${r0.get(h.no)}位→${r1.get(h.no)}位`).join('、')}${ch.length > 2 ? ` ほか${ch.length - 2}頭` : ''}が入れ替わります。`;
+  const rows = ch.map((h) => { const up = r1.get(h.no) < r0.get(h.no); return `<div class="gch ${up ? 'up' : 'dn'}">${hn(h)}<b>${esc(h.name)}</b><span>良 ${r0.get(h.no)}位 → ${g} <em>${r1.get(h.no)}位</em></span><i>${up ? '↑' : '↓'}</i></div>`; }).join('');
+  setFold(sec, 'going', '馬場が変わったら', concl, allSame ? '' + '<section class="sec" style="padding-top:4px"><p class="note">稍重・重・不良のどれになっても、上位5番手までの順位は変わりません。</p></section>' : `<section class="sec" style="padding-top:4px">
+    <div class="seg sm scroll" role="group" aria-label="馬場" id="goSeg" style="margin-top:4px">${['稍重', '重', '不良'].map((k) => `<button type="button" data-gv="${k}" aria-pressed="${g === k}">${k}</button>`).join('')}</div>
+    <div class="box" style="margin-top:8px">${rows || `<p class="note" style="padding:10px">${g}では、上位5番手までの順位は変わりません。</p>`}</div>
+    <p class="note" style="margin-top:6px">馬場の状態ごとに計算し直したときの順位です（馬場の4区分を入れたT-AIのモデル）。上位5番手までで順位が入れ替わる馬だけを出しています。勝つ確率の数字は、出馬表の1か所だけです。</p>
+  </section>`);
 }
 // 展開（川崎さんの展開データ。races.pace / predictions.pace）。勝つ確率の計算には入っていない、過去の成績からの見立て
 const PACE_STEPS = ['遅い', 'やや遅い', '普通', 'やや速い', '速い'], STYLE_ORD = ['逃げ', '先行', '差し', '追込', '不明'];
+function paceMap(r) {
+  const rp = r.pace || {}, hs = r.horses.filter((h) => h.pace && h.pace.style && h.pace.style !== '不明');
+  if (!hs.length) return '';
+  const Z = [['追込', '後方'], ['差し', '中団'], ['先行', '好位'], ['逃げ', '先頭']];
+  const cls = (st) => ((rp.adv || []).includes(st) ? 'adv' : (rp.dis || []).includes(st) ? 'dis' : '');
+  const col = (st) => hs.filter((h) => h.pace.style === st).sort((a, b) => (a.pace.front || 99) - (b.pace.front || 99) || a.no - b.no);
+  return `<div class="pmap" aria-label="隊列の見立て（右が先頭）">
+    <div class="pmz">${Z.map(([st, lab]) => `<div class="pmc ${cls(st)}"><small>${lab}<br>${st}</small><div class="pmh">${col(st).map((h) => `<span class="pmd ${h.pace.adv === '有利' ? 'adv' : h.pace.adv === '不利' ? 'dis' : ''}" title="${esc(h.name)}">${hn(h)}</span>`).join('') || '<em>－</em>'}</div></div>`).join('')}</div>
+    <div class="pmf"><span>← 後ろ</span><b>進む向き →</b><span>前 →</span></div>
+    <p class="dnote" style="margin-top:4px">赤い帯＝この展開で有利な位置、灰色＝不利な位置。馬番の赤枠は「有利」、灰色は「不利」と見立てた馬です。</p></div>`;
+}
 const advCol = (a) => (a === '有利' ? 'var(--red)' : a === '不利' ? 'var(--ink3)' : 'var(--ink)');
 const sbTxt = (p) => { const s = (p && p.sb) || {}, m = /\((\d+)\/(\d+)\)/.exec(String(s.led_share5 || '')); return s.mean_early5 != null ? `序盤 前から${pct(s.mean_early5, 0)}%${m ? `・先頭${m[1]}/${m[2]}` : ''}` : ''; };
 function renderPace(r) {
@@ -1371,8 +1482,9 @@ function renderPace(r) {
     const p = h.pace;
     return `<div class="cr${p.adv === '有利' ? ' ev' : ''}"><span class="n">${hn(h)}<span><b>${esc(h.name)}</b><small>${sbTxt(p) || '記録が少ない'}</small></span></span><span class="v">${esc(p.style)}</span><span class="v">${p.front ? `${p.front}番手` : '－'}</span><span class="e" style="color:${advCol(p.adv)};font-family:inherit;font-size:13.5px;font-weight:900">${esc(p.adv)}</span></div>`;
   }).join('');
-  sec.innerHTML = `<section class="sec">
-    <div class="label"><b>展開</b><span>ペースと脚質の見立て</span></div>
+  const paceConcl = `ペースは${esc(rp.call || '－')}。${(rp.adv || []).length ? `${rp.adv.map(esc).join('・')}が有利` : '有利な脚質は特になし'}${(rp.dis || []).length ? `、${rp.dis.map(esc).join('・')}は不利` : ''}。`;
+  setFold(sec, 'pace', '展開', paceConcl, `<section class="sec" style="padding-top:4px">
+    ${paceMap(r)}
     <div class="box pacebox">
       <div class="pcall"><small>ペース</small><b>${esc(rp.call || '－')}</b></div>
       <div class="pscale">${PACE_STEPS.map((s) => `<span${s === rp.call ? ' class="on"' : ''}>${s}</span>`).join('')}</div>
@@ -1381,7 +1493,7 @@ function renderPace(r) {
     </div>
     <div class="box cmp pcmp" style="margin-top:8px"><div class="cap4"><span>馬（脚質の順）</span><span>脚質</span><span>隊列</span><span>展開</span></div>${rows}</div>
     <p class="note" style="margin-top:6px">脚質は近5走の序盤の位置から分けています（記録が3走未満の馬は「不明」）。有利・不利は、2016年からの同じ条件（芝・ダート、距離帯、先行する馬の多さ）での脚質別の成績から見たもので、勝つ確率の計算には入っていません。</p>
-  </section>`;
+  </section>`);
 }
 // ラップ傾向（川崎さんの tab_data：コースのペースの骨格・脚質と位置取りの成績、出走馬の前走のラップ型）。記述的な集計
 const COURSE = new Map();  // '場|芝ダ|距離帯' → data | 'loading' | null
@@ -1432,8 +1544,9 @@ function renderLap(r) {
   }
   const typeCol = (t) => (t === '前傾' ? 'var(--red)' : t === '後傾' ? '#1f4fa3' : 'var(--ink)');
   const horses = hs.length ? `<p class="ixsub">出走馬の前走のラップ型</p><div class="box cmp pcmp lapt"><div class="cap4"><span>馬（馬番順）</span><span>型</span><span>4角</span><span>着順</span></div>${hs.slice().sort((a, b) => a.no - b.no).map((h) => { const l = h.lap; return `<div class="cr"><span class="n">${hn(h)}<span><b>${esc(h.name)}</b><small>${l.prev_date ? String(l.prev_date).slice(5).replace('-', '/') : ''} ${esc(l.prev_venue || '')}${l.prev_surface ? (String(l.prev_surface).startsWith('ダ') ? 'ダ' : '芝') : ''}${l.prev_distance || ''}・ペース${esc(l.prev_pace_call || '－')}</small></span></span><span class="v" style="color:${typeCol(l.prev_lap_type)}">${esc(l.prev_lap_type || '－')}</span><span class="v">${esc(l.prev_pos_4c || '－')}</span><span class="e" style="font-size:14px">${l.prev_finish_pos != null ? l.prev_finish_pos + '着' : '－'}</span></div>`; }).join('')}</div>` : '';
-  sec.innerHTML = `<section class="sec"><div class="label"><b>ラップ傾向</b><span>コースの骨格と前走の型</span></div>${needBlock(r)}${course}${horses}
-    <p class="note" style="margin-top:6px">ラップは200mごとの区間タイム。前傾＝前半が速い流れ、後傾＝後半が速い流れ。4角の位置は「残り400m地点の走行位置」で見た近似です。過去の傾向を示すもので、勝つ確率の計算には入っていません。前走のラップが無い馬（初出走・集計前のレース）は入っていません。</p></section>`;
+  const lj = r.judge, lapConcl = lj && lj.commentary ? esc(String(lj.commentary).split('。')[0] + '。') : c && c !== 'loading' ? `${esc(r.venue)}${sf}${band}mは、${(() => { const t = [['前傾', c.share_front_tilt], ['平均', c.share_even], ['後傾', c.share_back_tilt]].sort((a, b) => (b[1] || 0) - (a[1] || 0))[0]; return t[0]; })()}ラップになりやすいコース。` : '出走馬の前走のラップ型。';
+  setFold(sec, 'lap', 'ラップ傾向', lapConcl, `<section class="sec" style="padding-top:4px">${needBlock(r)}${course}${horses}
+    <p class="note" style="margin-top:6px">ラップは200mごとの区間タイム。前傾＝前半が速い流れ、後傾＝後半が速い流れ。4角の位置は「残り400m地点の走行位置」で見た近似です。過去の傾向を示すもので、勝つ確率の計算には入っていません。前走のラップが無い馬（初出走・集計前のレース）は入っていません。</p></section>`);
 }
 // 指数カードの「展開」の行（その馬の脚質・有利不利・騎手と調教師のその脚質での成績）
 function paceBlock(h, trainer) {
@@ -1621,7 +1734,7 @@ function vsBar() {
 }
 function vsToggle(no, el) {
   const r = byId.get($('#view').dataset.race); if (!r) return;
-  if (VS.race !== r.id) { VS.race = r.id; VS.set.clear(); document.querySelectorAll('.row .ck.on').forEach((x) => x.classList.remove('on')); }
+  if (VS.race !== r.id) { VS.race = r.id; VS.set.clear(); document.querySelectorAll('.ck.on').forEach((x) => x.classList.remove('on')); }
   if (VS.set.has(no)) VS.set.delete(no);
   else { if (VS.set.size >= 4) { alert('比べられるのは4頭までです。'); return; } VS.set.add(no); }
   el.classList.toggle('on', VS.set.has(no)); el.setAttribute('aria-checked', String(VS.set.has(no)));
@@ -1859,13 +1972,9 @@ function openCard(r, no) {
   document.body.classList.add('lock');
   requestAnimationFrame(() => { $('#sheetBg').classList.add('open'); $('#sheet').classList.add('open'); $('#sheetX').focus(); });
 }
-function placeRows(r, animate = true) {
-  const my = MINE.mode === 'mine' ? myRanks(r) : null;
-  const order = r.horses.slice().sort(raceState.sort === 'prob' ? (my ? (a, b) => my.get(a.no) - my.get(b.no) : (a, b) => b.prob - a.prob) : (a, b) => a.no - b.no);
-  const rows = $('#rows'); if (!rows) return;
-  if (!animate) rows.querySelectorAll('.row').forEach((e) => { e.style.transition = 'none'; });
-  let y = 0; order.forEach((h) => { rows.querySelector(`[data-no="${h.no}"]`).style.transform = `translateY(${y}px)`; y += rowH(h); });
-  if (!animate) requestAnimationFrame(() => rows.querySelectorAll('.row').forEach((e) => { e.style.transition = ''; }));
+function placeRows(r) {
+  const t = $('#tbl'); if (!t) return;
+  const sx = $('#stw') && $('#stw').scrollLeft; t.innerHTML = shutuba(r); if (sx && $('#stw')) $('#stw').scrollLeft = sx;
   document.querySelectorAll('#sortSeg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.sort === raceState.sort)));
 }
 function hitOf(r, kind, nums) {
@@ -1888,6 +1997,7 @@ function renderCombos(r) {
   needOdds(r, raceState.kind);
   const list = CALC.combos(r, raceState.kind), mx = list[0].prob, shown = list.slice(0, raceState.limit);
   const done = r.status === 'done' && r.horses.some((h) => h.result === 1), wo = !!oddsTbl(r, raceState.kind);
+  const cc = $('#comboC'); if (cc && list[0]) cc.textContent = `${KIND[raceState.kind]}の1番手は ${list[0].nums.join(ORD[raceState.kind] ? '→' : '-')}（${pct(list[0].prob)}%）。`;
   $('#combos').innerHTML = `<div class="cap"><span>${KIND[raceState.kind]}　全${list.length}通り</span><span>${wo ? 'オッズ（T-AI）・確率' : '確率'}</span></div>` +
     shown.map((c, i) => { const h = done && hitOf(r, raceState.kind, c.nums); return `<div class="crow${wo ? ' wo' : ''}"${h ? ' style="background:#fff"' : ''}><span class="rk">${i + 1}</span><span class="tk">${c.nums.map((n) => chip(r, raceState.kind, n)).join(`<i>${ORD[raceState.kind] ? '→' : '-'}</i>`)}${h ? '<span class="stamp" style="margin-left:6px;font-size:10.5px">的中</span>' : ''}</span>${wo ? oddsCell(r, raceState.kind, c.nums, c.prob) : ''}<span class="pr"><span class="pct">${pct(c.prob, c.prob < .001 ? 2 : 1)}%</span><span class="bar red"><i style="width:${c.prob / mx * 100}%"></i></span></span></div>`; }).join('') +
     (list.length > raceState.limit ? `<button type="button" class="more" id="more">もっと見る（あと${list.length - raceState.limit}通り）</button>` : '') +
@@ -1895,22 +2005,9 @@ function renderCombos(r) {
 }
 function mountRace(r) {
   if (r.status === 'waiting' || r.locked) return;
-  placeRows(r, false); renderCombos(r); renderCompare(r); renderPace(r); renderLap(r); renderGoing(r); tocSync(); vsBar();
-  const tbl = $('#tbl'), calc = $('#calc'), first = !seen.has(r.id) && !RM && r.status === 'ready';
-  const setBars = () => tbl.querySelectorAll('.bar i[data-w]').forEach((i) => { i.style.width = i.dataset.w + '%'; });
-  if (!first) { tbl.classList.add('instant'); setBars(); tbl.classList.add('drawn'); calc.classList.add('ok'); if (r.status === 'ready') $('#calcT').textContent = '計算済み'; return; }
-  calc.classList.add('run'); $('#calcT').textContent = '計算中…';
-  const ems = [...tbl.querySelectorAll('em[data-v]')];
-  ems.forEach((e) => { e.textContent = '--.-'; });
-  const t0 = performance.now();
-  const tick = () => {
-    const t = performance.now() - t0; let live = false;
-    ems.forEach((e, i) => { const stop = 380 + (r.horses.length - +e.closest('.row').querySelector('.rk').textContent.replace('位', '')) * 0 + i * 38; if (t < stop) { live = true; e.textContent = (Math.random() * 40).toFixed(1).padStart(4, '0'); } else e.textContent = e.dataset.v; });
-    if (live) timers.push(setTimeout(tick, 45));
-  };
-  tick();
-  later(setBars, 300);
-  later(() => { tbl.classList.add('drawn'); calc.classList.remove('run'); calc.classList.add('ok'); $('#calcT').textContent = '計算済み'; seen.add(r.id); store.set('seen', [...seen]); }, 380 + ems.length * 38 + 150);
+  renderCombos(r); renderPace(r); renderLap(r); renderGoing(r); tocSync(); vsBar();
+  const calc = $('#calc'); if (calc) { calc.classList.add('ok'); if (r.status === 'ready') $('#calcT').textContent = '計算済み'; }
+  seen.add(r.id);
 }
 
 /* ─ 買い目をつくる ─ */
@@ -2635,7 +2732,7 @@ document.addEventListener('click', (e) => {
   const chk = e.target.closest('[data-chk]');
   if (chk) { vsToggle(+chk.dataset.chk, chk); return; }
   if (e.target.closest('#vsGo')) { const r = byId.get($('#view').dataset.race); if (r) openVs(r); return; }
-  if (e.target.closest('#vsClear')) { VS.set.clear(); document.querySelectorAll('.row .ck.on').forEach((x) => { x.classList.remove('on'); x.setAttribute('aria-checked', 'false'); }); vsBar(); return; }
+  if (e.target.closest('#vsClear')) { VS.set.clear(); document.querySelectorAll('.ck.on').forEach((x) => { x.classList.remove('on'); x.setAttribute('aria-checked', 'false'); }); vsBar(); return; }
   const cardRow = e.target.closest('[data-card]');
   if (cardRow) { const r = byId.get($('#view').dataset.race); if (r) openCard(r, +cardRow.dataset.card); return; }
   const t = e.target.closest('button, a'); if (!t) return;
@@ -2649,6 +2746,7 @@ document.addEventListener('click', (e) => {
   if (ds.pmode) { MINE.mode = ds.pmode; mineSave(); if (ds.pmode === 'mine') raceState.sort = 'prob'; rerender(); return; }
   if (ds.mineset) { openMine(); return; }
   if (ds.mp) { mineAct(ds.mp); return; }
+  if (ds.jump) { const f = $(ds.jump + ' details.fold'); if (f && !f.open) { f.open = true; raceState.open.add(f.dataset.fold); } }
   if (ds.jump) { const el = $(ds.jump), toc = $('#rtoc'), m = $('#mast'); if (el) { const off = (m ? m.offsetHeight : 0) + (toc ? toc.offsetHeight : 0) + 8; scrollTo({ top: el.getBoundingClientRect().top + scrollY - off, behavior: 'smooth' }); } return; }
   if (ds.dkey) { distKey = ds.dkey; const sh = $('#sheet'), r = sh && byId.get(sh.dataset.race); if (r) { const ix = $('.ixs'), sc = ix && ix.scrollTop; $('#sheetB').innerHTML = cardSafe(r, +sh.dataset.no); if ($('.ixs') && sc) $('.ixs').scrollTop = sc; } return; }
   if (ds.ctab) { cardTab = ds.ctab; const sh = $('#sheet'), r = sh && byId.get(sh.dataset.race); if (r) { $('#sheetB').innerHTML = cardSafe(r, +sh.dataset.no); const ix = $('.ixs'); if (ix) ix.scrollTop = 0; } return; }
@@ -2720,6 +2818,11 @@ document.addEventListener('input', (e) => {
   // 6桁そろったら、そのまま開く
   if (e.target.id === 'code' && e.target.value.replace(/\D/g, '').length === 6) { const f = $('#codeForm'); if (f && !$('#codeBtn').disabled) f.requestSubmit(); }
 });
+document.addEventListener('toggle', (e) => {
+  const f = e.target; if (!f.classList || !f.classList.contains('fold')) return;
+  if (f.open) raceState.open.add(f.dataset.fold); else raceState.open.delete(f.dataset.fold);
+  tocSync();
+}, true);
 document.addEventListener('submit', (e) => {
   if (e.target.id === 'searchForm') { e.preventDefault(); const q = ($('#sq').value || '').trim(); if (q) go('#/search/' + encodeURIComponent(q)); return; }
   if (e.target.id === 'codeForm') {
