@@ -655,6 +655,41 @@ body.lock { overflow: hidden; }
 .ltc small { display: block; text-align: center; font-size: 12px; font-weight: 900; line-height: 1.3; }
 .ltc small span { font-size: 9.5px; font-weight: 700; color: var(--ink3); }
 .ltc.on small { color: var(--red); }
+.bstrip { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 10px; padding: 8px 10px; border: 2px solid var(--ink); background: var(--card); text-align: left; font-family: inherit; color: inherit; }
+.bstrip b { font-size: 13px; font-weight: 900; white-space: nowrap; }
+.bstrip span { flex: 1 1 auto; min-width: 0; font-size: 11.5px; color: var(--ink2); }
+.bstrip i { font-style: normal; font-size: 12px; }
+.bstrip.stop { border-color: var(--red); background: #fbe3e6; }
+.bstrip.stop b, .bstrip.stop span { color: var(--red); }
+.bstop { margin-top: 10px; padding: 14px; border: 3px solid var(--red); background: #fbe3e6; text-align: center; }
+.bstop b { display: block; font-size: 22px; font-weight: 900; color: var(--red); }
+.bstop p { margin: 6px 0 0; font-size: 13px; }
+.bkv { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 10px; }
+.bkv > div { border: 1.5px solid var(--ink); background: var(--card); padding: 8px; }
+.bkv small { display: block; font-size: 11px; font-weight: 700; color: var(--ink2); }
+.bkv b { font-family: var(--n); font-size: 19px; font-weight: 900; }
+.bkv b.plus { color: var(--red); }
+.bkv b.minus { color: #1f4fa3; }
+.bbar { margin-top: 8px; height: 12px; border: 1.5px solid var(--ink); background: var(--card); }
+.bbar i { display: block; height: 100%; background: var(--ink); }
+.bbar i.near { background: #d4772e; }
+.bbar i.over { background: var(--red); }
+.bset { display: grid; gap: 8px; margin-top: 10px; }
+.bset label { display: grid; grid-template-columns: minmax(0, 1fr) 120px auto; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; }
+.bset input { height: 42px; padding: 0 8px; border: 2px solid var(--ink); background: var(--card); font-size: 16px; font-family: var(--n); text-align: right; border-radius: 0; -webkit-appearance: none; }
+.bday { margin-top: 10px; border-top: 2px solid var(--ink); }
+.bdh { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; }
+.bdh b { font-size: 14px; }
+.bdh span { font-size: 12px; color: var(--ink2); }
+.brow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(27, 24, 20, .2); }
+.bri b { display: block; font-size: 13px; overflow-wrap: anywhere; }
+.bri small { display: block; font-size: 12px; color: var(--ink2); }
+.brs { display: flex; align-items: center; gap: 6px; }
+.brs em { font-style: normal; font-size: 12px; font-weight: 900; white-space: nowrap; }
+.bhit { color: var(--red); }
+.bmiss { color: var(--ink3); }
+.bpend { color: var(--ink2); }
+.bdel { width: 30px; height: 30px; border: 1.5px solid var(--ink3); background: var(--card); color: var(--ink3); font-weight: 900; }
 .memo .mrow { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(27, 24, 20, .25); }
 .memo .mtag { align-self: start; text-align: center; font-size: 11px; font-weight: 900; padding: 3px 0; border: 1.5px solid var(--ink); }
 .memo .mtag.now { background: var(--ink); color: var(--paper); }
@@ -2130,7 +2165,7 @@ const ipatUrl = () => (/iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAge
 function ipatBox(r) {
   return `<section class="sec ipat"><div class="label"><b>即PATで買う</b><span>JRA公式サイトへ</span></div>
     <p class="ipr">即PATで選ぶレース<b>${fd(r.date)} ${esc(r.venue)}${r.no}R ${esc(r.name)}</b><small>${esc(r.start)}発走</small></p>
-    <div class="btns"><button class="btn" type="button" data-ipat="1">即PATで買う（JRA公式サイトへ）<span>▶</span></button><button class="btn sub" type="button" data-ipatcopy="1">買い目をコピー（即PATの入力順）<span>▶</span></button></div>
+    <div class="btns">${GUEST ? '' : '<button class="btn sub" type="button" data-betrec="1">この買い目を記録する（ベット管理）<span>▶</span></button>'}<button class="btn" type="button" data-ipat="1">即PATで買う（JRA公式サイトへ）<span>▶</span></button><button class="btn sub" type="button" data-ipatcopy="1">買い目をコピー（即PATの入力順）<span>▶</span></button></div>
     <details class="smore"><summary>買い方の手順と注意</summary><ol class="hsteps">
       <li>「即PATで買う」を押すと、JRA公式の即PATが別のタブで開きます（この画面はそのまま残ります）。</li>
       <li>即PATにログインします。当日の初回だけログインすれば、同じブラウザで開き直してもログインが続くことが多いです。</li>
@@ -2153,12 +2188,123 @@ function ipatText() {
   if (per >= 100) L.push(`合計 ${yen(per * t.length)}円`);
   return L.join('\n');
 }
+/* ─ ベット管理（川崎さんの依頼：予算と収支。買った買い目を記録し、レース結果と自動で突き合わせる。負けが限度に届いたら「今日はここまで」） ─
+   記録はデータベースの bets（本人だけが読み書き）。払い戻しは最終オッズで計算した見込み（実際の払戻金と少し違うことがある） */
+let BETS = null, BSET = {};
+const jstDate = (iso) => new Date(Date.parse(iso) + 9 * 3600e3).toISOString().slice(0, 10);
+const betRe = () => { if (/^#\/(bets|build)/.test(location.hash)) rerender(); };
+function loadBets(force) {
+  if (GUEST || !session || BETS === 'loading' || (BETS && BETS !== 'err' && !force)) return;
+  BETS = 'loading';
+  Promise.all([sb.from('bets').select('*').order('created_at', { ascending: false }).limit(1000), sb.from('bet_settings').select('*').maybeSingle()])
+    .then(([b, st]) => { BETS = b.error ? 'err' : b.data || []; BSET = (st && st.data) || {}; settleBets(); betRe(); })
+    .catch(() => { BETS = 'err'; betRe(); });
+}
+function betHit(r, kind, nums) {
+  if (kind === 'tan') { const w = r.horses.find((h) => h.result === 1); return !!w && nums[0] === w.no; }
+  return hitOf(r, kind, nums);
+}
+// 終わったレースの記録を、結果と最終オッズで締める（締めた結果はデータベースに残すので、古いレースでも消えない）
+function settleBets() {
+  if (!Array.isArray(BETS)) return;
+  const open = BETS.filter((b) => !b.settled);
+  const byRace = new Map(); open.forEach((b) => { const r = byId.get(b.race_id); if (r && r.status === 'done' && r.horses.some((h) => h.result === 1)) { if (!byRace.has(r.id)) byRace.set(r.id, []); byRace.get(r.id).push(b); } });
+  byRace.forEach((bs, rid) => {
+    const r = byId.get(rid), cols = [...new Set(bs.map((b) => OCOL[b.kind]))];
+    sb.from('odds').select(cols.join(',') + ',final').eq('race_id', rid).maybeSingle().then(({ data }) => {
+      if (!data || !data.final) return;  // 最終オッズが出るまで待つ
+      bs.forEach((b) => {
+        const nums = b.nums.split('-').map(Number), hit = betHit(r, b.kind, nums);
+        let pay = 0;
+        if (hit) {
+          const t = data[OCOL[b.kind]], v = t && (b.kind === 'tan' ? t[String(nums[0])] : t[CALC.keyOf(b.kind, nums)]);
+          const o = v == null ? null : Array.isArray(v) ? v[0] : v;
+          if (o == null || o >= 9999) return;  // オッズが無いときは締めない
+          pay = Math.round(b.amount * o);
+        }
+        sb.from('bets').update({ settled: true, hit, payout: pay }).eq('id', b.id).then(({ error }) => { if (!error) { Object.assign(b, { settled: true, hit, payout: pay }); betRe(); } });
+      });
+    });
+  });
+}
+function betSum(list) {
+  const spent = list.reduce((a, b) => a + b.amount, 0), done = list.filter((b) => b.settled);
+  const ret = done.reduce((a, b) => a + (b.payout || 0), 0), spentDone = done.reduce((a, b) => a + b.amount, 0);
+  return { spent, ret, spentDone, pend: spent - spentDone, pl: ret - spentDone, roi: spentDone ? ret / spentDone : null };
+}
+function betState() {
+  if (!Array.isArray(BETS)) return null;
+  const t = jstToday(), m = t.slice(0, 7);
+  const mon = betSum(BETS.filter((b) => jstDate(b.created_at).slice(0, 7) === m)), day = betSum(BETS.filter((b) => jstDate(b.created_at) === t));
+  const dayLoss = day.spentDone - day.ret;  // 負け＝結果が出た分の（使った額−払い戻し）。結果待ちは数えない
+  const stopDay = BSET.day_stop > 0 && dayLoss >= BSET.day_stop, stopMon = BSET.month_budget > 0 && mon.spent >= BSET.month_budget;
+  return { mon, day, dayLoss, stopDay, stopMon, stop: stopDay || stopMon };
+}
+const stopMsg = (st) => (st.stopMon ? `今月の予算（${yen(BSET.month_budget)}円）を使い切りました。` : `今日の負けが限度（${yen(BSET.day_stop)}円）に届きました。`);
+function betStrip() {
+  if (GUEST) return '';
+  loadBets();
+  const st = betState();
+  return `<button type="button" class="bstrip${st && st.stop ? ' stop' : ''}" data-go="#/bets">${st && st.stop ? `<b>今日はここまで</b><span>${stopMsg(st)}</span>` : `<b>ベット管理</b><span>${st ? `今月 ${yen(st.mon.spent)}円使用・収支 ${st.mon.pl >= 0 ? '+' : ''}${yen(st.mon.pl)}円${BSET.month_budget ? `（予算 ${yen(BSET.month_budget)}円）` : ''}` : '予算と収支'}</span>`}<i>▶</i></button>`;
+}
+function vBets() {
+  if (GUEST) return `<section class="sec"><div class="label"><b>ベット管理</b><span>予算と収支</span></div><p class="note" style="margin-top:12px">ベット管理は、ログインした会員の方が使えます（記録は本人だけが見られます）。</p></section>`;
+  loadBets();
+  if (BETS === null || BETS === 'loading') return '<section class="sec"><p class="note" style="padding:40px 0;text-align:center">読み込んでいます…</p></section>';
+  if (BETS === 'err') return '<section class="sec"><p class="note" style="padding:24px 0">読み込めませんでした。<button class="btn sub" type="button" data-betreload="1" style="margin-top:10px">もう一度読み込む<span>▶</span></button></p></section>';
+  const st = betState(), m = st.mon, d = st.day, bud = BSET.month_budget || 0;
+  const sign = (v) => `${v >= 0 ? '+' : '−'}${yen(Math.abs(v))}円`;
+  const bar = bud ? Math.min(100, Math.round(m.spent / bud * 100)) : 0;
+  const days = [...new Set(BETS.map((b) => jstDate(b.created_at)))].slice(0, 14);
+  const rlab = (id) => { const r = byId.get(id); return r ? `${r.venue}${r.no}R ${r.name}` : `${id.slice(4, 6)}/${id.slice(6, 8)}`; };
+  const stt = (b) => (!b.settled ? '<em class="bpend">結果待ち</em>' : b.hit ? `<em class="bhit">的中 ${yen(b.payout)}円</em>` : '<em class="bmiss">外れ</em>');
+  return `${st.stop ? `<section class="sec"><div class="bstop"><b>今日はここまで</b><p>${stopMsg(st)}<br>熱くなる前に、いったん画面を閉じましょう。</p></div></section>` : ''}
+  <section class="sec"><div class="label"><b>今月</b><span>${jstToday().slice(0, 7).replace('-', '年')}月</span></div>
+    <div class="bkv"><div><small>使った額</small><b>${yen(m.spent)}円</b></div><div><small>払い戻し（見込み）</small><b>${yen(m.ret)}円</b></div><div><small>収支</small><b class="${m.pl >= 0 ? 'plus' : 'minus'}">${m.spentDone ? sign(m.pl) : '－'}</b></div><div><small>回収率</small><b>${m.roi == null ? '－' : Math.round(m.roi * 100) + '%'}</b></div></div>
+    ${bud ? `<div class="bbar"><i style="width:${bar}%" class="${bar >= 100 ? 'over' : bar >= 80 ? 'near' : ''}"></i></div><p class="note" style="margin-top:4px">予算 ${yen(bud)}円のうち ${yen(m.spent)}円（残り ${yen(Math.max(0, bud - m.spent))}円）${m.pend ? `・結果待ち ${yen(m.pend)}円` : ''}</p>` : `<p class="note" style="margin-top:6px">月の予算を決めると、使った割合が出ます。${m.pend ? `結果待ち ${yen(m.pend)}円。` : ''}</p>`}
+  </section>
+  <section class="sec"><div class="label"><b>今日</b><span>${fd(jstToday())}</span></div>
+    <div class="bkv"><div><small>使った額</small><b>${yen(d.spent)}円</b></div><div><small>払い戻し（見込み）</small><b>${yen(d.ret)}円</b></div><div><small>収支</small><b class="${d.pl >= 0 ? 'plus' : 'minus'}">${d.spentDone ? sign(d.pl) : '－'}</b></div><div><small>負けの限度</small><b>${BSET.day_stop ? `${yen(Math.max(0, st.dayLoss))} / ${yen(BSET.day_stop)}円` : '未設定'}</b></div></div>
+  </section>
+  <section class="sec"><div class="label"><b>予算と歯止め</b><span>自分で決める</span></div>
+    <div class="bset"><label>月の予算<input id="bMon" type="number" inputmode="numeric" min="0" step="1000" value="${BSET.month_budget || ''}" placeholder="例 30000"><span>円</span></label>
+      <label>1日に負けてよい額<input id="bDay" type="number" inputmode="numeric" min="0" step="1000" value="${BSET.day_stop || ''}" placeholder="例 5000"><span>円</span></label></div>
+    <div class="btns" style="margin-top:8px"><button class="btn sub" type="button" data-betsave="1">保存する<span>▶</span></button></div>
+    <p class="note" style="margin-top:6px">月の予算を使い切るか、その日の負け（結果が出たレースの、使った額−払い戻し）が限度に届くと「今日はここまで」と出します。</p>
+  </section>
+  <section class="sec"><div class="label"><b>記録</b><span>新しい順（2週間分）</span></div>
+    ${BETS.length ? days.map((dd) => { const xs = BETS.filter((b) => jstDate(b.created_at) === dd), s2 = betSum(xs); return `<div class="bday"><div class="bdh"><b>${fdShort(dd)}</b><span>${yen(s2.spent)}円・収支 ${sign(s2.pl)}</span></div>${xs.map((b) => `<div class="brow"><span class="bri"><b>${esc(rlab(b.race_id))}</b><small>${KIND[b.kind] || b.kind} ${esc(b.nums.replace(/-/g, ORD[b.kind] ? '→' : '-'))}・${yen(b.amount)}円</small></span><span class="brs">${stt(b)}${b.settled ? '' : `<button type="button" class="bdel" data-betdel="${b.id}" aria-label="この記録を消す">×</button>`}</span></div>`).join('')}</div>`; }).join('')
+      : '<p class="note" style="margin-top:10px">まだ記録がありません。「買い目」の画面で買い目を作り、「この買い目を記録する」を押すと、ここに入ります。</p>'}
+    <p class="dnote" style="margin-top:8px">払い戻しは最終オッズで計算した見込みで、実際の払戻金と少し違うことがあります（ワイドは低いほうのオッズで計算）。T-AIから馬券は買えません。記録は自分用のメモです。</p>
+  </section>`;
+}
+async function recordBets(btn) {
+  const t = tickets(); if (!t.length) { alert('先に馬を選んで、買い目を作ってください。'); return; }
+  const per = Math.floor((BS.budget || 0) / t.length / 100) * 100;
+  if (per < 100) { alert('予算が足りません（1点100円から）。'); return; }
+  const st = betState();
+  if (st && st.stop && !confirm(`${stopMsg(st)}\nそれでも記録しますか？`)) return;
+  btn.disabled = true;
+  const { error } = await sb.from('bets').insert(t.map((n) => ({ race_id: BS.raceId, kind: BS.kind, nums: n.join('-'), amount: per })));
+  btn.disabled = false;
+  if (error) { alert('記録できませんでした。電波の良いところでもう一度お試しください。'); return; }
+  const o = btn.innerHTML; btn.innerHTML = `記録しました（${t.length}点・計${yen(per * t.length)}円）`; setTimeout(() => { btn.innerHTML = o; }, 2200);
+  BETS = null; loadBets(true);
+}
+async function saveBetSet() {
+  const v = (id) => { const x = Math.floor(+($(id).value || 0)); return x > 0 ? x : null; };
+  const row = { user_id: session.user.id, month_budget: v('#bMon'), day_stop: v('#bDay'), updated_at: new Date().toISOString() };
+  const { error } = await sb.from('bet_settings').upsert(row);
+  if (error) { alert('保存できませんでした。'); return; }
+  BSET = row; rerender();
+}
 function vBuild() {
   const r = byId.get(BS.raceId), ready = buildable();
   if (!kindsFor(r).includes(BS.kind)) { BS.kind = 'uma'; BS.axis = null; BS.sel.clear(); }
   const nagashi = !BS.auto && BS.method === 'nagashi' && BS.kind !== 'tan';
   return `<section class="sec">
     <div class="label"><b>買い目をつくる</b><span>選んだ瞬間に計算</span></div>
+    ${betStrip()}
     <div class="pick" style="margin-top:12px"><span class="lbl">レース</span>
       <button type="button" class="pickbtn" id="raceOpen" aria-haspopup="dialog">${rb(r)}<span class="pt"><small>${fdShort(r.date)} ${r.venue} ${r.start}発走</small><b>${esc(r.name)}</b></span><span class="chg">変える</span></button>
     </div>
@@ -2718,6 +2864,7 @@ function vMy() {
     </div>
   </section>
   ${freeBox}
+  ${GUEST ? '' : `<section class="sec"><div class="label"><b>ベット管理</b><span>予算と収支</span></div><p class="note" style="margin-top:10px">買った買い目を記録すると、結果と自動で突き合わせて収支を出します。月の予算と1日の負けの限度を決めておくと、届いたときに「今日はここまで」と出ます。</p><div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-go="#/bets">ベット管理を開く<span>▶</span></button></div></section>`}
   ${homeBox()}
   <section class="sec"><div class="label"><b>あなたの予想</b><span>重視する順番</span></div><p class="note" style="margin-top:10px">確率・指数・騎手・展開などを、あなたが重視する順に並べると、出馬表に「あなたの順位・あなたの◎」が出ます（レースページの一番上の「あなたの見解」で切り替え）。今の重視順：${mineLabel()}</p><div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-mineset="1">重視順を決める<span>▶</span></button></div></section>
   ${m.free ? '' : `<section class="sec"><div class="label"><b>AIとつなぐ</b><span>自分の生成AIで使う</span></div><p class="note" style="margin-top:10px">ChatGPTやClaudeなど、ふだん使っている生成AIにT-AIのデータを読ませて、自分の言葉で質問できます。</p><div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-go="#/ai">AIとつなぐ<span>▶</span></button></div></section>`}
@@ -2780,6 +2927,7 @@ function route() {
   else if (name === 'bias') { tab = 'bias'; const [, , dd, vv] = location.hash.split('/'); html = vBias(dd, decodeURIComponent(vv || '')); mopts = { sub: '当日の傾向' }; }
   else if (name === 'ai') { tab = 'my'; html = vAi(); mopts = { back: 'my', backLabel: '会員', sub: 'AIとつなぐ' }; }
   else if (name === 'my') html = vMy();
+  else if (name === 'bets') { tab = 'build'; html = vBets(); mopts = { back: 'build', backLabel: '買い目', sub: 'ベット管理' }; }
   else if (name === 'search') { tab = 'races'; html = vSearch(decodeURIComponent(arg || '')); mopts = { back: 'races', backLabel: '出馬表', sub: '検索' }; }
   else { tab = 'races'; html = vRaces(); }
   curTab = tab;
@@ -2815,6 +2963,10 @@ document.addEventListener('click', (e) => {
   const ds = t.dataset;
   if (ds.copy != null) { copyText(ds.copy, t); return; }
   if (ds.ipat) { window.open(ipatUrl(), '_blank', 'noopener'); return; }
+  if (ds.betrec) { recordBets(t); return; }
+  if (ds.betsave) { saveBetSet(); return; }
+  if (ds.betreload) { BETS = null; loadBets(true); rerender(); return; }
+  if (ds.betdel) { if (confirm('この記録を消しますか？')) sb.from('bets').delete().eq('id', +ds.betdel).then(({ error }) => { if (!error) { BETS = BETS.filter((b) => b.id !== +ds.betdel); rerender(); } }); return; }
   if (ds.ipatcopy) { const tx = ipatText(); if (!tx) { alert('先に馬を選んで、買い目を作ってください。'); return; } copyText(tx, t); return; }
   if (ds.install && INSTALL) { INSTALL.prompt(); INSTALL.userChoice.finally(() => { INSTALL = null; rerender(); }); return; }
   if (ds.cnav) { cardStep(+ds.cnav); return; }
