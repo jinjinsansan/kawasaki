@@ -622,6 +622,11 @@ body.lock { overflow: hidden; }
 .pmd { display: inline-block; outline: 2px solid transparent; outline-offset: 1px; }
 .pmd.adv { outline-color: var(--red); }
 .pmd.dis { opacity: .55; }
+.pmn { margin-top: 6px; border: 1.5px dashed var(--ink3); padding: 4px; }
+.pmn small { display: block; font-size: 10.5px; font-weight: 700; color: var(--ink3); }
+.pmn .pmh { justify-content: flex-start; }
+.pbasis { margin: 8px 0 0; font-size: 12.5px; line-height: 1.6; }
+.pbasis b { display: block; font-size: 11px; color: var(--ink2); }
 .pmf { display: flex; justify-content: space-between; margin-top: 4px; font-size: 10.5px; color: var(--ink3); }
 .pmf b { color: var(--ink2); }
 .more2 { margin-top: 10px; }
@@ -1486,7 +1491,9 @@ function renderGoing(r) {
   </section>`);
 }
 // 展開（川崎さんの展開データ。races.pace / predictions.pace）。勝つ確率の計算には入っていない、過去の成績からの見立て
-const PACE_STEPS = ['遅い', 'やや遅い', '普通', 'やや速い', '速い'], STYLE_ORD = ['逃げ', '先行', '差し', '追込', '不明'];
+const PACE_STEPS = ['遅い', 'やや遅い', '普通', 'やや速い', '速い'], PACE3 = ['スローペース', 'ミドルペース', 'ハイペース'], STYLE_ORD = ['逃げ', '先行', '差し', '追込', '新馬', '不明'];
+// 展開データ v2 のペース判定の根拠（技術的な数値の部分は出さない）
+const paceBasis = (rp) => String((rp && rp.basis) || '').replace(/\s*front_speed=.*$/, '').trim();
 function paceMap(r) {
   const rp = r.pace || {}, hs = r.horses.filter((h) => h.pace && h.pace.style && h.pace.style !== '不明');
   if (!hs.length) return '';
@@ -1496,6 +1503,8 @@ function paceMap(r) {
   return `<div class="pmap" aria-label="隊列の見立て（右が先頭）">
     <div class="pmz">${Z.map(([st, lab]) => `<div class="pmc ${cls(st)}"><small>${lab}<br>${st}</small><div class="pmh">${col(st).map((h) => `<span class="pmd ${h.pace.adv === '有利' ? 'adv' : h.pace.adv === '不利' ? 'dis' : ''}" title="${esc(h.name)}">${hn(h)}</span>`).join('') || '<em>－</em>'}</div></div>`).join('')}</div>
     <div class="pmf"><span>← 後ろ</span><b>進む向き →</b><span>前 →</span></div>
+    ${(() => { const nw = r.horses.filter((h) => h.pace && h.pace.style === '新馬').sort((a, b) => a.no - b.no); return nw.length ? `<div class="pmn"><small>新馬（走った記録が無く、位置は分からない）</small><div class="pmh">${nw.map((h) => hn(h)).join('')}</div></div>` : ''; })()}
+    ${paceBasis(rp) ? `<p class="pbasis"><b>見込みの根拠</b>${esc(paceBasis(rp))}</p>` : ''}
     <p class="dnote" style="margin-top:4px">赤い帯＝この展開で有利な位置、灰色＝不利な位置。馬番の赤枠は「有利」、灰色は「不利」と見立てた馬です。</p></div>`;
 }
 const advCol = (a) => (a === '有利' ? 'var(--red)' : a === '不利' ? 'var(--ink3)' : 'var(--ink)');
@@ -1511,13 +1520,13 @@ function renderPace(r) {
     const p = h.pace;
     return `<div class="cr${p.adv === '有利' ? ' ev' : ''}"><span class="n">${hn(h)}<span><b>${esc(h.name)}</b><small>${sbTxt(p) || '記録が少ない'}</small></span></span><span class="v">${esc(p.style)}</span><span class="v">${p.front ? `${p.front}番手` : '－'}</span><span class="e" style="color:${advCol(p.adv)};font-family:inherit;font-size:13.5px;font-weight:900">${esc(p.adv)}</span></div>`;
   }).join('');
-  const paceConcl = `ペースは${esc(rp.call || '－')}。${(rp.adv || []).length ? `${rp.adv.map(esc).join('・')}が有利` : '有利な脚質は特になし'}${(rp.dis || []).length ? `、${rp.dis.map(esc).join('・')}は不利` : ''}。`;
+  const paceConcl = `ペースは${esc(rp.call || '－')}の見込み。${(rp.adv || []).length ? `${rp.adv.map(esc).join('・')}が有利` : '有利な脚質は特になし'}${(rp.dis || []).length ? `、${rp.dis.map(esc).join('・')}は不利` : ''}。`;
   setFold(sec, 'pace', '展開', paceConcl, `<section class="sec" style="padding-top:4px">
     ${paceMap(r)}
     <details class="more2"><summary>くわしく見る（ペースの目盛り・先行勢・馬ごとの脚質）</summary>
     <div class="box pacebox">
       <div class="pcall"><small>ペース</small><b>${esc(rp.call || '－')}</b></div>
-      <div class="pscale">${PACE_STEPS.map((s) => `<span${s === rp.call ? ' class="on"' : ''}>${s}</span>`).join('')}</div>
+      <div class="pscale">${(PACE3.includes(rp.call) ? PACE3 : PACE_STEPS).map((s) => `<span${s === rp.call ? ' class="on"' : ''}>${s.replace('ペース', '')}</span>`).join('')}</div>
       <div class="pkv"><small>先行勢（並びの見立て）</small><div class="pfront">${front || '<span class="note">先行する馬が見当たりません</span>'}</div></div>
       <div class="pkv2"><div><small>有利な脚質</small><b style="color:var(--red)">${(rp.adv || []).map(esc).join('・') || 'なし'}</b></div><div><small>不利な脚質</small><b>${(rp.dis || []).map(esc).join('・') || 'なし'}</b></div></div>
     </div>
