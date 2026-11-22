@@ -690,6 +690,16 @@ body.lock { overflow: hidden; }
 .bmiss { color: var(--ink3); }
 .bpend { color: var(--ink2); }
 .bdel { width: 30px; height: 30px; border: 1.5px solid var(--ink3); background: var(--card); color: var(--ink3); font-weight: 900; }
+.bell { display: block; width: 100%; margin-top: 8px; min-height: 40px; padding: 6px 10px; border: 2px solid var(--ink); background: var(--card); font-family: inherit; font-size: 13px; font-weight: 900; text-align: left; color: inherit; }
+.bell.on { border-color: var(--red); color: var(--red); background: #fbe3e6; }
+.bell.sm { margin: 8px 0 0; font-size: 12.5px; }
+.nstat { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 8px 10px; border: 1.5px solid var(--ink); background: var(--card); }
+.nstat span { font-size: 13px; font-weight: 700; }
+.nstat b { font-size: 15px; color: var(--ink3); }
+.nstat b.on { color: var(--red); }
+.nstat .btn { width: auto; margin-left: auto; min-height: 38px; padding: 0 12px; font-size: 13px; box-shadow: none; }
+.nrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(27, 24, 20, .2); font-size: 13px; font-weight: 700; }
+.nrow small { display: block; font-size: 11px; color: var(--ink2); font-weight: 400; }
 .memo .mrow { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(27, 24, 20, .25); }
 .memo .mtag { align-self: start; text-align: center; font-size: 11px; font-weight: 900; padding: 3px 0; border: 1.5px solid var(--ink); }
 .memo .mtag.now { background: var(--ink); color: var(--paper); }
@@ -1446,7 +1456,7 @@ function vRace(r) {
   const ot = r.odds && r.odds.win ? `オッズは${oddsWhen(r)}。` : '';
   return `${head}
   <div class="vsw"><div class="seg" role="group" aria-label="見解" id="pmodeSeg"><button type="button" data-pmode="std" aria-pressed="${!MY && MINE.mode !== 'mine'}">T-AIの見解</button><button type="button" data-pmode="mine" aria-pressed="${MINE.mode === 'mine'}">あなたの見解</button></div>
-    <p class="vnote">${MINE.mode === 'mine' ? `あなたの重視順で並べた見解です（T-AIの勝率は参考）。${ot}` : `T-AIの見解は全員共通です。${ot}`}</p></div>
+    <p class="vnote">${MINE.mode === 'mine' ? `あなたの重視順で並べた見解です（T-AIの勝率は参考）。${ot}` : `T-AIの見解は全員共通です。${ot}`}</p>${raceBell(r)}</div>
   ${MINE.mode === 'mine' ? `<div class="mybar">${MY ? `<span><b>あなたの重視順</b>${mineLabel()}</span>` : '<span>あなたの順位を計算しています…</span>'}<button type="button" class="btn sub" data-mineset="1">変更</button></div>` : ''}
   <nav class="rtoc" id="rtoc" aria-label="このページの目次">${[['#tbl', '出馬表'], ['#paceSec', '展開'], ['#lapSec', 'ラップ'], ['#goingSec', '馬場'], ['#comboSec', '組み合わせ']].map(([t, l]) => `<button type="button" data-jump="${t}">${l}</button>`).join('')}</nav>
   <div class="dctl"><div class="seg sm" role="group" aria-label="並び順" id="sortSeg"><button type="button" data-sort="no" aria-pressed="${raceState.sort === 'no'}">馬番順</button><button type="button" data-sort="prob" aria-pressed="${raceState.sort === 'prob'}">${MY ? 'あなたの順' : '確率順'}</button></div><small>表は左へスワイプ →</small></div>
@@ -1735,7 +1745,7 @@ function cardSafe(r, no) {
 function cardBody(r, no) {
   const h = r.horses.find((x) => x.no === no), w = r.odds && r.odds.win && r.odds.win[String(no)], pl = CALC.place(r, no);
   const top = `<div class="card-h">${hn(h)}<div><b>${esc(h.name)}</b><small>${esc(h.jockey)}・${h.weight}kg・${esc(h.last)}</small></div></div>
-    <div class="kv4"><div><small>勝つ確率</small><b class="r">${pct(h.prob)}%</b></div><div><small>複勝率</small><b>${pct(pl)}%</b></div><div><small>T-AIオッズ</small><b>${fair(h.prob)}</b></div><div><small>単勝オッズ</small><b>${w ? o1(w[0]) : '－'}</b></div></div>`;
+    <div class="kv4"><div><small>勝つ確率</small><b class="r">${pct(h.prob)}%</b></div><div><small>複勝率</small><b>${pct(pl)}%</b></div><div><small>T-AIオッズ</small><b>${fair(h.prob)}</b></div><div><small>単勝オッズ</small><b>${w ? o1(w[0]) : '－'}</b></div></div>${horseBell(h)}`;
   const m = IDX.get(r.id);
   if (m === 'err') return top + `<div class="ixs"><p class="note" style="padding:20px 0;text-align:center">指数を読み込めませんでした（電波の状態などで）。<br><button class="btn sub" type="button" data-idxretry="${r.id}" style="margin-top:10px">もう一度読み込む<span>▶</span></button></p></div>`;
   if (m === undefined || m === 'loading') return top + '<div class="ixs"><p class="note" style="padding:20px 0;text-align:center">指数を読み込んでいます…</p></div>';
@@ -2297,6 +2307,72 @@ async function saveBetSet() {
   const { error } = await sb.from('bet_settings').upsert(row);
   if (error) { alert('保存できませんでした。'); return; }
   BSET = row; rerender();
+}
+/* ─ 買い忘れ通知（川崎さんの依頼）：発走10分前と、登録馬の出走をスマホの通知で知らせる。送るのはサーバー（1分ごと） ─ */
+const VAPID_PUB = 'BHssN2AIei8uazeHIONv9xA4K1ALL4NVdNiwLzB_6-g1tHTBdeJOUxfYt8j62t-mCsyB-R07Od4vzbAbNvP0bM8';  // 公開用の鍵（秘密の鍵はサーバーにだけある）
+const NOTI = { st: 'no', races: new Set(), horses: new Set(), push: null };  // st: no → loading → ok
+const pushOk = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const notiRe = () => { const sh = $('#sheet'); if (sh && sh.dataset.no) { const r = byId.get(sh.dataset.race); if (r) $('#sheetB').innerHTML = cardSafe(r, +sh.dataset.no); const bl = $('#view .bell[data-rwatch]'), rr = bl && byId.get(bl.dataset.rwatch); if (bl && rr) bl.outerHTML = raceBell(rr); return; } if (/^#\/(race|my)/.test(location.hash)) rerender(); };  // 指数カードを開いているあいだは、ページを描き直さない（カードが閉じてしまうので）
+function loadNoti() {
+  if (GUEST || !session || NOTI.st !== 'no') return;
+  NOTI.st = 'loading';
+  Promise.all([sb.from('race_watch').select('race_id'), sb.from('horse_watch').select('horse_name'),
+    pushOk() ? navigator.serviceWorker.getRegistration('/').then((g) => (g ? g.pushManager.getSubscription() : null)).catch(() => null) : Promise.resolve(null)])
+    .then(([a, b, sub]) => { NOTI.races = new Set((a.data || []).map((x) => x.race_id)); NOTI.horses = new Set((b.data || []).map((x) => x.horse_name)); NOTI.push = sub; NOTI.st = 'ok'; notiRe(); })
+    .catch(() => { NOTI.st = 'no'; });
+}
+function b64u(s) { const p = '='.repeat((4 - (s.length % 4)) % 4), b = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from([...b].map((c) => c.charCodeAt(0))); }
+async function enablePush() {
+  if (!pushOk()) { alert(isIOS() ? 'iPhoneでは、T-AIを「ホーム画面に追加」して、そのアイコンから開いたときに通知が使えます（マイページに手順があります）。' : 'このブラウザでは通知が使えません。Chromeなどでお試しください。'); return false; }
+  if (isIOS() && !STANDALONE()) { alert('iPhoneでは、T-AIを「ホーム画面に追加」して、そのアイコンから開いたときに通知が使えます（マイページに手順があります）。'); return false; }
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') { alert('通知が許可されませんでした。ブラウザ（または端末）の設定で、このサイトの通知を許可してください。'); return false; }
+  try {
+    const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+    await navigator.serviceWorker.ready;
+    const sub = (await reg.pushManager.getSubscription()) || (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(VAPID_PUB) }));
+    const j = sub.toJSON();
+    const { error } = await sb.from('push_subs').upsert({ endpoint: j.endpoint, user_id: session.user.id, p256dh: j.keys.p256dh, auth: j.keys.auth });
+    if (error) throw error;
+    NOTI.push = sub; return true;
+  } catch (e) { console.error('push', e); alert('通知の準備ができませんでした。もう一度お試しください。'); return false; }
+}
+async function toggleWatch(kind, key, btn) {
+  if (GUEST || !session) { alert('通知は、ログインした会員の方が使えます。'); return; }
+  const on = kind === 'race' ? NOTI.races.has(key) : NOTI.horses.has(key);
+  if (!on && !NOTI.push && !(await enablePush())) return;
+  btn.disabled = true;
+  const tbl = kind === 'race' ? 'race_watch' : 'horse_watch', col = kind === 'race' ? 'race_id' : 'horse_name';
+  const { error } = on ? await sb.from(tbl).delete().eq(col, key) : await sb.from(tbl).upsert({ user_id: session.user.id, [col]: key });
+  btn.disabled = false;
+  if (error) { alert('設定できませんでした。'); return; }
+  const set = kind === 'race' ? NOTI.races : NOTI.horses; on ? set.delete(key) : set.add(key);
+  notiRe();
+}
+function raceBell(r) {
+  if (GUEST || r.status === 'done' || r.locked) return '';
+  loadNoti();
+  const on = NOTI.races.has(r.id);
+  return `<button type="button" class="bell${on ? ' on' : ''}" data-rwatch="${r.id}" aria-pressed="${on}">${on ? '🔔 発走10分前に知らせます（タップで取り消し）' : '🔔 発走10分前に知らせる'}</button>`;
+}
+function horseBell(h) {
+  if (GUEST || h.known === false) return '';
+  loadNoti();
+  const on = NOTI.horses.has(h.name);
+  return `<button type="button" class="bell sm${on ? ' on' : ''}" data-hwatch="${esc(h.name)}" aria-pressed="${on}">${on ? '★ 登録中：出走が決まったら知らせます（タップで解除）' : '☆ この馬を登録（出走が決まったら知らせる）'}</button>`;
+}
+function notiBox() {
+  if (GUEST) return '';
+  loadNoti();
+  const up = [...NOTI.races].map((id) => byId.get(id)).filter((r) => r && r.status !== 'done').sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
+  return `<section class="sec"><div class="label"><b>買い忘れ通知</b><span>スマホに知らせる</span></div>
+    <p class="note" style="margin-top:10px">レースページの「🔔 発走10分前に知らせる」と、指数カードの「☆ この馬を登録」で、スマホに通知が届きます（登録馬は、出走表に載ったときに知らせます）。</p>
+    <div class="nstat"><span>この端末の通知</span><b class="${NOTI.push ? 'on' : ''}">${NOTI.push ? 'オン' : 'オフ'}</b>${NOTI.push ? '<button type="button" class="btn sub" data-ntest="1">試しに通知する</button>' : '<button type="button" class="btn" data-npush="1">通知をオンにする</button>'}</div>
+    ${isIOS() && !STANDALONE() ? '<p class="dnote" style="margin-top:6px">iPhoneは、上の「ホーム画面に追加」をしてから、そのアイコンで開いたときに通知をオンにできます。</p>' : ''}
+    ${up.length ? `<p class="ixsub">知らせるレース</p>${up.map((r) => `<div class="nrow"><span>${fdShort(r.date)} ${esc(r.venue)}${r.no}R ${esc(r.name)}<small>${esc(r.start)}発走</small></span><button type="button" class="bdel" data-rwatch="${r.id}" aria-label="取り消す">×</button></div>`).join('')}` : ''}
+    ${NOTI.horses.size ? `<p class="ixsub">登録馬</p>${[...NOTI.horses].sort().map((n) => `<div class="nrow"><span>${esc(n)}</span><button type="button" class="bdel" data-hwatch="${esc(n)}" aria-label="解除">×</button></div>`).join('')}` : ''}
+  </section>`;
 }
 function vBuild() {
   const r = byId.get(BS.raceId), ready = buildable();
@@ -2865,6 +2941,7 @@ function vMy() {
   </section>
   ${freeBox}
   ${GUEST ? '' : `<section class="sec"><div class="label"><b>ベット管理</b><span>予算と収支</span></div><p class="note" style="margin-top:10px">買った買い目を記録すると、結果と自動で突き合わせて収支を出します。月の予算と1日の負けの限度を決めておくと、届いたときに「今日はここまで」と出ます。</p><div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-go="#/bets">ベット管理を開く<span>▶</span></button></div></section>`}
+  ${notiBox()}
   ${homeBox()}
   <section class="sec"><div class="label"><b>あなたの予想</b><span>重視する順番</span></div><p class="note" style="margin-top:10px">確率・指数・騎手・展開などを、あなたが重視する順に並べると、出馬表に「あなたの順位・あなたの◎」が出ます（レースページの一番上の「あなたの見解」で切り替え）。今の重視順：${mineLabel()}</p><div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-mineset="1">重視順を決める<span>▶</span></button></div></section>
   ${m.free ? '' : `<section class="sec"><div class="label"><b>AIとつなぐ</b><span>自分の生成AIで使う</span></div><p class="note" style="margin-top:10px">ChatGPTやClaudeなど、ふだん使っている生成AIにT-AIのデータを読ませて、自分の言葉で質問できます。</p><div class="btns" style="margin-top:10px"><button class="btn sub" type="button" data-go="#/ai">AIとつなぐ<span>▶</span></button></div></section>`}
@@ -2964,6 +3041,10 @@ document.addEventListener('click', (e) => {
   if (ds.copy != null) { copyText(ds.copy, t); return; }
   if (ds.ipat) { window.open(ipatUrl(), '_blank', 'noopener'); return; }
   if (ds.betrec) { recordBets(t); return; }
+  if (ds.rwatch) { toggleWatch('race', ds.rwatch, t); return; }
+  if (ds.hwatch) { toggleWatch('horse', ds.hwatch, t); return; }
+  if (ds.npush) { enablePush().then((ok) => { if (ok) notiRe(); }); return; }
+  if (ds.ntest) { navigator.serviceWorker.getRegistration('/').then((g) => g && g.showNotification('T-AI 通知のテスト', { body: 'この端末に通知が届きます。', icon: '/icon-192.png' })); return; }
   if (ds.betsave) { saveBetSet(); return; }
   if (ds.betreload) { BETS = null; loadBets(true); rerender(); return; }
   if (ds.betdel) { if (confirm('この記録を消しますか？')) sb.from('bets').delete().eq('id', +ds.betdel).then(({ error }) => { if (!error) { BETS = BETS.filter((b) => b.id !== +ds.betdel); rerender(); } }); return; }
