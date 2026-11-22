@@ -700,6 +700,46 @@ body.lock { overflow: hidden; }
 .nstat .btn { width: auto; margin-left: auto; min-height: 38px; padding: 0 12px; font-size: 13px; box-shadow: none; }
 .nrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(27, 24, 20, .2); font-size: 13px; font-weight: 700; }
 .nrow small { display: block; font-size: 11px; color: var(--ink2); font-weight: 400; }
+.vsw .seg button { font-size: 14px; }
+.plist { margin-top: 10px; border-top: 2px solid var(--ink); }
+.prow { display: grid; grid-template-columns: 40px minmax(0, .9fr) minmax(0, 1.3fr); grid-template-areas: 'ic nm hon' 'ic bd hon'; gap: 2px 8px; align-items: center; width: 100%; padding: 8px 0; border: 0; border-bottom: 1px solid rgba(27, 24, 20, .2); background: none; text-align: left; font-family: inherit; color: inherit; }
+.prow .pic { grid-area: ic; }
+.pic { display: grid; place-items: center; width: 38px; height: 38px; border: 2px solid var(--ink); border-radius: 50%; background: var(--card); font-size: 19px; }
+.pic.big { width: 56px; height: 56px; font-size: 28px; }
+.prow .pnm { grid-area: nm; min-width: 0; }
+.prow .pnm b { display: block; font-size: 14px; font-weight: 900; }
+.prow .pnm small { display: block; font-size: 10.5px; color: var(--ink2); }
+.prow .pbadge { grid-area: bd; }
+.pbadge { display: inline-block; font-size: 10.5px; font-weight: 700; color: var(--ink3); }
+.pbadge.ok { color: var(--ink2); }
+.pbadge b { margin-left: 4px; padding: 0 4px; color: #fff; font-size: 10px; }
+.pbadge b.up { background: var(--red); }
+.pbadge b.dn { background: #1f4fa3; }
+.prow .phon { grid-area: hon; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 5px; min-width: 0; }
+.prow .phon em { font-style: normal; color: var(--red); font-weight: 900; }
+.prow .phon b { font-size: 13px; font-weight: 900; overflow-wrap: anywhere; }
+.prow .phon small { flex: 1 0 100%; font-size: 11px; color: var(--ink2); }
+.psel { display: flex; gap: 6px; overflow-x: auto; padding: 10px 0 6px; -webkit-overflow-scrolling: touch; }
+.psel button { flex: 0 0 auto; min-height: 36px; padding: 0 10px; border: 1.5px solid var(--ink); background: var(--card); font-family: inherit; font-size: 12.5px; font-weight: 900; white-space: nowrap; color: inherit; }
+.psel button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.psel .pback { border-style: dashed; }
+.pchar { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.pchar b { display: block; font-size: 20px; font-weight: 900; }
+.pchar small { display: block; font-size: 12px; color: var(--ink2); }
+.pchar q { display: block; margin-top: 2px; font-size: 13px; font-weight: 700; color: var(--red); }
+.pprof { margin: 8px 0 0; font-size: 13px; line-height: 1.7; color: var(--ink2); }
+.pscore { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 10px; }
+.pscore > div { border: 1.5px solid var(--ink); background: var(--card); padding: 8px; }
+.pscore small { display: block; font-size: 11px; font-weight: 700; color: var(--ink2); }
+.pscore b { display: block; font-size: 15px; font-weight: 900; }
+.pscore span { display: block; font-size: 11px; color: var(--ink2); }
+.pmarks { margin-top: 6px; }
+.pmk { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 6px 0; border-bottom: 1px solid rgba(27, 24, 20, .15); }
+.pmk em { font-style: normal; min-width: 1.6em; font-weight: 900; color: var(--red); }
+.pmk b { font-size: 14px; font-weight: 900; }
+.pmk small { flex: 1 0 100%; padding-left: 2.2em; font-size: 11.5px; color: var(--ink2); }
+.pmk.list span { font-size: 13px; }
+.pcom { margin: 6px 0 0; font-size: 14px; line-height: 1.8; }
 .memo .mrow { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(27, 24, 20, .25); }
 .memo .mtag { align-self: start; text-align: center; font-size: 11px; font-weight: 900; padding: 3px 0; border: 1.5px solid var(--ink); }
 .memo .mtag.now { background: var(--ink); color: var(--paper); }
@@ -1405,7 +1445,7 @@ function vRaces() {
 }
 
 /* ─ レース詳細 ─ */
-let raceState = { sort: 'no', kind: 'uma', limit: 10, ck: 'tan', gv: '不良', open: new Set() };
+let raceState = { sort: 'no', kind: 'uma', limit: 10, ck: 'tan', gv: '不良', open: new Set(), view: 'std', pid: 0 };
 const ROW = 60, WROW = 34;
 // 追い風／向い風（川崎さんの統合判定 judge：確率とは別の物差しの表示用の参考情報）。出馬表には両端の馬だけ、理由は1行
 const windOf = (h) => (h.judge && h.judge.wind === '追い風' ? 'up' : h.judge && h.judge.wind === '向い風' ? 'dn' : '');
@@ -1455,9 +1495,9 @@ function vRace(r) {
   const done = r.status === 'done', over = r.horses.some((h) => h.note === 'overseas');
   const ot = r.odds && r.odds.win ? `オッズは${oddsWhen(r)}。` : '';
   return `${head}
-  <div class="vsw"><div class="seg" role="group" aria-label="見解" id="pmodeSeg"><button type="button" data-pmode="std" aria-pressed="${!MY && MINE.mode !== 'mine'}">T-AIの見解</button><button type="button" data-pmode="mine" aria-pressed="${MINE.mode === 'mine'}">あなたの見解</button></div>
-    <p class="vnote">${MINE.mode === 'mine' ? `あなたの重視順で並べた見解です（T-AIの勝率は参考）。${ot}` : `T-AIの見解は全員共通です。${ot}`}</p>${raceBell(r)}</div>
-  ${MINE.mode === 'mine' ? `<div class="mybar">${MY ? `<span><b>あなたの重視順</b>${mineLabel()}</span>` : '<span>あなたの順位を計算しています…</span>'}<button type="button" class="btn sub" data-mineset="1">変更</button></div>` : ''}
+  <div class="vsw"><div class="seg" role="group" aria-label="見解" id="pmodeSeg"><button type="button" data-pmode="std" aria-pressed="${raceState.view !== 'persona' && MINE.mode !== 'mine'}">T-AIの見解</button><button type="button" data-pmode="mine" aria-pressed="${raceState.view !== 'persona' && MINE.mode === 'mine'}">あなたの見解</button><button type="button" data-pmode="persona" aria-pressed="${raceState.view === 'persona'}">AI予想家</button></div>
+    <p class="vnote">${raceState.view === 'persona' ? 'キャラクターごとに、見る材料と印の付け方が違う予想家たちです。' : MINE.mode === 'mine' ? `あなたの重視順で並べた見解です（T-AIの勝率は参考）。${ot}` : `T-AIの見解は全員共通です。${ot}`}</p>${raceBell(r)}</div>
+  ${raceState.view === 'persona' ? personaView(r) + rnav(r) + '<!--persona-->' : ''}${raceState.view === 'persona' ? '' : `${MINE.mode === 'mine' ? `<div class="mybar">${MY ? `<span><b>あなたの重視順</b>${mineLabel()}</span>` : '<span>あなたの順位を計算しています…</span>'}<button type="button" class="btn sub" data-mineset="1">変更</button></div>` : ''}
   <nav class="rtoc" id="rtoc" aria-label="このページの目次">${[['#tbl', '出馬表'], ['#paceSec', '展開'], ['#lapSec', 'ラップ'], ['#goingSec', '馬場'], ['#comboSec', '組み合わせ']].map(([t, l]) => `<button type="button" data-jump="${t}">${l}</button>`).join('')}</nav>
   <div class="dctl"><div class="seg sm" role="group" aria-label="並び順" id="sortSeg"><button type="button" data-sort="no" aria-pressed="${raceState.sort === 'no'}">馬番順</button><button type="button" data-sort="prob" aria-pressed="${raceState.sort === 'prob'}">${MY ? 'あなたの順' : '確率順'}</button></div><small>表は左へスワイプ →</small></div>
   <div id="tbl">${shutuba(r)}</div>
@@ -1469,7 +1509,7 @@ function vRace(r) {
     <div class="seg sm k6 scroll" role="group" aria-label="券種" id="kindSeg" style="margin-top:4px">${kindsFor(r).filter((k) => k !== 'tan').map((k) => `<button type="button" data-kind="${k}" aria-pressed="${raceState.kind === k}">${KIND[k]}</button>`).join('')}</div>
     <div class="box" style="margin-top:8px" id="combos"></div>
   </section></details></div>
-  ${done ? '' : `<div class="btns" style="margin:12px var(--pad) 0"><button class="btn" type="button" data-go="#/build/${r.id}">このレースで買い目をつくる<span>▶</span></button></div>`}`}${rnav(r)}`;
+  ${done ? '' : `<div class="btns" style="margin:12px var(--pad) 0"><button class="btn" type="button" data-go="#/build/${r.id}">このレースで買い目をつくる<span>▶</span></button></div>`}`}${rnav(r)}`}`;
 }
 // 出馬表（川崎さんのデモ第3版：1頭1行。左の馬番・馬名・騎手・斤量は固定し、右を左へスワイプすると数字が出てくる）
 const RENTAI = new Map();  // レース → 馬番 → 連対率（サイトの馬連の確率と同じ式から：その馬を含む馬連の確率の合計）
@@ -2374,6 +2414,68 @@ function notiBox() {
     ${NOTI.horses.size ? `<p class="ixsub">登録馬</p>${[...NOTI.horses].sort().map((n) => `<div class="nrow"><span>${esc(n)}</span><button type="button" class="bdel" data-hwatch="${esc(n)}" aria-label="解除">×</button></div>`).join('')}` : ''}
   </section>`;
 }
+/* ─ AI予想家（川崎さんの persona_spec v2.1）：見る材料・文体・印の付け方が違う11人。一覧（◎早見）→ 予想家ごとのページ ─
+   予想と成績は川崎さん側で毎日作って届く（persona / persona_score）。サイトでは計算・推測しない */
+const PERSONAS = [
+  [1, 'まとめくん', '総合集計型', '🗒️', 'みんなの声、集めてきました', '他の予想家10人とファンの支持、市場の人気をぜんぶ集めて数える要約役。自分の意見は持たず、集まった支持の厚さだけで判断する。'],
+  [2, 'まっすぐ', '指数まっすぐ型', '📏', '数字は嘘をつかない', 'T-AIの予測勝率だけを見る一点主義。他の材料には一切目をくれず、確率1位をそのまま本命にする。'],
+  [3, 'アナボン', '穴党型', '💥', '当たればデカい。それでいい', '人気馬には目もくれない生粋の穴党。確率とオッズの掛け算（期待値）だけを信じ、大配当専門に狙う。'],
+  [4, 'ナガレ師匠', '展開読み型', '🐎', 'まず隊列から読む', '予想は隊列とペースから入る職人肌。どの馬がハナを切り、誰がどこに収まるかを読むことで勝ち馬を絞る。'],
+  [5, 'ジン', '騎手信頼型', '🏇', '最後は人で買う', '馬の力の次に見るのは鞍上。「勝たせ度」の格付けを信じ、勝負強い騎手の馬を優先して買う人情派。'],
+  [6, 'みきわめ', '仕上がり型', '🔍', '馬は仕上がりがすべて', '外厩での仕上げと厩舎の状態づくりを見る目利き。放牧先の評価と厩舎との相性から、当日の出来を測る。'],
+  [7, 'ジョウケン', '馬場適性型', '🌱', '今日の条件では、評価が変わる', '普段の評価順位をそのまま信じない条件派。当日の馬場状態で評価が上がる馬を探すのが仕事。'],
+  [8, 'ノリさん', '勢い型', '📈', '勢いは嘘をつかない', '近走のスピード指数の伸びだけを見る短期決戦派。難しいことは考えず、上昇カーブの勢いを買う。'],
+  [9, 'トキさん', 'ラップ適合型', '⏱️', '時計が答えを知っている', 'コースのラッププロファイルと各馬の走り方の噛み合いを測る時計派。根拠の数字を並べてから結論を出す。'],
+  [10, 'カゼさん', '追い風型', '🌬️', '追い風の馬だけ買えばいい', '今日の条件がその馬に追い風か向い風か、それだけで選ぶ。向い風の馬は実力があっても容赦なく消す。'],
+  [11, 'コエさん', '関係者コメント型', '👂', '陣営の声が、いちばん正直', '全頭の陣営コメントを聞いて回る耳の人。トーンの強気・弱気と言い回しの踏み込み具合から、自信のほどを測る。'],
+];
+const PERS = new Map();  // レース → [予想] | 'loading' | 'err'
+let PSCORE = null;       // persona_id → { season, last30d }
+function needPersona(r) {
+  if (PERS.has(r.id) && PERS.get(r.id) !== 'err') return;
+  PERS.set(r.id, 'loading');
+  const re = () => { if ($('#view') && $('#view').dataset.race === r.id && raceState.view === 'persona') rerender(); };
+  sb.from('persona').select('*').eq('race_id', r.id).order('persona_id').then(({ data, error }) => { PERS.set(r.id, error ? 'err' : data || []); re(); });
+  if (!PSCORE) { PSCORE = {}; sb.from('persona_score').select('*').then(({ data }) => { (data || []).forEach((x) => { (PSCORE[x.persona_id] = PSCORE[x.persona_id] || {})[x.period] = x.data; }); re(); }); }
+}
+function pBadge(id) {
+  const sc = PSCORE && PSCORE[id] && PSCORE[id].season;
+  if (!sc || sc.status !== 'ok') return '<span class="pbadge">集計中</span>';
+  const f = PSCORE[id].last30d && PSCORE[id].last30d.form;
+  return `<span class="pbadge ok">複勝率 ${pct(+sc.honmei_place_rate, 0)}%・回収 ${Math.round(+sc.win_roi_pct)}%${f === '好調' ? '<b class="up">好調</b>' : f === '不調' ? '<b class="dn">不調</b>' : ''}</span>`;
+}
+function personaView(r) {
+  needPersona(r);
+  const L = PERS.get(r.id);
+  if (L === 'loading' || L === undefined) return '<section class="sec"><p class="note" style="padding:30px 0;text-align:center">読み込んでいます…</p></section>';
+  if (L === 'err' || !L.length) return '<section class="sec"><p class="note" style="padding:20px 0">このレースのAI予想家は、まだ届いていません（前日の夜に第1弾、当日の朝に確定版が届きます）。</p></section>';
+  const byP = new Map(L.map((x) => [x.persona_id, x]));
+  const horse = (no) => r.horses.find((h) => h.no === no);
+  const odd = (no) => oddsOne(r, 'tan', [no]);
+  if (!raceState.pid || !byP.has(raceState.pid)) {
+    return `<section class="sec"><div class="label"><b>AI予想家</b><span>◎早見表（タップで各予想家へ）</span></div>
+      <div class="plist">${PERSONAS.filter((p) => byP.has(p[0])).map(([id, name, type, ic]) => { const x = byP.get(id), h = x.honmei_horse_no && horse(x.honmei_horse_no);
+        return `<button type="button" class="prow" data-pid="${id}"><span class="pic">${ic}</span><span class="pnm"><b>${esc(name)}</b><small>${esc(type)}</small></span>
+          <span class="phon">${h ? `<em>◎</em>${hn(h)}<b>${esc(h.name)}</b><small>${odd(h.no) ? `単勝 ${o1(odd(h.no))}倍` : ''}</small>` : '<small>見解なし</small>'}</span>${pBadge(id)}</button>`; }).join('')}</div>
+      <p class="dnote" style="margin-top:8px">AI予想家の◎は、それぞれ決まった材料と手順で機械的に選んだものです。T-AIの勝つ確率とは別の見方の見本で、的中を約束するものではありません。成績は30レースたまるまで「集計中」です。</p></section>`;
+  }
+  const P = PERSONAS.find((p) => p[0] === raceState.pid), x = byP.get(raceState.pid), [id, name, type, ic, catchp, prof] = P;
+  const sc = (PSCORE && PSCORE[id]) || {};
+  const scBox = (k, lab) => { const v = sc[k]; return `<div><small>${lab}</small>${!v || v.status !== 'ok' ? '<b>集計中</b>' : `<b>複勝率 ${pct(+v.honmei_place_rate, 0)}%</b><span>勝率 ${pct(+v.honmei_win_rate, 0)}%・回収 ${Math.round(+v.win_roi_pct)}%・${v.races}レース${v.form && v.form !== '通常' ? `・${esc(v.form)}` : ''}</span>`}</div>`; };
+  const marks = Array.isArray(x.marks) ? x.marks : [];
+  const mrow = (m) => (m.horse_no ? (() => { const h = horse(m.horse_no); return `<div class="pmk"><em>${esc(m.mark || '')}</em>${h ? hn(h) : ''}<b>${esc(m.horse_name || (h && h.name) || '')}</b>${m.note ? `<small>${esc(m.note)}</small>` : ''}</div>`; })()
+    : `<div class="pmk list"><em>${esc(m.mark === '消' ? '消し' : m.mark === '追' ? '追い風' : m.mark || '')}</em><span>${esc(m.list || m.text || '')}</span></div>`);
+  return `<section class="sec">
+    <div class="psel" role="group" aria-label="予想家を選ぶ"><button type="button" class="pback" data-pid="0">‹ 一覧</button>${PERSONAS.filter((p) => byP.has(p[0])).map(([pid, nm, , pic]) => `<button type="button" data-pid="${pid}" aria-pressed="${pid === id}">${pic} ${esc(nm)}</button>`).join('')}</div>
+    <div class="pchar"><span class="pic big">${ic}</span><div><b>${esc(name)}</b><small>${esc(type)}</small><q>${esc(catchp)}</q></div></div>
+    <p class="pprof">${esc(prof)}</p>
+    <div class="pscore">${scBox('season', '通算')}${scBox('last30d', '直近30日')}</div>
+    <p class="ixsub">印</p><div class="pmarks">${marks.length ? marks.map(mrow).join('') : x.honmei_horse_no ? mrow({ mark: '◎', horse_no: x.honmei_horse_no, horse_name: x.honmei_horse_name }) : '<p class="note">材料不足のため見解なし</p>'}</div>
+    ${x.comment ? `<p class="ixsub">見解</p><p class="pcom">${esc(x.comment)}</p>` : ''}
+    ${x.dividend_view ? `<p class="ixsub">配当観</p><p class="pcom">${esc(x.dividend_view)}</p>` : ''}
+    <p class="dnote" style="margin-top:8px">${x.stage === 1 ? '前日の第1弾です（当日の朝に確定版に差し替わります）。' : ''}◎は決まった材料と手順で機械的に選んだもので、的中を約束するものではありません。</p>
+  </section>`;
+}
 function vBuild() {
   const r = byId.get(BS.raceId), ready = buildable();
   if (!kindsFor(r).includes(BS.kind)) { BS.kind = 'uma'; BS.axis = null; BS.sel.clear(); }
@@ -3052,7 +3154,8 @@ document.addEventListener('click', (e) => {
   if (ds.install && INSTALL) { INSTALL.prompt(); INSTALL.userChoice.finally(() => { INSTALL = null; rerender(); }); return; }
   if (ds.cnav) { cardStep(+ds.cnav); return; }
   if (ds.idxretry) { const r = byId.get(ds.idxretry); if (r) { IDX.delete(r.id); needIdx(r); idxRedraw(r); } return; }
-  if (ds.pmode) { MINE.mode = ds.pmode; mineSave(); if (ds.pmode === 'mine') raceState.sort = 'prob'; rerender(); return; }
+  if (ds.pmode) { if (ds.pmode === 'persona') { raceState.view = 'persona'; raceState.pid = 0; rerender(); return; } raceState.view = 'std'; MINE.mode = ds.pmode; mineSave(); if (ds.pmode === 'mine') raceState.sort = 'prob'; rerender(); return; }
+  if (ds.pid != null) { raceState.pid = +ds.pid; rerender(); const c = $('.psel [aria-pressed="true"]'); if (c) c.scrollIntoView({ inline: 'center', block: 'nearest' }); return; }
   if (ds.mineset) { openMine(); return; }
   if (ds.mp) { mineAct(ds.mp); return; }
   if (ds.jump) { const f = $(ds.jump + ' details.fold'); if (f && !f.open) { f.open = true; raceState.open.add(f.dataset.fold); } }
