@@ -559,6 +559,10 @@ body.lock { overflow: hidden; }
 .stwrap .stfade { position: absolute; top: 2px; bottom: 2px; right: 2px; width: 22px; pointer-events: none; background: linear-gradient(to right, rgba(250, 247, 240, 0), rgba(250, 247, 240, .95)); transition: opacity .2s; }
 .stwrap.end .stfade { opacity: 0; }
 .st { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 13px; }
+.st th small { display: block; font-size: 9px; font-weight: 700; opacity: .75; }
+.st td .mo { display: block; margin-top: 2px; font-family: inherit; font-size: 11px; font-weight: 700; color: var(--ink2); white-space: nowrap; }
+.st td .mo b { font-family: var(--n); font-size: 12px; color: var(--ink2); }
+.st td .mo i { font-style: normal; font-size: 10px; color: var(--ink3); margin-left: 3px; }
 .st th { position: sticky; top: 0; background: var(--ink); color: var(--paper); font-size: 11px; font-weight: 700; padding: 6px 8px; white-space: nowrap; text-align: right; }
 .st th.sx { text-align: left; z-index: 2; left: 0; }
 .st td { padding: 6px 8px; border-bottom: 1px solid rgba(27, 24, 20, .2); text-align: right; white-space: nowrap; vertical-align: middle; font-family: var(--n); font-size: 14px; font-weight: 700; }
@@ -1434,13 +1438,15 @@ function shutuba(r) {
   const order = r.horses.slice().sort(raceState.sort === 'prob' ? (my ? (a, b) => my.get(a.no) - my.get(b.no) : (a, b) => b.prob - a.prob) : (a, b) => a.no - b.no);
   const pcv = (x) => (x == null ? '－' : pct(x) + '%');
   const odd = (h) => oddsOne(r, 'tan', [h.no]);
+  const pop = (h) => { const w = r.odds && r.odds.win && r.odds.win[String(h.no)]; return w && w[1] && odd(h) ? w[1] : null; };
+  const plc = (h) => { const p = r.odds && r.odds.place && r.odds.place[String(h.no)]; return p && p[0] && p[0] < 9999 ? `${o1(p[0])}-${o1(p[1])}` : ''; };
   const cols = [
     ...(done ? [['着順', (h) => (h.result != null ? `<b class="sfin${h.result <= 3 ? ' f' + h.result : ''}">${h.result}着</b>` : '－')]] : []),
     ...(my ? [['あなた', (h) => `<b class="sme">${my.get(h.no)}位</b>`]] : []),
-    [my ? 'T-AI勝率' : '勝率', (h) => `<b class="${my ? 'sdim' : h.prob >= .3 ? 'shi' : ''}">${pct(h.prob)}%</b><small>${h.rank}位</small>`],
+    // 確率のすぐ下に市場のオッズ（川崎さんの依頼：スワイプしなくても見比べられるように）
+    [`${my ? 'T-AI勝率' : '勝率'}<small>単勝オッズ</small>`, (h) => `<b class="${my ? 'sdim' : h.prob >= .3 ? 'shi' : ''}">${pct(h.prob)}%</b><span class="mo">${odd(h) ? `単 <b>${o1(odd(h))}</b>${pop(h) ? `<i>${pop(h)}人気</i>` : ''}` : `<i>${h.rank}位</i>`}</span>`],
+    ['複勝率<small>複勝オッズ</small>', (h) => `${pcv(CALC.place(r, h.no))}<span class="mo">${plc(h) ? `複 <b>${plc(h)}</b>` : ''}</span>`],
     ['連対率', (h) => pcv(rentaiOf(r, h.no))],
-    ['複勝率', (h) => pcv(CALC.place(r, h.no))],
-    ['単勝', (h) => (odd(h) ? `${o1(odd(h))}<small>${r.odds.win[String(h.no)] && r.odds.win[String(h.no)][1] ? r.odds.win[String(h.no)][1] + '番人気' : ''}</small>` : '－')],
     ['T-AI換算', (h) => fair(h.prob)],
     ['比較', (h) => (odd(h) && h.prob > 0 && odd(h) >= 1.1 / h.prob ? '<b class="cheap">割安</b>' : '')],
     ['判定', (h) => (windOf(h) ? `<span class="sjw ${windOf(h)}"><i>${windOf(h) === 'up' ? '追い風' : '向い風'}</i>${windTag(r, h) ? `<b>${windTag(r, h)}</b>` : ''}<small>${esc(h.judge.wind_reason || '')}</small></span>` : '')],
