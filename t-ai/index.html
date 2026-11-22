@@ -207,6 +207,37 @@ p { margin: 0; }
 .vs-a b { color: #f2d27a; }
 .vs-b { background: #fbf7ee; }
 .vs-b b, .vs-b small { color: var(--red); }
+/* 第6面：会員ページの実物（横スワイプ） */
+.shots { display: flex; gap: 14px; margin: 24px 0 0; padding: 0 var(--pad) 6px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 var(--pad); -webkit-overflow-scrolling: touch; }
+.shot { flex: 0 0 min(68vw, 270px); margin: 0; scroll-snap-align: start; }
+.shot .ph { border: 3px solid var(--ink); border-radius: 22px; overflow: hidden; background: #fff; box-shadow: 4px 4px 0 var(--ink); }
+.shot img { display: block; width: 100%; height: auto; }
+.shot figcaption { display: grid; gap: 4px; margin-top: 12px; font-family: var(--g); }
+.shot figcaption b { font-weight: 900; font-size: 16px; color: var(--red); }
+.shot figcaption span { font-size: 13.5px; line-height: 1.7; color: var(--ink2); }
+.shint { margin: 8px var(--pad) 0; font-family: var(--g); font-size: 12px; font-weight: 700; color: var(--ink3); text-align: center; }
+.more { margin: 22px var(--pad) 0; border: 2px solid var(--ink); background: #fbf7ee; padding: 14px 14px 6px; }
+.more-h { margin: 0 0 6px; font-family: var(--g); font-weight: 900; font-size: 15px; }
+.more ul { list-style: none; margin: 0; padding: 0; }
+.more li { display: grid; gap: 2px; padding: 9px 0; border-top: 1px solid rgba(27, 24, 20, .25); font-family: var(--g); }
+.more li b { font-weight: 900; font-size: 14.5px; }
+.more li span { font-size: 13px; line-height: 1.7; color: var(--ink2); }
+/* 第7面：v2 */
+.years { margin: 22px var(--pad) 0; border: 2px solid var(--ink); background: #fbf7ee; }
+.years .cap { display: flex; justify-content: space-between; gap: 8px; padding: 8px 12px; background: var(--ink); color: var(--paper); font-family: var(--g); font-weight: 900; font-size: 13px; }
+.years .cap span:last-child { font-weight: 700; opacity: .8; }
+.yb { display: grid; grid-template-columns: 3.2em minmax(0, 1fr) 4.4em; align-items: center; gap: 10px; padding: 9px 12px; border-top: 1px solid rgba(27, 24, 20, .2); font-family: var(--n); }
+.yb .y { font-weight: 700; font-size: 16px; }
+.yb .bar { height: 14px; background: var(--paper2); position: relative; }
+.yb .bar i { position: absolute; inset: 0 auto 0 0; width: var(--w); background: var(--red); }
+.yb .bar::after { content: ""; position: absolute; top: -4px; bottom: -4px; left: 50%; border-left: 2px dashed var(--ink); }
+.yb .v { text-align: right; font-weight: 700; font-size: 17px; color: var(--red); }
+.yb.dn .bar i { background: var(--ink3); }
+.yb.dn .v { color: var(--ink2); }
+.years .foot { padding: 8px 12px 10px; border-top: 1px solid rgba(27, 24, 20, .2); font-family: var(--g); font-size: 12px; line-height: 1.6; color: var(--ink2); }
+.notes { list-style: none; margin: 16px var(--pad) 0; padding: 0; display: grid; gap: 6px; font-family: var(--g); font-size: 12px; line-height: 1.7; color: var(--ink2); }
+.lastcall { margin: 10px 0 0; padding: 10px 12px; border: 2px solid var(--red); font-family: var(--g); font-weight: 700; font-size: 14px; line-height: 1.6; text-align: center; }
+.lastcall b { color: var(--red); font-weight: 900; }
 .demo { display: grid; gap: 4px; margin: 28px var(--pad) 0; padding: 14px 16px 16px; border: 2px dashed var(--ink); text-decoration: none; color: var(--ink); text-align: center; font-family: var(--g); background: #fbf7ee; }
 .demo:hover { color: var(--ink); background: #fff; }
 .demo .cut { font-size: 11px; color: var(--ink3); white-space: nowrap; overflow: hidden; }
@@ -288,7 +319,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
 .seat-n b { font-family: var(--n); font-weight: 700; font-size: 44px; line-height: 1; color: var(--red); font-variant-numeric: tabular-nums; }
 .seat-n.pop b { animation: seatPop .6s var(--ease); }
 @keyframes seatPop { 0% { transform: scale(1.35); } 100% { transform: none; } }
-.seat-grid { display: grid; grid-template-columns: repeat(15, minmax(0, 1fr)); gap: 3px; }
+.seat-grid { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 3px; }
 .seat-grid i { aspect-ratio: 1; border: 1px solid var(--ink); background: var(--paper); }
 .seat-grid i.x { background: var(--ink); }
 .seat-c { margin-top: 8px; padding: 6px 10px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 14px; text-align: center; }
@@ -304,7 +335,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
 <div class="sheet">
   <header class="mast">
     <div class="mast-top">KAWASAKI CLUB 特別号</div>
-    <div class="mast-name"><b>T<i>-</i>AI新報</b><small>マイルCS週<br>特別号</small></div>
+    <div class="mast-name"><b>T<i>-</i>AI新報</b><small>最終<br>募集号</small></div>
     <div class="dbl"></div>
     <div class="mast-sub"><span>2026年11月</span><span>選択を<wbr>科学する、<wbr>最強の<wbr>ベットシステム</span></div>
     <div class="stamp" aria-hidden="true">号外<small><span class="nb">T-AI</span></small></div>
@@ -313,7 +344,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
   <section data-screen-label="01 一面" data-nodock>
     <div class="front">
       <div class="front-l">
-        <span class="kick">本日発表</span>
+        <span class="kick">最終募集</span>
         <p class="front-sub">選択を<wbr>科学する、<br>最強の<br>ベットシステム<br><em>「<span class="nb">T-AI</span>」</em></p>
         <div class="mini" data-pen>
           <div class="t"><span><span class="nb">T-AI</span> 予測勝率</span><span>例</span></div>
@@ -325,7 +356,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
     </div>
     <p class="band" data-rv>当てるな。<br>選ぶのもやめろ。<small>感覚と<wbr>経験の<wbr>時代は、<wbr>終わった。</small></p>
     <div class="cta-row">
-      <div class="seat" data-seat><p class="seat-h"><span class="seat-k">募集状況</span><span>限定<b>30</b>名</span><span class="seat-d" data-seat-d>締切 11/19（木）<wbr>24:00</span></p><p class="seat-n" data-seat-n>残り<b>30</b>名</p><span class="seat-grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><p class="seat-c" data-seat-c hidden>締切まで <b>30:00</b></p></div>
+      <div class="seat" data-seat><p class="seat-h"><span class="seat-k">募集状況</span><span>限定<b>20</b>名</span><span class="seat-d" data-seat-d>締切 11/24（火）<wbr>24:00</span></p><p class="seat-n" data-seat-n>残り<b>20</b>名</p><span class="seat-grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><p class="seat-c" data-seat-c hidden>締切まで <b>30:00</b></p></div>
       <a class="btn" href="#plans">プランを<wbr>見る<span>▶</span></a>
       <small>2027年末まで 149,800円（税抜）<wbr>／返金保証つき</small>
     </div>
@@ -469,11 +500,66 @@ html.js [data-rv].in { opacity: 1; transform: none; }
     <a class="demo" href="https://tai.clubkawasaki.net" target="_blank" rel="noopener" data-rv><span class="cut">✂ - - - - - - - - - - - - - - - -</span><b><span class="nb">T-AI</span>の<wbr>解析を<wbr>体験する ↗</b><span>tai.clubkawasaki.net</span></a>
   </section>
 
+  <section class="art" id="ch6" data-screen-label="07b 実働">
+    <div class="label"><b>実働</b><span>第6面</span></div>
+    <h2 class="hl" data-rv>もう、<em>動いています</em></h2>
+    <div class="body">
+      <p>前回の<wbr>募集から、<wbr>会員ページは<wbr>本番で<wbr>動いています。<br>11月21日〜23日の<wbr>3日間だけで、<wbr>JRAの<b class="redb">全72レース・<wbr>1,040頭</b>に<wbr>「勝つ確率」を<wbr>出しました。</p>
+      <p>「これから<wbr>作るシステム」では<wbr>ありません。<wbr>会員さまが<wbr>今日も<wbr>使っている<wbr>実物を、<wbr>そのまま<wbr>お見せします。</p>
+    </div>
+    <div class="shots" data-rv>
+        <figure class="shot"><div class="ph"><img src="assets/app/race.jpg" alt="会員ページの出馬表の画面" width="540" height="1052" loading="lazy" decoding="async"></div><figcaption><b>1　出馬表</b><span>勝率の<wbr>すぐ横に、<wbr>市場の<wbr>オッズと<wbr>期待値。<wbr>期待値が<wbr>1を<wbr>超えると<wbr>赤、<wbr>1.1以上は<wbr>「割安」。<wbr>スワイプせずに<wbr>見比べられます。</span></figcaption></figure>
+        <figure class="shot"><div class="ph"><img src="assets/app/card.jpg" alt="会員ページの指数カードの画面" width="540" height="1052" loading="lazy" decoding="async"></div><figcaption><b>2　指数カード</b><span>1頭ずつ、<wbr>今日の<wbr>条件が<wbr>「追い風」か<wbr>「向い風」かを<wbr>理由つきで。<wbr>調教・<wbr>陣営の<wbr>コメントの<wbr>温度・<wbr>近走も<wbr>1枚に。</span></figcaption></figure>
+        <figure class="shot"><div class="ph"><img src="assets/app/pace.jpg" alt="会員ページの展開・ラップの画面" width="540" height="1052" loading="lazy" decoding="async"></div><figcaption><b>3　展開・ラップ</b><span>予想される<wbr>隊列と<wbr>ペース、<wbr>このコースの<wbr>ラップに<wbr>向く馬・<wbr>向かない馬。</span></figcaption></figure>
+        <figure class="shot"><div class="ph"><img src="assets/app/persona.jpg" alt="会員ページのAI予想家の画面" width="540" height="1052" loading="lazy" decoding="async"></div><figcaption><b>4　AI予想家</b><span>見る<wbr>材料が<wbr>違う<wbr>11人の<wbr>◎を<wbr>一覧で。<wbr>誰が<wbr>どの<wbr>馬を<wbr>推しているかが<wbr>一目で<wbr>わかります。</span></figcaption></figure>
+        <figure class="shot"><div class="ph"><img src="assets/app/build.jpg" alt="会員ページの買い目メーカーの画面" width="540" height="1052" loading="lazy" decoding="async"></div><figcaption><b>5　買い目メーカー</b><span>確率から<wbr>買い目を<wbr>自動で<wbr>組み、<wbr>即PATの<wbr>入力順の<wbr>まま<wbr>コピー。</span></figcaption></figure>
+    </div>
+    <p class="shint">← 左右に<wbr>スワイプ →</p>
+    <div class="more" data-rv>
+      <p class="more-h">ほかにも、<wbr>会員さまだけの<wbr>機能</p>
+      <ul>
+        <li><b>収支管理</b><span>記録した<wbr>馬券を<wbr>結果と<wbr>払い戻しで<wbr>自動で<wbr>精算。<wbr>月の<wbr>予算と<wbr>「今日は<wbr>ここでやめる」の<wbr>警告</span></li>
+        <li><b>買い忘れ通知</b><span>発走10分前と、<wbr>登録した<wbr>馬の<wbr>出走を<wbr>スマホに<wbr>お知らせ</span></li>
+        <li><b>馬場と当日の傾向</b><span>今日の<wbr>内外・<wbr>脚質の<wbr>有利不利を<wbr>レースごとに<wbr>更新</span></li>
+        <li><b>あなたの見解</b><span>重視する<wbr>材料の<wbr>順番を<wbr>決めるだけで、<wbr>あなた<wbr>専用の<wbr>順位に<wbr>並べ替え</span></li>
+        <li><b>アプリとして使える</b><span>ホーム画面に<wbr>追加すれば、<wbr>アイコン<wbr>ひとつで<wbr>開けます</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="art" id="ch6b" data-screen-label="07c v2">
+    <div class="label"><b>次の一手</b><span>第7面</span></div>
+    <h2 class="hl" data-rv>発走前の<wbr>オッズまで<wbr>読む、<em>第2の<wbr>勝率「v2」</em></h2>
+    <div class="body">
+      <p>前日に<wbr>出す<wbr><span class="nb">T-AI</span>の<wbr>勝率は<wbr>そのままに、<wbr>もうひとつの<wbr>勝率<wbr>「v2」を、<wbr>会員さまのために<wbr>用意しています。</p>
+      <p>v2は、<wbr>発走前の<wbr>オッズを<wbr>土台に、<wbr>人気ごとに<wbr>市場が<wbr>どれだけ<wbr>ズレているか<wbr>（本命の<wbr>過小評価・<wbr>人気薄の<wbr>過大評価）を<wbr>学習で<wbr>補正した<wbr>確率です。<br>会員ページでは、<wbr>発走の<wbr>約1時間前から<wbr>出馬表に<wbr>並べて<wbr>表示する<wbr>予定です。</p>
+    </div>
+    <div class="bignum" data-rv><span class="k">実戦に<wbr>近い条件<wbr>（朝10時の<wbr>オッズ）での<wbr>検証で、<wbr>回収率</span><span class="v">111.2<small>%</small></span><span class="k">2025年・<wbr>2,519レース。<wbr>各レースで<b>「バランスの<wbr>1頭」</b>を<wbr>単勝100円ずつ<wbr>買った場合<wbr>（投資 251,900円 → 回収 280,110円、<wbr>的中率 35.1%）</span></div>
+    <div class="body" style="padding-top:14px"><p><b>「バランスの<wbr>1頭」</b>とは、<wbr>「勝つ確率の<wbr>順位」と<wbr>「お得度<wbr>（確率×オッズ）の<wbr>順位」の<wbr>合計が<wbr>いちばん<wbr>小さい馬。<wbr>当たりやすさと<wbr>配当の<wbr>バランスで<wbr>選ぶ、<wbr>機械的な<wbr>ルールです。</p></div>
+    <div class="years" data-pen>
+      <div class="cap"><span>年ごとの<wbr>回収率</span><span>確定オッズで<wbr>計算・参考／点線＝100%</span></div>
+        <div class="yb"><span class="y">2022</span><span class="bar"><i style="--w:66%"></i></span><span class="v">106.5%</span></div>
+        <div class="yb"><span class="y">2023</span><span class="bar"><i style="--w:77%"></i></span><span class="v">110.9%</span></div>
+        <div class="yb"><span class="y">2024</span><span class="bar"><i style="--w:90%"></i></span><span class="v">116.1%</span></div>
+        <div class="yb"><span class="y">2025</span><span class="bar"><i style="--w:71%"></i></span><span class="v">108.5%</span></div>
+        <div class="yb dn"><span class="y">2026</span><span class="bar"><i style="--w:47%"></i></span><span class="v">98.8%</span></div>
+      <div class="foot">2022〜2026年・16,887レース、<wbr>同じ<wbr>「バランスの1頭」で<wbr>計算。<wbr>全期間で<wbr>108.4%</div>
+    </div>
+    <ul class="notes">
+      <li>※過去の<wbr>データでの<wbr>検証結果です。<wbr>将来の<wbr>払い戻しや<wbr>利益を<wbr>約束する<wbr>ものではありません。</li>
+      <li>※年ごとの<wbr>数字は、<wbr>発走後に<wbr>確定する<wbr>オッズで<wbr>計算した<wbr>参考値です。<wbr>実際に<wbr>買える<wbr>条件に<wbr>近いのは、<wbr>上の<wbr>発走前の<wbr>検証です。</li>
+      <li>※同じ<wbr>検証で、<wbr>お得度<wbr>1.0以上の<wbr>馬だけを<wbr>買う<wbr>方法は<wbr>回収率<wbr>75.2%<wbr>（発走前・2025年）でした。</li>
+      <li>※結果が<wbr>出る前に<wbr>予測を<wbr>凍結して<wbr>答え合わせする<wbr>フォワードテストを、<wbr>いまも<wbr>続けています。</li>
+    </ul>
+    <p class="box red" data-rv>v2は<wbr>会員さま<wbr>限定です。</p>
+  </section>
+
   <section class="ad" id="plans" data-screen-label="08 料金・返金保証" data-nodock>
     <div class="ad-in">
       <p class="ad-top"><span>全面広告</span><span>募集要項</span></p>
       <h2 class="ad-h">募集プラン・料金・<br>前代未聞の<em>「返金保証」</em>について</h2>
-      <div class="seat" data-seat><p class="seat-h"><span class="seat-k">募集状況</span><span>限定<b>30</b>名</span><span class="seat-d" data-seat-d>締切 11/19（木）<wbr>24:00</span></p><p class="seat-n" data-seat-n>残り<b>30</b>名</p><span class="seat-grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><p class="seat-c" data-seat-c hidden>締切まで <b>30:00</b></p></div>
+      <p class="lastcall">オッズを<wbr>守るため、<wbr>今回が<b>最後の<wbr>募集</b>です。<wbr>今後の<wbr>募集は<wbr>行いません。</p>
+      <div class="seat" data-seat><p class="seat-h"><span class="seat-k">募集状況</span><span>限定<b>20</b>名</span><span class="seat-d" data-seat-d>締切 11/24（火）<wbr>24:00</span></p><p class="seat-n" data-seat-n>残り<b>20</b>名</p><span class="seat-grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><p class="seat-c" data-seat-c hidden>締切まで <b>30:00</b></p></div>
       <div class="plan member" data-rv>
         <p class="ptag"><b>現会員様</b><span>返金保証 対象外</span></p>
         <h3>■ 現会員様・特別アップグレード枠</h3>
@@ -538,7 +624,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
     <div class="label"><b>主筆より</b><span>最終面</span></div>
     <h2 class="hl" data-rv>最後に：これが<wbr>私の<em>「集大成」</em>です</h2>
     <div class="body">
-      <p>これだけ<wbr>破格の<wbr>条件と<wbr>保証を<wbr>出せるのは、<wbr>1ミリたりとも<wbr>揺るがない<wbr>絶対的な自信があるからです。<br>最初から<wbr>自信があるこの<wbr>「マイルCSの<wbr>週」に<wbr>世に<wbr>出すと<wbr>先週から<wbr>決めて、<wbr>ここまで<wbr>ストーリーを<wbr>作ってきました。</p>
+      <p>これだけ<wbr>破格の<wbr>条件と<wbr>保証を<wbr>出せるのは、<wbr>1ミリたりとも<wbr>揺るがない<wbr>絶対的な自信があるからです。<br>前回は、<wbr>最初から<wbr>自信があった<wbr>「マイルCSの<wbr>週」に<wbr>世に<wbr>出しました。<wbr>そして<wbr>今回が、<wbr>最後の<wbr>募集です。</p>
       <p class="box red" data-rv>これが<wbr>私、<wbr>川崎タカシの<wbr>集大成です。</p>
       <p>市場を<wbr>壊す側になるのか、<wbr>壊される<wbr>側になるのか。<wbr>すべては<wbr>今回のあなたの<wbr>選択にかかっています。</p>
       <p>一見すると<wbr>高そうに<wbr>見えるかもしれませんが、<wbr>断言します。<span class="mk">「極めて<wbr>安い買い物」</span>です。<br>もしあなたが<wbr>年間で<wbr>10万円以上競馬で<wbr>負けているなら、<wbr>あるいは<wbr>自分の<wbr>予想に<wbr>絶対的な指針がないのなら、<wbr>迷わず<wbr>申し込んでください。</p>
@@ -559,13 +645,13 @@ html.js [data-rv].in { opacity: 1; transform: none; }
       <details><summary><i>Q3.</i><span>手元の<wbr>軍資金が<wbr>少ないのですが、<wbr>大金がないと<wbr>勝てませんか？</span></summary><p><i>A.</i><span>大金は<wbr>不要です。<wbr>1レースあたり<wbr>数百円〜数千円レベルの<wbr>少額スタートでも<wbr>全く問題ありません。<wbr>競馬で<wbr>最も<wbr>重要なのは<wbr>賭け金の<wbr>大きさではなく<wbr>「期待値のある<wbr>箇所に、<wbr>正しい<wbr>比率で<wbr>資金を<wbr>配分すること<wbr>（ベットコントロール）」です。<wbr>少額から<wbr>スタートし、<wbr>複利の<wbr>力で<wbr>無理なく<wbr>雪だるま<wbr>式に<wbr>資金を<wbr>増やしていく<wbr>具体的な<wbr>ステップもすべて<wbr>伝授します。</span></p></details>
       <details><summary><i>Q4.</i><span>会員が<wbr>増えてみんなが<wbr>同じ馬を<wbr>買ったら、<wbr>オッズが<wbr>下がって<wbr>勝てなくなりませんか？</span></summary><p><i>A.</i><span>ご<wbr>安心ください。<wbr>単一の<wbr>買い目に<wbr>全員を<wbr>集中させるような<wbr>粗悪な予想配信とは<wbr>異なり、<wbr><span class="nb">T-AI</span>は<wbr>JRA全レース・全券種の<wbr>確率を<wbr>可視化するため、<wbr>利用者ごとに<wbr>狙う<wbr>レースや<wbr>券種が<wbr>自然と<wbr>分散されます。<wbr>さらに<wbr>システム自体が<wbr>一定の<wbr>投票増加に<wbr>耐えうる<wbr>設計になっている<wbr>上、<wbr>市場オッズへの<wbr>影響を<wbr>完全に<wbr>防ぐため<wbr>「参加人数には<wbr>厳格な上限」を<wbr>設けています。<wbr>枠が<wbr>埋まり<wbr>次第、<wbr>募集は<wbr>完全に<wbr>打ち切ります。</span></p></details>
       <details><summary><i>Q5.</i><span>仕事や<wbr>家庭の<wbr>都合で、<wbr>土日に<wbr>リアルタイムでずっと<wbr>競馬を<wbr>見られない<wbr>日があっても<wbr>大丈夫ですか？</span></summary><p><i>A.</i><span>全レースに<wbr>張り付く必要は<wbr>一切ありません。<wbr>JRA全36レースすべての<wbr>確率が<wbr>算出されるため、<wbr>「日曜の<wbr>午後の<wbr>1時間だけ」<wbr>「厳選勝負レースだけ」といったように、<wbr>ご<wbr>自身の<wbr>ライフスタイルに<wbr>合わせて<wbr>期待値の<wbr>高い場面だけをつまみ<wbr>食いする<wbr>運用が<wbr>可能です。<wbr>さらに<wbr>今後の<wbr>無料アップデートで<wbr>「自動投票システム」が<wbr>実装されれば、<wbr>文字通り<wbr>スマホを<wbr>開く時間すら<wbr>不要になります。</span></p></details>
-      <details><summary><i>Q6.</i><span>今回は<wbr>見送って、<wbr>もう<wbr>少し様子を<wbr>見てから<wbr>次の<wbr>募集で<wbr>参加してもいいですか？</span></summary><p><i>A.</i><span>はっきり<wbr>申し上げますが、<wbr>様子見は<wbr>「一番損をする<wbr>選択」です。<wbr>理由は<wbr>3つあります。<wbr>1つ<wbr>目は、<wbr>オッズ保護のため<wbr>定員に<wbr>達した<wbr>時点で<wbr>募集を<wbr>終了し、<wbr>次回の<wbr>募集は<wbr>未定であること。<wbr>2つ<wbr>目は、<wbr>今後自動投票や<wbr>地方競馬指数などの<wbr>大型アップデートが<wbr>実装されれば、<wbr>現在の<wbr>価格での<wbr>提供は<wbr>二度とできなくなること。<wbr>そして<wbr>3つ<wbr>目は、<wbr>あなたが<wbr>迷って<wbr>先延ばしにしている<wbr>来週も<wbr>再来週も、<wbr>従来のやり<wbr>方を<wbr>続ける<wbr>限り大切なお<wbr>金と<wbr>時間を<wbr>失い続けるという<wbr>事実です。<wbr>返金保証という<wbr>リスクヘッジまで<wbr>用意している<wbr>今この<wbr>瞬間以上に、<wbr>有利な参加タイミングは<wbr>二度とありません。</span></p></details>
+      <details><summary><i>Q6.</i><span>今回は<wbr>見送って、<wbr>もう<wbr>少し様子を<wbr>見てから<wbr>次の<wbr>募集で<wbr>参加してもいいですか？</span></summary><p><i>A.</i><span>はっきり<wbr>申し上げますが、<wbr>様子見は<wbr>「一番損をする<wbr>選択」です。<wbr>理由は<wbr>3つあります。<wbr>1つ<wbr>目は、<wbr>オッズ保護のため、<wbr>今回が<wbr>最後の<wbr>募集であること。<wbr>定員に<wbr>達した<wbr>時点で<wbr>締め切り、<wbr>今後の<wbr>募集は<wbr>行いません。<wbr>2つ<wbr>目は、<wbr>今後自動投票や<wbr>地方競馬指数などの<wbr>大型アップデートが<wbr>実装されれば、<wbr>現在の<wbr>価格での<wbr>提供は<wbr>二度とできなくなること。<wbr>そして<wbr>3つ<wbr>目は、<wbr>あなたが<wbr>迷って<wbr>先延ばしにしている<wbr>来週も<wbr>再来週も、<wbr>従来のやり<wbr>方を<wbr>続ける<wbr>限り大切なお<wbr>金と<wbr>時間を<wbr>失い続けるという<wbr>事実です。<wbr>返金保証という<wbr>リスクヘッジまで<wbr>用意している<wbr>今この<wbr>瞬間以上に、<wbr>有利な参加タイミングは<wbr>二度とありません。</span></p></details>
     </div>
   </section>
 
   <section class="final" id="final" data-screen-label="11 申込" data-nodock>
     <p class="ft">市場を<wbr>壊す側になるのか、<br><em>壊される<wbr>側になるのか。</em></p>
-    <div class="seat" data-seat><p class="seat-h"><span class="seat-k">募集状況</span><span>限定<b>30</b>名</span><span class="seat-d" data-seat-d>締切 11/19（木）<wbr>24:00</span></p><p class="seat-n" data-seat-n>残り<b>30</b>名</p><span class="seat-grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><p class="seat-c" data-seat-c hidden>締切まで <b>30:00</b></p></div>
+    <div class="seat" data-seat><p class="seat-h"><span class="seat-k">募集状況</span><span>限定<b>20</b>名</span><span class="seat-d" data-seat-d>締切 11/24（火）<wbr>24:00</span></p><p class="seat-n" data-seat-n>残り<b>20</b>名</p><span class="seat-grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><p class="seat-c" data-seat-c hidden>締切まで <b>30:00</b></p></div>
     <a class="btn" href="https://takashiskeiba.com/fm/32869/Vm7k7RW5" target="_blank" rel="noopener" data-cta="final"><span class="nb">T-AI</span>に<wbr>申し込む<span>▶</span></a>
     <small>2027年末まで 149,800円（税抜）<wbr>／税込 164,780円</small>
   </section>
@@ -577,7 +663,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
 </div>
 
 <div class="dock" id="dock" aria-hidden="true">
-  <div class="dock-in"><div><b>限定30名　残り<wbr>30名</b><span>2027年末まで 149,800円（税抜）<wbr>返金保証＋特約</span></div><a class="btn" href="#plans" tabindex="-1">プランを<wbr>見る</a></div>
+  <div class="dock-in"><div><b>限定20名　残り<wbr>20名</b><span>2027年末まで 149,800円（税抜）<wbr>返金保証＋特約</span></div><a class="btn" href="#plans" tabindex="-1">プランを<wbr>見る</a></div>
 </div>
 
 <script>
@@ -599,21 +685,21 @@ html.js [data-rv].in { opacity: 1; transform: none; }
 </script>
 
 <script>
-// 募集状況（限定30名）。川崎さんの指定で、今日 11/19（木）の時刻ごとに表示を切り替える。
-//   確認用：?at=2026-11-19T22:10 のように付けると、その時刻の表示になる
+// 募集状況（限定20名・最終募集）。11/24（火）の時刻ごとに表示を切り替える（前回 11/19 と同じ流れを20名に合わせた）。
+//   確認用：?at=2026-11-24T22:10 のように付けると、その時刻の表示になる
 (() => {
   'use strict';
-  const T = (hm) => Date.parse(`2026-11-19T${hm}:00+09:00`);
+  const T = (hm) => Date.parse(`2026-11-24T${hm}:00+09:00`);
   const SEAT_PLAN = [            // この時刻から、残りは何名か
-    { at: 0, left: 30 },
-    { at: T('21:00'), left: 17 },
-    { at: T('22:00'), left: 10 },
-    { at: T('22:30'), left: 6 },
-    { at: T('23:00'), left: 3 },
+    { at: 0, left: 20 },
+    { at: T('21:00'), left: 11 },
+    { at: T('22:00'), left: 7 },
+    { at: T('22:30'), left: 4 },
+    { at: T('23:00'), left: 2 },
   ];
   const LAST_CALL = T('23:30');  // ここから「締切まで残り○分」
   const CLOSE = T('24:00');      // 表示を「募集終了」にする（申込ボタンは押せるまま）
-  const TOTAL = 30;
+  const TOTAL = 20;
 
   const q = new URLSearchParams(location.search).get('at');
   const offset = q && !isNaN(Date.parse(q + '+09:00')) ? Date.parse(q + '+09:00') - Date.now() : 0;
@@ -642,7 +728,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
       el.querySelectorAll('.seat-grid i').forEach((i, k) => i.classList.toggle('x', k < TOTAL - left));
     });
     if (key !== last) {
-      if (dockB) dockB.textContent = closed ? '募集は終了しました' : `限定30名　残り${left}名`;
+      if (dockB) dockB.textContent = closed ? '募集は終了しました' : `限定20名　残り${left}名`;
       // 申込ボタンは24:00以降もそのまま押せる（川崎さんの指定）
       last = key;
     }
