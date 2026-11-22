@@ -740,6 +740,7 @@ body.lock { overflow: hidden; }
 .pmk small { flex: 1 0 100%; padding-left: 2.2em; font-size: 11.5px; color: var(--ink2); }
 .pmk.list span { font-size: 13px; }
 .pcom { margin: 6px 0 0; font-size: 14px; line-height: 1.8; }
+.st .v2p { color: #1f4fa3; font-weight: 900; }
 .memo .mrow { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(27, 24, 20, .25); }
 .memo .mtag { align-self: start; text-align: center; font-size: 11px; font-weight: 900; padding: 3px 0; border: 1.5px solid var(--ink); }
 .memo .mtag.now { background: var(--ink); color: var(--paper); }
@@ -1522,6 +1523,22 @@ function rentaiOf(r, no) {
   }
   return m.get(no);
 }
+/* ─ v2（川崎さんの第2の勝率）：発走前のオッズの歪みを補正した確率。会員だけ。v1（T-AIの勝率）は置き換えず並べる ─
+   届くのは発走の約1時間前から（5分ごとに取り込み）。サイトでは計算しない */
+const V2 = new Map();  // レース → { at, m: Map(馬番→確率), label } | 'loading'
+function needV2(r) {
+  if (GUEST || FREE || !session || r.status === 'done' && V2.has(r.id)) return;
+  const c = V2.get(r.id);
+  if (c === 'loading' || (c && Date.now() - c.at < 120000)) return;
+  V2.set(r.id, 'loading');
+  sb.from('v2_live').select('horse_no,win_prob,snapshot_time,tier').eq('race_id', r.id).then(({ data, error }) => {
+    const rows = error ? [] : data || [];
+    const t = rows[0] || {};
+    V2.set(r.id, { at: Date.now(), m: new Map(rows.map((x) => [x.horse_no, +x.win_prob])), label: rows.length ? `${t.tier && t.tier !== '随時' ? t.tier + '・' : ''}${String(t.snapshot_time || '').slice(11, 16)}時点` : '' });
+    if (rows.length && $('#view') && $('#view').dataset.race === r.id && !($('#sheet') && $('#sheet').dataset.no)) rerender();
+  });
+}
+const v2Of = (r) => { needV2(r); const c = V2.get(r.id); return c && c !== 'loading' && c.m.size ? c : null; };
 function shutuba(r) {
   const done = r.status === 'done', my = MY;
   const order = r.horses.slice().sort(raceState.sort === 'prob' ? (my ? (a, b) => my.get(a.no) - my.get(b.no) : (a, b) => b.prob - a.prob) : (a, b) => a.no - b.no);
@@ -1534,6 +1551,7 @@ function shutuba(r) {
     ...(my ? [['あなた', (h) => `<b class="sme">${my.get(h.no)}位</b>`]] : []),
     // 確率のすぐ下に市場のオッズ（川崎さんの依頼：スワイプしなくても見比べられるように）
     [`${my ? 'T-AI勝率' : '勝率'}<small>単勝オッズ</small>`, (h) => `<b class="${my ? 'sdim' : h.prob >= .3 ? 'shi' : ''}">${pct(h.prob)}%</b><span class="mo">${odd(h) ? `単 <b>${o1(odd(h))}</b>${pop(h) ? `<i>${pop(h)}人気</i>` : ''}` : `<i>${h.rank}位</i>`}</span>`],
+    ...(v2Of(r) ? [[`v2勝率<small>${esc(v2Of(r).label)}</small>`, (h) => { const v = v2Of(r).m.get(h.no); return v == null ? '－' : `<b class="v2p">${pct(v)}%</b>${odd(h) ? `<span class="evl${v * odd(h) >= 1 ? ' hi' : ''}">期待値 ${(v * odd(h)).toFixed(2)}</span>` : ''}`; }]] : []),
     ['複勝率<small>複勝オッズ</small>', (h) => `${pcv(CALC.place(r, h.no))}<span class="mo">${plc(h) ? `複 <b>${plc(h)}</b>` : ''}</span>`],
     // 期待値＝確率×オッズ（単勝は勝率×単勝オッズ、複勝は複勝率×複勝オッズの下限）。1を超えると赤。単勝が1割以上の馬に「割安」
     ['期待値<small>単勝／複勝</small>', (h) => { const ew = odd(h) ? h.prob * odd(h) : null, p = r.odds && r.odds.place && r.odds.place[String(h.no)], ep = p && p[0] && p[0] < 9999 ? CALC.place(r, h.no) * p[0] : null; return ew == null && ep == null ? '－' : `<span class="evl${ew >= 1 ? ' hi' : ''}">単 ${ew == null ? '－' : ew.toFixed(2)}</span><span class="evl${ep >= 1 ? ' hi' : ''}">複 ${ep == null ? '－' : ep.toFixed(2)}</span>${ew >= 1.1 ? '<b class="cheap">割安</b>' : ''}`; }],
