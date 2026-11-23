@@ -740,6 +740,24 @@ body.lock { overflow: hidden; }
 .pmk small { flex: 1 0 100%; padding-left: 2.2em; font-size: 11.5px; color: var(--ink2); }
 .pmk.list span { font-size: 13px; }
 .pcom { margin: 6px 0 0; font-size: 14px; line-height: 1.8; }
+.vsw .seg { grid-auto-flow: unset; grid-template-columns: 1fr 1fr 1fr .55fr; }
+.vsw .seg button { padding-left: 4px; padding-right: 4px; font-size: clamp(11.5px, 3.6vw, 14px); letter-spacing: 0; }
+.v2pick { margin-top: 10px; border: 3px solid var(--red); background: #fff4f4; padding: 12px; }
+.v2pick > small { display: block; font-size: 12px; font-weight: 900; color: var(--red); }
+.v2h { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.v2h b { font-size: 22px; font-weight: 900; }
+.v2k { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 10px; }
+.v2k span { display: grid; font-size: 11px; font-weight: 700; color: var(--ink2); }
+.v2k b { font-size: 18px; font-weight: 900; color: var(--ink); }
+.v2res { margin: 8px 0 0; font-weight: 900; }
+.v2tbl { margin-top: 10px; border-top: 2px solid var(--ink); }
+.v2r { display: grid; grid-template-columns: minmax(0, 1fr) 4.2em 4.2em 3.8em; gap: 6px; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(27, 24, 20, .18); font-size: 13px; }
+.v2r > span:first-child { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.v2r > span:first-child b { overflow-wrap: anywhere; line-height: 1.35; font-weight: 900; }
+.v2r > span:not(:first-child) { text-align: right; }
+.v2r .v { font-weight: 900; color: #1f4fa3; }
+.v2r.hd { font-size: 11px; font-weight: 700; color: var(--ink2); }
+.v2r.pk { background: #fff4f4; }
 .memo .mrow { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(27, 24, 20, .25); }
 .memo .mtag { align-self: start; text-align: center; font-size: 11px; font-weight: 900; padding: 3px 0; border: 1.5px solid var(--ink); }
 .memo .mtag.now { background: var(--ink); color: var(--paper); }
@@ -1495,9 +1513,9 @@ function vRace(r) {
   const done = r.status === 'done', over = r.horses.some((h) => h.note === 'overseas');
   const ot = r.odds && r.odds.win ? `オッズは${oddsWhen(r)}。` : '';
   return `${head}
-  <div class="vsw"><div class="seg" role="group" aria-label="見解" id="pmodeSeg"><button type="button" data-pmode="std" aria-pressed="${raceState.view !== 'persona' && MINE.mode !== 'mine'}">T-AIの見解</button><button type="button" data-pmode="mine" aria-pressed="${raceState.view !== 'persona' && MINE.mode === 'mine'}">あなたの見解</button><button type="button" data-pmode="persona" aria-pressed="${raceState.view === 'persona'}">AI予想家</button></div>
-    <p class="vnote">${raceState.view === 'persona' ? 'キャラクターごとに、見る材料と印の付け方が違う予想家たちです。' : MINE.mode === 'mine' ? `あなたの重視順で並べた見解です（T-AIの勝率は参考）。${ot}` : `T-AIの見解は全員共通です。${ot}`}</p>${raceBell(r)}</div>
-  ${raceState.view === 'persona' ? personaView(r) + rnav(r) + '<!--persona-->' : ''}${raceState.view === 'persona' ? '' : `${MINE.mode === 'mine' ? `<div class="mybar">${MY ? `<span><b>あなたの重視順</b>${mineLabel()}</span>` : '<span>あなたの順位を計算しています…</span>'}<button type="button" class="btn sub" data-mineset="1">変更</button></div>` : ''}
+  <div class="vsw"><div class="seg" role="group" aria-label="見解" id="pmodeSeg"><button type="button" data-pmode="std" aria-pressed="${raceState.view !== 'persona' && raceState.view !== 'v2' && MINE.mode !== 'mine'}">T-AIの見解</button><button type="button" data-pmode="mine" aria-pressed="${raceState.view !== 'persona' && raceState.view !== 'v2' && MINE.mode === 'mine'}">あなたの見解</button><button type="button" data-pmode="persona" aria-pressed="${raceState.view === 'persona'}">AI予想家</button><button type="button" data-pmode="v2" aria-pressed="${raceState.view === 'v2'}">v2</button></div>
+    <p class="vnote">${raceState.view === 'v2' ? '発走前のオッズまで読む、第2の勝率です（会員限定）。' : raceState.view === 'persona' ? 'キャラクターごとに、見る材料と印の付け方が違う予想家たちです。' : MINE.mode === 'mine' ? `あなたの重視順で並べた見解です（T-AIの勝率は参考）。${ot}` : `T-AIの見解は全員共通です。${ot}`}</p>${raceBell(r)}</div>
+  ${raceState.view === 'v2' ? v2View(r) + rnav(r) : ''}${raceState.view === 'persona' ? personaView(r) + rnav(r) + '<!--persona-->' : ''}${raceState.view === 'persona' || raceState.view === 'v2' ? '' : `${MINE.mode === 'mine' ? `<div class="mybar">${MY ? `<span><b>あなたの重視順</b>${mineLabel()}</span>` : '<span>あなたの順位を計算しています…</span>'}<button type="button" class="btn sub" data-mineset="1">変更</button></div>` : ''}
   <nav class="rtoc" id="rtoc" aria-label="このページの目次">${[['#tbl', '出馬表'], ['#paceSec', '展開'], ['#lapSec', 'ラップ'], ['#goingSec', '馬場'], ['#comboSec', '組み合わせ']].map(([t, l]) => `<button type="button" data-jump="${t}">${l}</button>`).join('')}</nav>
   <div class="dctl"><div class="seg sm" role="group" aria-label="並び順" id="sortSeg"><button type="button" data-sort="no" aria-pressed="${raceState.sort === 'no'}">馬番順</button><button type="button" data-sort="prob" aria-pressed="${raceState.sort === 'prob'}">${MY ? 'あなたの順' : '確率順'}</button></div><small>表は左へスワイプ →</small></div>
   <div id="tbl">${shutuba(r)}</div>
@@ -2476,6 +2494,56 @@ function personaView(r) {
     <p class="dnote" style="margin-top:8px">${x.stage === 1 ? '前日の第1弾です（当日の朝に確定版に差し替わります）。' : ''}◎は決まった材料と手順で機械的に選んだもので、的中を約束するものではありません。</p>
   </section>`;
 }
+/* ─ v2（川崎さんの第2の勝率・会員限定）：v2_live（5分ごとに取り込み）をそのまま出す。サイトでは確率を計算しない。
+   買い目は川崎さんのルール「バランスの1頭」＝勝率の順位＋（勝率×オッズ）の順位の合計が最小の馬。オッズは v2 のファイルの base_odds（朝10時などの計算時点）を使うので、川崎さんの配信と同じ馬になる ─ */
+const V2 = new Map();  // レース → { at, rows } | 'loading'
+function needV2(r) {
+  if (GUEST || FREE || !session) return;
+  const c = V2.get(r.id);
+  if (c === 'loading' || (c && (Date.now() - c.at < 120000 || r.status === 'done'))) return;
+  V2.set(r.id, 'loading');
+  sb.from('v2_live').select('horse_no,win_prob,base_odds,snapshot_time,tier').eq('race_id', r.id).then(({ data, error }) => {
+    V2.set(r.id, { at: Date.now(), rows: error ? [] : data || [] });
+    if ($('#view') && $('#view').dataset.race === r.id && raceState.view === 'v2' && !($('#sheet') && $('#sheet').dataset.no)) rerender();
+  });
+}
+function v2Pick(rows) {
+  const ok = rows.filter((x) => +x.base_odds > 0);
+  if (!ok.length) return null;
+  const rk = (key) => { const m = new Map(); ok.slice().sort((a, b) => key(b) - key(a)).forEach((x, i) => m.set(x.horse_no, i + 1)); return m; };
+  const rp = rk((x) => +x.win_prob), re = rk((x) => +x.win_prob * +x.base_odds);
+  return ok.slice().sort((a, b) => rp.get(a.horse_no) + re.get(a.horse_no) - (rp.get(b.horse_no) + re.get(b.horse_no)) || b.win_prob - a.win_prob)[0];
+}
+const v2When = (rows) => { const t = rows[0] || {}; const hm = String(t.snapshot_time || '').slice(11, 16); return t.tier === '10時' ? '朝10時のオッズで計算' : `${hm ? hm + '時点' : '発走前'}のオッズで計算`; };
+function v2Text(r) {
+  const c = V2.get(r.id), p = c && c.rows && v2Pick(c.rows);
+  if (!p) return '';
+  const h = r.horses.find((x) => x.no === p.horse_no);
+  return [`${r.date.slice(5).replace('-', '/')} ${r.venue}${r.no}R ${r.name}（${r.start}発走）`, '', '【v2 バランスの1頭】', '【即PATの入力順】', '券種：単勝', '買い方：通常', `馬番：${p.horse_no}${h ? `（${h.name}）` : ''}`, '金額：100円'].join('\n');
+}
+function v2View(r) {
+  if (GUEST || FREE) return '<section class="sec"><p class="note" style="padding:20px 0">v2は会員さま限定です。</p></section>';
+  needV2(r);
+  const c = V2.get(r.id);
+  if (!c || c === 'loading') return '<section class="sec"><p class="note" style="padding:30px 0;text-align:center">読み込んでいます…</p></section>';
+  if (!c.rows.length) return '<section class="sec"><p class="note" style="padding:20px 0">このレースのv2は、まだ出ていません。発走の約1時間前（10:35以降に発走するレースは朝10時すぎ）に表示されます。</p></section>';
+  const p = v2Pick(c.rows), ph = p && r.horses.find((x) => x.no === p.horse_no);
+  const tai = new Map(r.horses.map((h) => [h.no, h]));
+  const rows = c.rows.slice().sort((a, b) => b.win_prob - a.win_prob);
+  const done = r.status === 'done';
+  return `<section class="sec">
+    <div class="label"><b>v2の買い目</b><span>${esc(v2When(c.rows))}</span></div>
+    ${p ? `<div class="v2pick"><small>バランスの1頭（単勝）</small><div class="v2h">${ph ? hn(ph) : ''}<b>${ph ? esc(ph.name) : p.horse_no + '番'}</b></div>
+      <div class="v2k"><span>v2勝率<b>${pct(+p.win_prob)}%</b></span><span>オッズ<b>${o1(+p.base_odds)}</b></span><span>期待値<b>${(p.win_prob * p.base_odds).toFixed(2)}</b></span></div>
+      ${ph && ph.result != null ? `<p class="v2res">結果：${ph.result}着</p>` : ''}</div>
+    ${done ? '' : `<div class="btns"><button class="btn" type="button" data-v2copy="${r.id}">買い目をコピー（即PATの入力順）<span>▶</span></button><button class="btn sub" type="button" data-ipat="1">即PATで買う（JRA公式サイトへ）<span>▶</span></button></div>`}` : '<p class="note">オッズが届いていないため、買い目を出せません。</p>'}
+    <p class="dnote" style="margin-top:8px">「バランスの1頭」は、v2の勝率の順位と、勝率×オッズ（お得度）の順位の合計がいちばん小さい馬です。コピーは単勝100円で作ります（金額は即PATで変えられます）。的中や利益を約束するものではありません。</p>
+  </section>
+  <section class="sec"><div class="label"><b>v2の勝率</b><span>T-AIの勝率と並べて</span></div>
+    <div class="v2tbl"><div class="v2r hd"><span>馬</span><span>v2</span><span>T-AI</span><span>オッズ</span></div>
+    ${rows.map((x) => { const h = tai.get(x.horse_no); return `<div class="v2r${p && x.horse_no === p.horse_no ? ' pk' : ''}"><span>${h ? hn(h) : x.horse_no}<b>${h ? esc(h.name) : ''}</b></span><span class="v">${pct(+x.win_prob)}%</span><span>${h ? pct(h.prob) + '%' : '－'}</span><span>${+x.base_odds > 0 ? o1(+x.base_odds) : '－'}</span></div>`; }).join('')}</div>
+    <p class="dnote" style="margin-top:8px">v2は、発走前のオッズを土台に、人気ごとの市場のズレを学習で補正した確率です。T-AIの勝率（前日に出す確率）は変わりません。オッズは、v2を計算した時点の単勝オッズです。</p></section>`;
+}
 function vBuild() {
   const r = byId.get(BS.raceId), ready = buildable();
   if (!kindsFor(r).includes(BS.kind)) { BS.kind = 'uma'; BS.axis = null; BS.sel.clear(); }
@@ -3150,11 +3218,12 @@ document.addEventListener('click', (e) => {
   if (ds.betsave) { saveBetSet(); return; }
   if (ds.betreload) { BETS = null; loadBets(true); rerender(); return; }
   if (ds.betdel) { if (confirm('この記録を消しますか？')) sb.from('bets').delete().eq('id', +ds.betdel).then(({ error }) => { if (!error) { BETS = BETS.filter((b) => b.id !== +ds.betdel); rerender(); } }); return; }
+  if (ds.v2copy) { const r = byId.get(ds.v2copy), tx = r && v2Text(r); if (tx) copyText(tx, t); return; }
   if (ds.ipatcopy) { const tx = ipatText(); if (!tx) { alert('先に馬を選んで、買い目を作ってください。'); return; } copyText(tx, t); return; }
   if (ds.install && INSTALL) { INSTALL.prompt(); INSTALL.userChoice.finally(() => { INSTALL = null; rerender(); }); return; }
   if (ds.cnav) { cardStep(+ds.cnav); return; }
   if (ds.idxretry) { const r = byId.get(ds.idxretry); if (r) { IDX.delete(r.id); needIdx(r); idxRedraw(r); } return; }
-  if (ds.pmode) { if (ds.pmode === 'persona') { raceState.view = 'persona'; raceState.pid = 0; rerender(); return; } raceState.view = 'std'; MINE.mode = ds.pmode; mineSave(); if (ds.pmode === 'mine') raceState.sort = 'prob'; rerender(); return; }
+  if (ds.pmode) { if (ds.pmode === 'v2') { raceState.view = 'v2'; rerender(); return; } if (ds.pmode === 'persona') { raceState.view = 'persona'; raceState.pid = 0; rerender(); return; } raceState.view = 'std'; MINE.mode = ds.pmode; mineSave(); if (ds.pmode === 'mine') raceState.sort = 'prob'; rerender(); return; }
   if (ds.pid != null) { raceState.pid = +ds.pid; rerender(); const c = $('.psel [aria-pressed="true"]'); if (c) c.scrollIntoView({ inline: 'center', block: 'nearest' }); return; }
   if (ds.mineset) { openMine(); return; }
   if (ds.mp) { mineAct(ds.mp); return; }
