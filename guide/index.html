@@ -54,11 +54,11 @@ html, body { margin: 0; height: 100%; background: #0e0c0a; color: var(--ink); fo
 .cv-s { margin: 8px 0 0; font-weight: 900; font-size: clamp(28px, 9vw, 38px); line-height: 1.25; text-shadow: 0 3px 0 rgba(0, 0, 0, .3); }
 .cv-l { margin: 12px 0 0; font-weight: 700; font-size: 15px; line-height: 1.7; color: #ffe9e9; }
 .phones { position: relative; flex: 1; min-height: 0; margin-top: 14px; }
-.phones .ph { position: absolute; bottom: 0; width: 44%; }
-.phones .ph:nth-child(1) { left: 4%; transform: rotate(-8deg); }
-.phones .ph:nth-child(2) { left: 28%; z-index: 2; width: 48%; bottom: 14px; }
-.phones .ph:nth-child(3) { right: 4%; transform: rotate(8deg); }
-.ph { border: 5px solid #111; border-radius: 22px; overflow: hidden; background: #fff; box-shadow: 0 14px 30px rgba(0, 0, 0, .45); aspect-ratio: 390 / 600; }
+.phones .ph { position: absolute; bottom: 0; height: 86%; width: auto; }
+.phones .ph:nth-child(1) { left: 6%; transform: rotate(-8deg); }
+.phones .ph:nth-child(2) { left: 50%; z-index: 2; height: 96%; bottom: 10px; transform: translateX(-50%); }
+.phones .ph:nth-child(3) { right: 6%; transform: rotate(8deg); }
+.ph { border: 5px solid #111; border-radius: 22px; overflow: hidden; background: #fff; box-shadow: 0 14px 30px rgba(0, 0, 0, .45); aspect-ratio: 390 / 760; }
 .ph img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
 .star { position: absolute; z-index: 3; right: 6px; top: -10px; width: 92px; height: 92px; display: grid; place-items: center; text-align: center; color: var(--ink); font-weight: 900; font-size: 13px; line-height: 1.25; background: var(--star); clip-path: polygon(50% 0, 61% 17%, 80% 7%, 79% 28%, 98% 31%, 86% 48%, 100% 63%, 80% 69%, 82% 90%, 62% 84%, 50% 100%, 38% 84%, 18% 90%, 20% 69%, 0 63%, 14% 48%, 2% 31%, 21% 28%, 20% 7%, 39% 17%); transform: rotate(10deg); }
 .hint { position: absolute; z-index: 4; right: 16px; bottom: calc(var(--bot) + 18px); display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; background: #fff; color: var(--red); font-weight: 900; font-size: 14px; box-shadow: 0 6px 16px rgba(0, 0, 0, .3); animation: nudge 1.4s ease-in-out infinite; }
@@ -79,13 +79,13 @@ html, body { margin: 0; height: 100%; background: #0e0c0a; color: var(--ink); fo
 .steps b { font-weight: 900; }
 .steps mark { background: linear-gradient(transparent 62%, rgba(193, 18, 31, .28) 62%); color: inherit; }
 .fig { position: relative; flex: 1; min-height: 0; margin: 4px 18px 0; }
-.fig .ph { position: absolute; inset: 0 8% auto; height: calc(100% + 30px); aspect-ratio: auto; border-bottom: 0; border-radius: 22px 22px 0 0; }
+.fig .ph { position: absolute; top: 0; left: 50%; transform: translateX(-50%); height: calc(100% + 30px); width: auto; max-width: 92%; border-bottom: 0; border-radius: 22px 22px 0 0; }
 .fig .cap { position: absolute; z-index: 2; left: 50%; bottom: calc(var(--bot) + 64px); transform: translateX(-50%); white-space: nowrap; padding: 5px 12px; border-radius: 999px; background: var(--ink); color: #fff; font-weight: 700; font-size: 12px; }
 .fig .dots { position: absolute; z-index: 2; left: 50%; bottom: calc(var(--bot) + 96px); transform: translateX(-50%); display: flex; gap: 6px; }
 .fig .dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(27, 24, 20, .3); }
 .fig .dots i.on { background: var(--red); }
 .fig .tapnote { position: absolute; z-index: 2; right: 10%; top: 10px; padding: 4px 10px; border-radius: 999px; background: var(--star); font-weight: 900; font-size: 11px; }
-.open { position: absolute; z-index: 3; left: 18px; right: 18px; bottom: calc(var(--bot) + 12px); display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: 999px; background: var(--red); color: #fff; text-decoration: none; font-weight: 900; font-size: 15px; box-shadow: 0 0 0 2px #f5dc92 inset, 0 6px 0 var(--red2); }
+.open { position: absolute; z-index: 6; left: 18px; right: 18px; bottom: calc(var(--bot) + 12px); display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: 999px; background: var(--red); color: #fff; text-decoration: none; font-weight: 900; font-size: 15px; box-shadow: 0 0 0 2px #f5dc92 inset, 0 6px 0 var(--red2); }
 
 /* v2 だけ黒と金 */
 .use.v2 { background: #14110d; color: #f2ecdf; }
@@ -96,7 +96,7 @@ html, body { margin: 0; height: 100%; background: #0e0c0a; color: var(--ink); fo
 .use.v2 .steps li::before { background: var(--foil); color: #1b1814; }
 .use.v2 .steps mark { background: linear-gradient(transparent 62%, rgba(226, 184, 87, .45) 62%); }
 .use.v2 .fig .cap { background: #e2b857; color: #1b1814; }
-.use.v2 .open { background: var(--foil); color: #1b1814; box-shadow: 0 0 0 2px #fff6d8 inset, 0 6px 0 #6e4c12; }
+.open.gold { background: var(--foil); color: #1b1814; box-shadow: 0 0 0 2px #fff6d8 inset, 0 6px 0 #6e4c12; }
 
 /* 基本操作・最後 */
 .basic { background: var(--paper); padding: calc(var(--top) + 70px) 18px calc(var(--bot) + 16px); }
@@ -104,8 +104,8 @@ html, body { margin: 0; height: 100%; background: #0e0c0a; color: var(--ink); fo
 .sec-t { margin: 2px 0 12px; font-weight: 900; font-size: clamp(24px, 7.4vw, 30px); line-height: 1.3; }
 .sec-t em { font-style: normal; color: var(--red); }
 .b3 { display: grid; gap: 10px; flex: 1; min-height: 0; grid-template-rows: repeat(3, minmax(0, 1fr)); }
-.b3 > div { display: grid; grid-template-columns: 38% 1fr; gap: 12px; align-items: center; min-height: 0; padding: 8px; border-radius: 14px; background: var(--card); box-shadow: 0 0 0 2px var(--ink); }
-.b3 .ph { border-width: 3px; border-radius: 12px; height: 100%; aspect-ratio: auto; }
+.b3 > div { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; min-height: 0; padding: 8px; border-radius: 14px; background: var(--card); box-shadow: 0 0 0 2px var(--ink); }
+.b3 .ph { border-width: 3px; border-radius: 12px; height: 100%; width: auto; max-height: 100%; }
 .b3 b { display: block; font-weight: 900; font-size: 18px; }
 .b3 b span { display: inline-grid; place-items: center; width: 26px; height: 26px; margin-right: 6px; border-radius: 50%; background: var(--red); color: #fff; font-family: var(--n); font-size: 15px; vertical-align: 2px; }
 .b3 p { margin: 4px 0 0; font-size: 14px; line-height: 1.6; color: var(--ink2); }
@@ -116,7 +116,8 @@ html, body { margin: 0; height: 100%; background: #0e0c0a; color: var(--ink); fo
 .end summary::after { content: "＋"; float: right; color: var(--star); }
 .end details[open] summary::after { content: "－"; }
 .end details p { margin: 0; padding: 0 16px 14px; font-size: 14.5px; line-height: 1.75; color: #e9e1cf; }
-.end .open { position: static; margin-top: 18px; }
+.end { padding-bottom: calc(var(--bot) + 84px) !important; }
+.cover .hint { bottom: calc(var(--bot) + 76px); }
 .end .note { margin: 16px 0 0; font-size: 12.5px; line-height: 1.7; color: #b9ae9a; }
 .end .again { display: block; width: 100%; margin-top: 12px; min-height: 44px; border: 1.5px solid #6f675b; border-radius: 999px; background: none; color: #f2ecdf; font: 900 14px var(--g); cursor: pointer; }
 
@@ -145,6 +146,7 @@ html, body { margin: 0; height: 100%; background: #0e0c0a; color: var(--ink); fo
   <div class="bar"><div class="prog" id="prog"></div>
     <div class="bar-r"><span class="logo">T<i>-</i>AI<small>使い方マニュアル</small></span><button class="tocbtn" type="button" id="tocOpen">目次</button></div></div>
   <div class="track" id="track"></div>
+  <a class="open" id="openApp" href="https://t-ai-app.clubkawasaki.net/" target="_blank" rel="noopener">会員サイトを開く ▶</a>
   <div class="toc" id="toc" aria-hidden="true"><div class="toc-h"><b>目次</b><button type="button" id="tocClose" aria-label="閉じる">×</button></div><div class="tiles" id="tiles"></div></div>
 </div>
 <script>
@@ -223,11 +225,10 @@ USES.forEach((u, i) => slides.push({ name: u.title, use: u, html: `<section clas
     ${u.figs.length > 1 ? `<span class="tapnote">写真をタップで切り替え</span><div class="dots">${u.figs.map((_, k) => `<i class="${k ? '' : 'on'}"></i>`).join('')}</div>` : ''}
     <span class="cap">${u.figs[0].c}</span>
   </div>
-  <a class="open" href="${APP}${u.open}" target="_blank" rel="noopener">この画面を開く ▶</a></section>` }));
+</section>` }));
 slides.push({ name: 'よくある質問', html: `<section class="sl end" aria-label="よくある質問">
   <span class="sec-k">FAQ</span><h2 class="sec-t">よくある質問</h2>
   ${FAQ.map(([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join('')}
-  <a class="open" href="${APP}/" target="_blank" rel="noopener">会員サイトを開く ▶</a>
   <button type="button" class="again" data-go="0">最初から見る</button>
   <p class="note">※T-AIの確率や買い目は、過去のデータをもとにした予測で、将来の払い戻しや利益を約束するものではありません。※馬券は会員さまご自身で、JRAの即PATから購入します。</p></section>` });
 
@@ -246,6 +247,8 @@ const go = (i, smooth = true) => { i = Math.max(0, Math.min(els.length - 1, i));
 const mark = () => {
   cur = Math.round(track.scrollLeft / track.clientWidth);
   bars.forEach((b, i) => { b.classList.toggle('done', i < cur); b.classList.toggle('on', i === cur); });
+  const u = slides[cur] && slides[cur].use, op = document.getElementById('openApp');
+  op.href = APP + (u ? u.open : '/'); op.textContent = u && u.open !== '/' ? 'この画面を開く ▶' : '会員サイトを開く ▶'; op.classList.toggle('gold', !!(u && u.v2));
   try { history.replaceState(null, '', '#' + (slides[cur].use ? slides[cur].use.id : cur === 0 ? '' : cur === 1 ? 'basic' : 'faq')); } catch (e) { /* 何もしない */ }
 };
 let t;
