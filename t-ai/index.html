@@ -68,6 +68,15 @@ p { margin: 0; }
 .mini .v small { font-size: .45em; }
 .mini .v .circle { position: absolute; inset: -14px -18px -12px -16px; }
 .mini .note { display: block; margin-top: 6px; font-family: var(--pen); font-size: 15px; line-height: 1.3; color: var(--red); transform: rotate(-3deg); transform-origin: left; }
+.kick.red { background: var(--red); color: #fff; }
+.front-sub .v2e { font-size: 1.45em; }
+.front-sub .go { display: inline-block; margin-top: 4px; font-size: 1.5em; color: var(--red); letter-spacing: .04em; }
+.ignite { margin: 22px var(--pad) 0; padding: 14px 14px 12px; border: 3px solid var(--red); background: #fff4f4; font-family: var(--g); font-weight: 900; font-size: clamp(20px, 6vw, 27px); line-height: 1.4; }
+.ignite .new { display: inline-block; margin-right: 8px; padding: 1px 7px; background: var(--red); color: #fff; font-family: var(--n); font-size: .55em; letter-spacing: .1em; vertical-align: .2em; }
+.ignite b { color: var(--red); }
+.ignite .nw { white-space: nowrap; }
+.ignite small { display: block; margin-top: 4px; font-weight: 700; font-size: .55em; color: var(--ink2); }
+.sub-hl { margin: 8px var(--pad) 0; font-family: var(--g); font-weight: 900; font-size: 16px; color: var(--ink2); }
 .band { margin: 22px 0 0; padding: 16px var(--pad); background: var(--ink); color: var(--paper); font-family: var(--g); font-weight: 900; font-size: clamp(22px, 6.6vw, 30px); line-height: 1.45; }
 .band small { display: block; margin-top: 4px; font-weight: 500; font-size: .52em; color: #d8cfbd; letter-spacing: .04em; }
 .cta-row { padding: 18px var(--pad) 26px; display: grid; gap: 8px; }
@@ -345,8 +354,8 @@ html.js [data-rv].in { opacity: 1; transform: none; }
   <section data-screen-label="01 一面" data-nodock>
     <div class="front">
       <div class="front-l">
-        <span class="kick">最終募集</span>
-        <p class="front-sub">選択を<wbr>科学する、<br>最強の<br>ベットシステム<br><em>「<span class="nb">T-AI</span>」</em></p>
+        <span class="kick red">最終募集</span>
+        <p class="front-sub">最強の<wbr>ベットシステム<br><span class="nb">T-AI</span>に、<br>第2の勝率<br><em class="v2e">v2エンジン</em><br><b class="go">始動！</b></p>
         <div class="mini" data-pen>
           <div class="t"><span><span class="nb">T-AI</span> 予測勝率</span><span>例</span></div>
           <span class="v">23.4<small>%</small><svg class="circle pen" viewBox="0 0 120 70" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M18,38 C14,14 96,4 108,30 C118,58 42,68 14,50 C2,40 22,18 60,12"/></svg></span>
@@ -355,6 +364,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
       </div>
       <h1 class="v-head"><span>競馬は、</span><span>予想じゃない。</span></h1>
     </div>
+    <p class="ignite" data-rv><span class="new">NEW</span><span class="nb">T-AI</span> <b>v2エンジン</b>、<wbr><span class="nw">始動。</span><small>発走前の<wbr>オッズまで<wbr>読む、<wbr>第2の勝率。<wbr>会員さま限定。</small></p>
     <p class="band" data-rv>当てるな。<br>選ぶのもやめろ。<small>感覚と<wbr>経験の<wbr>時代は、<wbr>終わった。</small></p>
     <div class="cta-row">
       <div class="seat" data-seat><p class="seat-h"><span class="seat-k">募集状況</span><span>限定<b>20</b>名</span><span class="seat-d" data-seat-d>締切 11/24（火）<wbr>24:00</span></p><p class="seat-n" data-seat-n>残り<b>20</b>名</p><span class="seat-grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><p class="seat-c" data-seat-c hidden>締切まで <b>30:00</b></p></div>
@@ -530,26 +540,16 @@ html.js [data-rv].in { opacity: 1; transform: none; }
 
   <section class="art" id="ch6b" data-screen-label="07c v2">
     <div class="label"><b>次の一手</b><span>第7面</span></div>
-    <h2 class="hl" data-rv>発走前の<wbr>オッズまで<wbr>読む、<em>第2の<wbr>勝率「v2」</em></h2>
+    <h2 class="hl" data-rv><span class="nb">T-AI</span> v2エンジン、<em>始動。</em></h2>
+    <p class="sub-hl" data-rv>発走前の<wbr>オッズまで<wbr>読む、<wbr>第2の勝率</p>
     <div class="body">
       <p>前日に<wbr>出す<wbr><span class="nb">T-AI</span>の<wbr>勝率は<wbr>そのままに、<wbr>もうひとつの<wbr>勝率<wbr>「v2」を、<wbr>会員さまのために<wbr>用意しています。</p>
       <p>v2は、<wbr>発走前の<wbr>オッズを<wbr>土台に、<wbr>人気ごとに<wbr>市場が<wbr>どれだけ<wbr>ズレているか<wbr>（本命の<wbr>過小評価・<wbr>人気薄の<wbr>過大評価）を<wbr>学習で<wbr>補正した<wbr>確率です。<br>会員ページでは、<wbr>発走の<wbr>約1時間前から<wbr>出馬表に<wbr>並べて<wbr>表示する<wbr>予定です。</p>
     </div>
-    <div class="bignum" data-rv><span class="k">実戦に<wbr>近い条件<wbr>（朝10時の<wbr>オッズ）での<wbr>検証で、<wbr>回収率</span><span class="v">111.2<small>%</small></span><span class="k">2025年・<wbr>2,519レース。<wbr>各レースで<b>「バランスの<wbr>1頭」</b>を<wbr>単勝100円ずつ<wbr>買った場合<wbr>（投資 251,900円 → 回収 280,110円、<wbr>的中率 35.1%）</span></div>
-    <div class="body" style="padding-top:14px"><p><b>「バランスの<wbr>1頭」</b>とは、<wbr>「勝つ確率の<wbr>順位」と<wbr>「お得度<wbr>（確率×オッズ）の<wbr>順位」の<wbr>合計が<wbr>いちばん<wbr>小さい馬。<wbr>当たりやすさと<wbr>配当の<wbr>バランスで<wbr>選ぶ、<wbr>機械的な<wbr>ルールです。</p></div>
-    <div class="years" data-pen>
-      <div class="cap"><span>年ごとの<wbr>回収率</span><span>確定オッズで<wbr>計算・参考／点線＝100%</span></div>
-        <div class="yb"><span class="y">2022</span><span class="bar"><i style="--w:66%"></i></span><span class="v">106.5%</span></div>
-        <div class="yb"><span class="y">2023</span><span class="bar"><i style="--w:77%"></i></span><span class="v">110.9%</span></div>
-        <div class="yb"><span class="y">2024</span><span class="bar"><i style="--w:90%"></i></span><span class="v">116.1%</span></div>
-        <div class="yb"><span class="y">2025</span><span class="bar"><i style="--w:71%"></i></span><span class="v">108.5%</span></div>
-        <div class="yb dn"><span class="y">2026</span><span class="bar"><i style="--w:47%"></i></span><span class="v">98.8%</span></div>
-      <div class="foot">2022〜2026年・16,887レース、<wbr>同じ<wbr>「バランスの1頭」で<wbr>計算。<wbr>全期間で<wbr>108.4%</div>
-    </div>
+    <div class="bignum" data-rv><span class="k">朝10時の<wbr>オッズで<wbr>確かめた<wbr>検証</span><span class="v"><span data-to="2519">2,519</span><small>レース</small></span><span class="k">で、<wbr>市場<wbr>（オッズ）が<wbr>示す確率よりも、<b>v2の<wbr>確率のほうが<wbr>正確</b>でした<wbr>（統計的に<wbr>有意）。<wbr>確率の<wbr>当てはまりの<wbr>良さも、<wbr>比べた<wbr>3つの<wbr>方法の中で<wbr>いちばんでした。</span></div>
+    <div class="body" style="padding-top:14px"><p>過去の<wbr>確定オッズを<wbr>使った<wbr>16,887レースの<wbr>検証でも、<wbr>同じ作りの<wbr>モデルが<wbr>市場と<wbr><span class="nb">T-AI</span>の<wbr>これまでの<wbr>確率を<wbr>上回りました。<br>「みんなが<wbr>どう見ているか」<wbr>（オッズ）の<wbr>ズレまで<wbr>確率に<wbr>織り込む。<wbr>それが<wbr>v2エンジンです。</p></div>
     <ul class="notes">
       <li>※過去の<wbr>データでの<wbr>検証結果です。<wbr>将来の<wbr>払い戻しや<wbr>利益を<wbr>約束する<wbr>ものではありません。</li>
-      <li>※年ごとの<wbr>数字は、<wbr>発走後に<wbr>確定する<wbr>オッズで<wbr>計算した<wbr>参考値です。<wbr>実際に<wbr>買える<wbr>条件に<wbr>近いのは、<wbr>上の<wbr>発走前の<wbr>検証です。</li>
-      <li>※同じ<wbr>検証で、<wbr>お得度<wbr>1.0以上の<wbr>馬だけを<wbr>買う<wbr>方法は<wbr>回収率<wbr>75.2%<wbr>（発走前・2025年）でした。</li>
       <li>※結果が<wbr>出る前に<wbr>予測を<wbr>凍結して<wbr>答え合わせする<wbr>フォワードテストを、<wbr>いまも<wbr>続けています。</li>
     </ul>
     <p class="box red" data-rv>v2は<wbr>会員さま<wbr>限定です。</p>
