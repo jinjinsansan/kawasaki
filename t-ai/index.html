@@ -15,7 +15,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&amp;family=Zen+Kaku+Gothic+New:wght@500;700;900&amp;family=Zen+Kurenaido&amp;family=Oswald:wght@500;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&amp;family=Zen+Kaku+Gothic+New:wght@500;700;900&amp;family=Zen+Kurenaido&amp;family=Oswald:wght@500;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap">
 <style>
 /* T-AI 販売LP v4 ─ 競馬新聞 */
 :root {
@@ -350,6 +350,79 @@ html.js [data-rv].in { opacity: 1; transform: none; }
 .cta-row .seat, .ad-in .seat { margin-bottom: 6px; }
 .ad-in .seat { margin-bottom: 18px; }
 .btn.off { background: #bdb5a6; color: var(--paper); box-shadow: none; transform: none; pointer-events: none; }
+
+/* ─ 第7面 v2：この章だけ「機械の管制画面」 ─ */
+.v2x { --vbg: #070b16; --vpn: #0d1426; --vln: #1d2945; --vtx: #c9d4ec; --vdm: #6f7fa3; --vgr: #3ef0a8; --vrd: #ff4d61; --vam: #f6c24a; --vcy: #5cb6ff;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  background: radial-gradient(120% 60% at 50% 0%, #12204a 0%, var(--vbg) 55%) var(--vbg); color: var(--vtx); border-top: 0; padding-top: 0; overflow: hidden; }
+.v2x .label::after { background: var(--vln); }
+.v2x .label span, .v2x .sub-hl { color: var(--vdm); }
+.v2x .hl { color: #fff; }
+.v2x .hl em { color: var(--vgr); text-shadow: 0 0 18px rgba(62, 240, 168, .55); }
+.v2x .body { color: var(--vtx); }
+.vx-bar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 12px var(--pad); border-bottom: 1px solid var(--vln); font-family: var(--mono); }
+.vx-q { display: grid; place-content: center; width: 34px; height: 34px; border-radius: 8px; background: linear-gradient(135deg, #2f6bff, #19c2ff); color: #fff; font-weight: 700; font-size: 17px; }
+.vx-name { min-width: 0; font-size: 13px; letter-spacing: .08em; color: var(--vtx); white-space: nowrap; overflow: hidden; }
+.vx-name b { color: #fff; }
+.vx-name small { display: block; font-size: 8.5px; letter-spacing: .14em; color: var(--vdm); overflow: hidden; text-overflow: ellipsis; }
+.vx-clock { display: grid; justify-items: end; font-size: 15px; line-height: 1.2; color: #fff; }
+.vx-clock i { font-style: normal; font-size: 9px; letter-spacing: .12em; color: var(--vrd); animation: vxBlink 1.2s steps(2) infinite; }
+.vx-clock small { font-size: 8px; color: var(--vdm); letter-spacing: .2em; }
+@keyframes vxBlink { 50% { opacity: .25; } }
+.vx-tick { overflow: hidden; border-bottom: 1px solid var(--vln); background: rgba(255, 255, 255, .02); font-family: var(--mono); font-size: 11.5px; line-height: 30px; white-space: nowrap; margin-bottom: 30px; }
+.vx-tick-in { display: inline-block; padding-left: 100%; animation: vxTick 48s linear infinite; }
+.vx-tick-in span { margin-right: 22px; color: var(--vdm); }
+.vx-tick-in b { color: var(--vtx); font-weight: 500; }
+.vx-tick-in .up { color: var(--vgr); } .vx-tick-in .dn { color: var(--vrd); } .vx-tick-in .lv { color: #fff; background: var(--vrd); padding: 1px 6px; margin-right: 10px; }
+@keyframes vxTick { to { transform: translateX(-100%); } }
+.vx-panel { margin: 16px var(--pad) 0; border: 1px solid var(--vln); border-radius: 6px; background: linear-gradient(180deg, rgba(20, 30, 58, .85), rgba(10, 16, 32, .9)); box-shadow: 0 0 0 1px rgba(92, 182, 255, .04), 0 10px 30px rgba(0, 0, 0, .35); overflow: hidden; }
+.vx-ph { display: flex; justify-content: space-between; gap: 8px; padding: 7px 10px; border-bottom: 1px solid var(--vln); font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; color: var(--vdm); white-space: nowrap; }
+.vx-ph span:first-child { color: #fff; }
+.vx-orb { display: block; width: 100%; height: clamp(260px, 78vw, 380px); }
+.vx-pf { display: flex; justify-content: space-between; padding: 6px 10px 8px; font-family: var(--mono); font-size: 10.5px; color: var(--vdm); }
+.vx-pf b { color: var(--vam); font-weight: 500; }
+.vx-stack { list-style: none; margin: 0; padding: 6px; display: grid; gap: 6px; min-height: 324px; align-content: start; }
+.vx-stack li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 7px 9px; border: 1px solid var(--vln); border-left: 3px solid var(--vdm); border-radius: 4px; background: rgba(255, 255, 255, .025); font-family: var(--mono); animation: vxIn .5s var(--ease) both; }
+.vx-stack li.buy { border-color: rgba(62, 240, 168, .5); border-left-color: var(--vgr); background: rgba(62, 240, 168, .07); }
+.vx-stack li.skip { border-left-color: var(--vrd); }
+.vx-stack .t { padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; letter-spacing: .08em; color: #06120c; background: var(--vgr); }
+.vx-stack li.skip .t { background: transparent; border: 1px solid var(--vrd); color: var(--vrd); }
+.vx-stack li.hold .t { background: transparent; border: 1px solid var(--vam); color: var(--vam); }
+.vx-stack .m { min-width: 0; font-size: 12px; line-height: 1.45; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.vx-stack .m small { display: block; font-size: 10px; color: var(--vdm); overflow: hidden; text-overflow: ellipsis; }
+.vx-stack .sc { font-size: 22px; font-weight: 700; color: var(--vtx); }
+.vx-stack li.buy .sc { color: var(--vgr); text-shadow: 0 0 12px rgba(62, 240, 168, .5); }
+.vx-stack li.skip .sc { color: var(--vrd); }
+@keyframes vxIn { from { opacity: 0; transform: translateY(-10px); } }
+.vx-log { height: 150px; overflow: hidden; padding: 8px 10px; display: flex; flex-direction: column; justify-content: flex-end; font-family: var(--mono); font-size: 10.5px; line-height: 1.75; color: var(--vdm); }
+.vx-log div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vx-log .b { color: var(--vgr); } .vx-log .s { color: var(--vrd); } .vx-log .w { color: #fff; }
+.vx-img { margin: 8px var(--pad) 0; font-family: var(--g); font-size: 11.5px; color: var(--vdm); text-align: right; }
+.vx-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 26px var(--pad) 0; }
+.vx-stats > div { display: grid; align-content: start; gap: 2px; padding: 10px 8px 12px; border: 1px solid var(--vln); border-top: 2px solid var(--vcy); border-radius: 4px; background: rgba(92, 182, 255, .05); text-align: center; }
+.vx-stats small { font-family: var(--mono); font-size: 8.5px; letter-spacing: .12em; color: var(--vdm); }
+.vx-stats b { font-family: var(--n); font-weight: 700; font-size: clamp(26px, 8.6vw, 40px); line-height: 1.1; color: #fff; text-shadow: 0 0 16px rgba(92, 182, 255, .5); white-space: nowrap; }
+.vx-stats b i { font-style: normal; font-family: var(--g); font-size: .42em; margin-left: 2px; color: var(--vtx); }
+.vx-stats span { font-family: var(--g); font-weight: 700; font-size: 11.5px; line-height: 1.5; color: var(--vtx); }
+.v2x .bignum { border-top-color: var(--vgr); border-bottom-color: var(--vln); }
+.v2x .bignum .k { color: var(--vtx); }
+.v2x .bignum .k b { color: var(--vgr); }
+.v2x .bignum .v { color: var(--vgr); text-shadow: 0 0 22px rgba(62, 240, 168, .45); }
+.v2x .bignum .v small { color: var(--vtx); }
+.v2x .score { border: 1px solid var(--vln); border-radius: 6px; overflow: hidden; background: var(--vpn); }
+.v2x .score .cap { background: #15203d; color: #fff; font-family: var(--mono); letter-spacing: .04em; }
+.v2x .sr { border-top-color: var(--vln); }
+.v2x .sr .k { color: var(--vtx); }
+.v2x .v2r .sr small { color: var(--vdm); }
+.v2x .v2r .sr .v { color: var(--vgr); text-shadow: 0 0 18px rgba(62, 240, 168, .4); }
+.v2x .v2r .sr .v small { color: var(--vtx); }
+.v2x .v2r .foot { border-top-color: var(--vln); color: var(--vdm); }
+.vx-close { margin: 30px var(--pad) 0; font-family: var(--g); font-weight: 900; font-size: clamp(26px, 7.8vw, 36px); line-height: 1.4; color: #fff; }
+.vx-close small { display: block; margin-bottom: 6px; font-family: var(--mono); font-weight: 500; font-size: 11px; letter-spacing: .18em; color: var(--vdm); }
+.vx-close b { color: var(--vgr); text-shadow: 0 0 20px rgba(62, 240, 168, .55); }
+.v2x .notes { color: var(--vdm); }
+.v2x .box.red { margin: 22px var(--pad) 0; border-top-color: var(--vgr); border-bottom-color: var(--vln); color: #fff; }
+@media (prefers-reduced-motion: reduce) { .vx-tick-in { animation: none; padding-left: 0; } .vx-clock i { animation: none; } .vx-stack li { animation: none; } }
 </style>
 <script>document.documentElement.classList.add('js');</script>
 </head>
@@ -561,14 +634,41 @@ html.js [data-rv].in { opacity: 1; transform: none; }
     <p class="vo-note">※会員コミュニティでいただいた声を、一部要約して掲載しています。</p>
   </section>
 
-  <section class="art" id="ch6b" data-screen-label="07c v2">
+  <section class="art v2x" id="ch6b" data-screen-label="07c v2">
+    <div class="vx-bar"><span class="vx-q">T</span><span class="vx-name"><b>T-AI v2</b> // ENGINE<small>ODDS → MARKET GAP → WIN PROB → DECISION</small></span><span class="vx-clock"><i>● LIVE</i><b data-vx-clock>--:--:--</b><small>JST</small></span></div>
+    <div class="vx-tick" aria-hidden="true"><div class="vx-tick-in" data-vx-tick></div></div>
     <div class="label"><b>次の一手</b><span>第7面</span></div>
     <h2 class="hl" data-rv><span class="nb">T-AI</span> v2エンジン、<em>始動。</em></h2>
     <p class="sub-hl" data-rv>発走前の<wbr>オッズまで<wbr>読む、<wbr>第2の勝率</p>
-    <div class="body">
-      <p>前日に<wbr>出す<wbr><span class="nb">T-AI</span>の<wbr>勝率は<wbr>そのままに、<wbr>もうひとつの<wbr>勝率<wbr>「v2」を、<wbr>会員さまのために<wbr>用意しています。</p>
-      <p>v2は、<wbr>発走前の<wbr>オッズを<wbr>土台に、<wbr>人気ごとに<wbr>市場が<wbr>どれだけ<wbr>ズレているか<wbr>（本命の<wbr>過小評価・<wbr>人気薄の<wbr>過大評価）を<wbr>学習で<wbr>補正した<wbr>確率です。<br>会員ページでは、<wbr>発走の<wbr>約1時間前から<wbr>出馬表に<wbr>並べて<wbr>表示する<wbr>予定です。</p>
+
+    <div class="vx-panel">
+      <div class="vx-ph"><span>◆ THE ENGINE</span><span>入力 → v2の勝率</span></div>
+      <canvas class="vx-orb" data-vx-orb aria-hidden="true"></canvas>
+      <div class="vx-pf"><span><b data-vx-n>0</b> 頭を計算中</span><span>↓ 判断へ</span></div>
     </div>
+    <div class="vx-panel">
+      <div class="vx-ph"><span>◆ DECISION STACK</span><span>v2が選ぶ</span></div>
+      <ol class="vx-stack" data-vx-stack></ol>
+    </div>
+    <div class="vx-panel">
+      <div class="vx-ph"><span>◆ ENGINE LOG</span><span>tail -f v2.log</span></div>
+      <div class="vx-log" data-vx-log></div>
+    </div>
+    <p class="vx-img">※画面の<wbr>レース・馬番・<wbr>数字は<wbr>イメージです。</p>
+
+    <div class="body">
+      <p>前日に<wbr>出す<wbr><span class="nb">T-AI</span>の<wbr>勝率は<wbr>そのままに、<wbr>もうひとつの<wbr>勝率<wbr>「v2」が<wbr>動き出しました。</p>
+      <p>v2は、<wbr>発走前の<wbr>オッズを<wbr>土台に、<wbr>人気ごとに<wbr>市場が<wbr>どれだけ<wbr>ズレているか<wbr>（本命の<wbr>過小評価・<wbr>人気薄の<wbr>過大評価）を<wbr>学習で<wbr>補正した<wbr>確率です。<br>会員ページの<wbr>「v2」タブに、<wbr>v2が<wbr>選んだ<wbr>1頭と、<wbr>買い目を<wbr>そのまま<wbr>コピーできる<wbr>ボタンが<wbr>出ます。</p>
+    </div>
+
+    <!-- ▼ 川崎さんの数字（ステップメールと同じもの・仮）。根拠をもらったら、ここの3つの数字と説明だけを入れ替える ▼ -->
+    <div class="vx-stats" data-rv>
+      <div><small>DEVELOPMENT</small><b>5<i>年</i></b><span>開発と<wbr>実運用</span></div>
+      <div><small>SIMULATION</small><b>300<i>億回</i></b><span>シミュレーション</span></div>
+      <div><small>STRESS TEST</small><b>+5<i>%</i></b><span>市場の<wbr>資金が<wbr>増えても<wbr>プラス</span></div>
+    </div>
+    <!-- ▲ ここまで ▲ -->
+
     <div class="bignum" data-rv><span class="k">朝10時の<wbr>オッズで<wbr>確かめた<wbr>検証</span><span class="v"><span data-to="2519">2,519</span><small>レース</small></span><span class="k">で、<wbr>市場<wbr>（オッズ）が<wbr>示す確率よりも、<b>v2の<wbr>確率のほうが<wbr>正確</b>でした<wbr>（統計的に<wbr>有意）。<wbr>確率の<wbr>当てはまりの<wbr>良さも、<wbr>比べた<wbr>3つの<wbr>方法の中で<wbr>いちばんでした。</span></div>
     <div class="score v2r" data-pen>
       <div class="cap"><span>v2の<wbr>検証実績</span><span>1レース1頭・<wbr>単勝100円</span></div>
@@ -579,6 +679,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
       <div class="foot">的中率<wbr>以外の％は<wbr>回収率<wbr>（払戻÷投資）。<wbr>各レースで<wbr>「勝つ確率の順位」と<wbr>「確率×オッズの順位」の<wbr>合計が<wbr>いちばん<wbr>小さい馬を<wbr>1頭だけ<wbr>買った場合。</div>
     </div>
     <div class="body" style="padding-top:14px"><p>過去の<wbr>確定オッズを<wbr>使った<wbr>16,887レースの<wbr>検証でも、<wbr>同じ作りの<wbr>モデルが<wbr>市場と<wbr><span class="nb">T-AI</span>の<wbr>これまでの<wbr>確率を<wbr>上回りました。<br>「みんなが<wbr>どう見ているか」<wbr>（オッズ）の<wbr>ズレまで<wbr>確率に<wbr>織り込む。<wbr>それが<wbr>v2エンジンです。</p></div>
+    <p class="vx-close" data-rv><small>人が予想する時代は、終わった。</small>ここから先は、<wbr><b class="nb">v2が選ぶ。</b></p>
     <ul class="notes">
       <li>※過去の<wbr>データでの<wbr>検証結果です。<wbr>将来の<wbr>払い戻しや<wbr>利益を<wbr>約束する<wbr>ものではありません。</li>
       <li>※結果が<wbr>出る前に<wbr>予測を<wbr>凍結して<wbr>答え合わせする<wbr>フォワードテストを、<wbr>いまも<wbr>続けています。</li>
@@ -779,6 +880,128 @@ html.js [data-rv].in { opacity: 1; transform: none; }
   }
   render();
   setInterval(render, 1000);
+})();
+</script>
+<script>
+// 第7面 v2 の管制画面（帯・光る球・判断の列・ログ）。数字はすべてイメージ（本物のv2の出力ではない）。
+(() => {
+  'use strict';
+  const root = document.getElementById('ch6b');
+  if (!root) return;
+  const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const R = Math.random, pick = (a) => a[Math.floor(R() * a.length)];
+  const VEN = ['東京', '京都', '中山', '阪神', '中京', '福島', '新潟', '小倉'];
+  const NUM = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱';
+  const jst = (t) => new Date(t + 9 * 3600e3).toISOString().slice(11, 19);
+
+  // 時計
+  const clk = root.querySelector('[data-vx-clock]');
+  const tickClock = () => { clk.textContent = jst(Date.now()); };
+  tickClock(); setInterval(tickClock, 1000);
+
+  // 流れる帯
+  const tk = root.querySelector('[data-vx-tick]');
+  let th = '<span class="lv">LIVE</span>';
+  for (let i = 0; i < 16; i++) {
+    const o = (1.6 + R() * 28).toFixed(1), d = (R() * 14 - 7).toFixed(1);
+    th += `<span>${pick(VEN)}${1 + Math.floor(R() * 12)}R ${NUM[Math.floor(R() * 16)]} <b>単勝 ${o}</b> <i class="${d >= 0 ? 'up' : 'dn'}">${d >= 0 ? '▲' : '▼'}${Math.abs(d)}%</i></span>`;
+    if (i % 5 === 4) th += `<span><b>MARKET GAP</b> 人気${1 + Math.floor(R() * 8)}番 <i class="up">補正 ${(R() * 3 + .5).toFixed(1)}pt</i></span>`;
+  }
+  tk.innerHTML = th + th;
+
+  // 判断の列とログ（イメージの馬を1頭ずつ流す）
+  const stack = root.querySelector('[data-vx-stack]'), log = root.querySelector('[data-vx-log]');
+  let fire = 0;
+  function one() {
+    const race = `${pick(VEN)}${1 + Math.floor(R() * 12)}R`, no = NUM[Math.floor(R() * 16)];
+    const u = R(), kind = u < .42 ? 'buy' : u < .62 ? 'hold' : 'skip';
+    const p = .05 + R() * .28, ev = kind === 'buy' ? 1.08 + R() * .2 : kind === 'hold' ? .98 + R() * .09 : .7 + R() * .26, o = Math.max(1.4, ev / p);
+    const sc = Math.max(4, Math.min(97, Math.round(58 + (ev - 1) * 150 + R() * 6)));
+    return { race, no, p, o, ev, kind, sc };
+  }
+  function push(x, anim) {
+    const li = document.createElement('li');
+    li.className = x.kind;
+    li.innerHTML = `<span class="t">${x.kind === 'buy' ? 'BUY' : x.kind === 'hold' ? 'WATCH' : 'SKIP'}</span><span class="m">${x.race} ${x.no} ${x.kind === 'buy' ? 'バランスの1頭' : x.kind === 'hold' ? '様子見' : '見送り'}<small>勝率 ${(x.p * 100).toFixed(1)}% × ${x.o.toFixed(1)}倍 = ${x.ev.toFixed(2)}</small></span><span class="sc">${x.sc}</span>`;
+    if (!anim) li.style.animation = 'none';
+    stack.prepend(li);
+    while (stack.children.length > 6) stack.lastChild.remove();
+    const l = document.createElement('div');
+    l.innerHTML = `<span class="w">${jst(Date.now()).slice(3)}</span> ${x.race} ${x.no} p${x.p.toFixed(3).slice(1)}×${x.o.toFixed(1)}=${x.ev.toFixed(2)} <span class="${x.kind === 'buy' ? 'b' : x.kind === 'skip' ? 's' : ''}">${x.kind.toUpperCase()}</span>`;
+    log.append(l);
+    while (log.children.length > 8) log.firstChild.remove();
+    if (x.kind === 'buy') fire = 1;
+  }
+  for (let i = 0; i < 6; i++) push(one(), false);
+
+  // 光る球（canvas）
+  const cv = root.querySelector('[data-vx-orb]'), cx = cv.getContext('2d'), cnt = root.querySelector('[data-vx-n]');
+  const IN = [['単勝オッズ', '#f6c24a'], ['人気', '#ff8a4c'], ['市場のズレ', '#5cb6ff'], ['過去の学習データ', '#b98cff']];
+  const N = 560, P = [];
+  for (let i = 0; i < N; i++) { const u = R() * 2 - 1, a = R() * Math.PI * 2; P.push({ x: Math.sqrt(1 - u * u) * Math.cos(a), y: u, z: Math.sqrt(1 - u * u) * Math.sin(a), r: .55 + R() * .45 }); }
+  const pulses = [];
+  let W = 0, H = 0, dpr = 1, rot = 0, n = 0, last = 0, lastPush = 0, vis = false;
+  function size() { dpr = Math.min(2, devicePixelRatio || 1); W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  function geo() {
+    const ox = W * .64, oy = H * .47, rad = Math.min(W * .3, H * .38);
+    const ins = IN.map((d, i) => ({ x: 10, y: H * (.16 + i * .2), c: d[1], t: d[0] }));
+    return { ox, oy, rad, ins };
+  }
+  function curve(x0, y0, x1, y1, k) { const mx = x0 + (x1 - x0) * .55; return [x0 + (mx - x0) * k * 2 * (1 - k) + (x1 - x0) * k * k, 0, mx, y0, y1]; }
+  function bez(a, b, c, d, t) { const u = 1 - t; return u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d; }
+  function draw(t) {
+    const g = geo(); const { ox, oy, rad, ins } = g;
+    cx.clearRect(0, 0, W, H);
+    // 入力の線
+    ins.forEach((s, i) => {
+      const x0 = s.x + 84, y0 = s.y + 14, x1 = ox - rad * .25, y1 = oy + (i - 1.5) * rad * .18;
+      cx.strokeStyle = s.c + '88'; cx.lineWidth = 1.4; cx.beginPath(); cx.moveTo(x0, y0); cx.bezierCurveTo(x0 + (x1 - x0) * .5, y0, x1 - (x1 - x0) * .5, y1, x1, y1); cx.stroke();
+      cx.fillStyle = s.c; cx.font = '700 11px "Zen Kaku Gothic New", sans-serif'; cx.fillText(s.t, s.x, s.y + 8);
+      cx.strokeStyle = s.c + '88'; cx.beginPath(); cx.moveTo(s.x, s.y + 14); cx.lineTo(s.x + 84, s.y + 14); cx.stroke();
+      s.x0 = x0; s.y0 = y0; s.x1 = x1; s.y1 = y1;
+    });
+    // 球（回転する点と、中心から伸びる線）
+    const cr = Math.cos(rot), sr = Math.sin(rot), ct = Math.cos(.35), st = Math.sin(.35);
+    for (const q of P) {
+      let x = q.x * cr + q.z * sr, z = -q.x * sr + q.z * cr, y = q.y * ct - z * st; z = q.y * st + z * ct;
+      const k = .55 + z * .45, px = ox + x * rad * q.r, py = oy + y * rad * q.r;
+      const left = x < -.35;
+      cx.strokeStyle = left ? `rgba(246,194,74,${.10 + k * .22})` : `rgba(160,190,255,${.06 + k * .2})`;
+      cx.lineWidth = .7; cx.beginPath(); cx.moveTo(ox + x * rad * .12, oy + y * rad * .12); cx.lineTo(px, py); cx.stroke();
+      cx.fillStyle = left ? `rgba(246,194,74,${.35 + k * .6})` : `rgba(220,232,255,${.25 + k * .7})`;
+      cx.beginPath(); cx.arc(px, py, left ? 1.6 * k + .4 : 1.1 * k + .3, 0, 6.283); cx.fill();
+    }
+    const glow = cx.createRadialGradient(ox, oy, 0, ox, oy, rad * .5); glow.addColorStop(0, 'rgba(120,200,255,.35)'); glow.addColorStop(1, 'rgba(120,200,255,0)');
+    cx.fillStyle = glow; cx.beginPath(); cx.arc(ox, oy, rad * .5, 0, 6.283); cx.fill();
+    // 出力（判断へ）
+    const ex = ox, ey = H - 6;
+    cx.strokeStyle = fire > 0 ? `rgba(62,240,168,${.35 + fire * .65})` : 'rgba(62,240,168,.35)'; cx.lineWidth = 1.6 + fire * 2;
+    cx.beginPath(); cx.moveTo(ox, oy + rad * .2); cx.bezierCurveTo(ox + rad * .6, oy + rad * .9, ox - 10, ey - 30, ex, ey); cx.stroke();
+    // 線を流れる光
+    for (const u of pulses) {
+      const s = ins[u.i];
+      const px = bez(s.x0, s.x0 + (s.x1 - s.x0) * .5, s.x1 - (s.x1 - s.x0) * .5, s.x1, u.t), py = bez(s.y0, s.y0, s.y1, s.y1, u.t);
+      cx.fillStyle = '#fff'; cx.shadowColor = s.c; cx.shadowBlur = 10; cx.beginPath(); cx.arc(px, py, 2.2, 0, 6.283); cx.fill(); cx.shadowBlur = 0;
+    }
+  }
+  function frame(t) {
+    if (!vis) return;
+    const dt = Math.min(50, t - (last || t)); last = t;
+    rot += dt * .00018;
+    fire = Math.max(0, fire - dt * .0012);
+    if (R() < dt * .006) pulses.push({ i: Math.floor(R() * IN.length), t: 0 });
+    for (const u of pulses) u.t += dt * .0009;
+    while (pulses.length && pulses[0].t >= 1) pulses.shift();
+    n += Math.floor(R() * 4); cnt.textContent = (18234 + n).toLocaleString('ja-JP');
+    if (t - lastPush > 1700) { lastPush = t; push(one(), true); }
+    draw(t);
+    requestAnimationFrame(frame);
+  }
+  size(); addEventListener('resize', () => { size(); if (RM || !vis) draw(0); });
+  cnt.textContent = '18,234';
+  if (RM) { draw(0); return; }
+  draw(0);
+  new IntersectionObserver((es) => { const v = es[0].isIntersecting; if (v && !vis) { vis = true; last = 0; requestAnimationFrame(frame); } else if (!v) vis = false; }, { threshold: .05 }).observe(root);
 })();
 </script>
 </body>
