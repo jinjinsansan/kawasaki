@@ -43,7 +43,7 @@ p, h1, h2, h3, ol, ul, figure, blockquote { margin: 0; }
 .page::before { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(92, 182, 255, .045) 1px, transparent 1px), linear-gradient(90deg, rgba(92, 182, 255, .045) 1px, transparent 1px); background-size: 28px 28px; }
 
 /* 上部バー */
-.bar { position: sticky; top: 0; z-index: 30; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: calc(10px + env(safe-area-inset-top, 0px)) var(--pad) 10px; background: rgba(4, 6, 13, .86); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--ln); font-family: var(--mono); }
+.bar { position: sticky; top: 0; z-index: 30; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: calc(10px + env(safe-area-inset-top, 0px)) var(--pad) 10px; background: rgba(4, 6, 13, .97);  border-bottom: 1px solid var(--ln); font-family: var(--mono); }
 .bar-q { display: grid; place-content: center; width: 32px; height: 32px; border-radius: 7px; background: linear-gradient(135deg, #2f6bff, #19c2ff); color: #fff; font-weight: 700; font-size: 16px; box-shadow: 0 0 18px rgba(47, 107, 255, .45); }
 .bar-n { min-width: 0; font-size: 13px; letter-spacing: .08em; white-space: nowrap; overflow: hidden; }
 .bar-n b { color: #fff; }
@@ -228,7 +228,7 @@ p, h1, h2, h3, ol, ul, figure, blockquote { margin: 0; }
 /* 下の固定バー（起動画面と最後の章が見えている間は隠す） */
 .dock { position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; transform: translateY(110%); transition: transform .4s var(--ease); pointer-events: none; }
 .dock.on { transform: none; pointer-events: auto; }
-.dock-in { max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px var(--pad) calc(10px + env(safe-area-inset-bottom, 0px)); background: rgba(4, 6, 13, .92); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid rgba(62, 240, 168, .45); }
+.dock-in { max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px var(--pad) calc(10px + env(safe-area-inset-bottom, 0px)); background: rgba(4, 6, 13, .92);  border-top: 1px solid rgba(62, 240, 168, .45); }
 .dock-t { min-width: 0; font-family: var(--mono); line-height: 1.3; white-space: nowrap; }
 .dock-t small { display: block; font-size: 9.5px; letter-spacing: .16em; color: var(--dm); overflow: hidden; text-overflow: ellipsis; }
 .dock-t b { font-size: 20px; font-weight: 700; color: var(--gr); font-variant-numeric: tabular-nums; text-shadow: 0 0 14px rgba(62, 240, 168, .5); }
@@ -299,7 +299,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
 .lt-sign { margin-top: 2em !important; text-align: right; font-weight: 900 !important; color: var(--ik) !important; }
 .lt .note, .lt .lt-in > p.note { color: var(--ik2); }
 /* 章の目印（上部バーの下に出る） */
-.bar-ch { grid-column: 1 / -1; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; align-items: center; margin: 8px calc(-1 * var(--pad)) -10px; padding: 7px var(--pad) 8px; border-top: 1px solid var(--ln); background: rgba(4, 6, 13, .92); }
+.bar-ch { position: absolute; left: 0; right: 0; top: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; align-items: center; margin: 0; padding: 7px var(--pad) 8px; border-bottom: 1px solid var(--ln); pointer-events: none; border-top: 1px solid var(--ln); background: #04060d; }
 .bar-ch b { font-family: var(--mono); font-weight: 700; font-size: 11px; letter-spacing: .14em; color: var(--gr); white-space: nowrap; }
 .bar-ch span { min-width: 0; font-family: var(--g); font-weight: 700; font-size: 12.5px; line-height: 1.4; color: #e3e9f7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bar-ch i { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
@@ -623,8 +623,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
       cx.clearRect(0, 0, W, H);
       for (const p of S) {
         p.x -= p.v * dt; if (p.x + p.len < 0) Object.assign(p, mk(W + R() * 40));
-        const g = cx.createLinearGradient(p.x, 0, p.x + p.len, 0); g.addColorStop(0, p.c + p.a + ')'); g.addColorStop(1, p.c + '0)');
-        cx.strokeStyle = g; cx.lineWidth = p.w; cx.beginPath(); cx.moveTo(p.x, p.y); cx.lineTo(p.x + p.len, p.y); cx.stroke();
+        cx.strokeStyle = p.c + (p.a * .6) + ')'; cx.lineWidth = p.w; cx.beginPath(); cx.moveTo(p.x, p.y); cx.lineTo(p.x + p.len, p.y); cx.stroke();
         cx.fillStyle = p.c + Math.min(1, p.a + .3) + ')'; cx.fillRect(p.x - 1, p.y - p.w / 2 - .3, 2, p.w + .6);
       }
       cx.font = '500 10px "JetBrains Mono", monospace';
