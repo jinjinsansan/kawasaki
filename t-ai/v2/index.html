@@ -453,8 +453,10 @@ body { color: #c9d4ec; }
 .kv p { margin: 12px 0 0; font-family: var(--g); font-weight: 700; font-size: 15px; line-height: 1.8; color: var(--vtx); }
 .cd { margin: 22px var(--pad) 0; padding: 14px 14px 16px; border: 1px solid rgba(62, 240, 168, .45); border-radius: 6px; background: rgba(62, 240, 168, .06); text-align: center; box-shadow: 0 0 30px rgba(62, 240, 168, .08) inset; }
 .cd small { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: .2em; color: var(--vdm); }
-.cd b { display: block; margin-top: 4px; font-family: var(--mono); font-weight: 700; font-size: clamp(44px, 15vw, 70px); line-height: 1.05; letter-spacing: .02em; color: var(--vgr); text-shadow: 0 0 26px rgba(62, 240, 168, .55); font-variant-numeric: tabular-nums; }
+.cd b { display: block; margin-top: 4px; font-family: var(--mono); font-weight: 700; font-size: clamp(36px, 12vw, 60px); line-height: 1.05; letter-spacing: .01em; color: var(--vgr); text-shadow: 0 0 26px rgba(62, 240, 168, .55); font-variant-numeric: tabular-nums; }
 .cd span { display: block; margin-top: 6px; font-family: var(--g); font-weight: 700; font-size: 13px; color: var(--vtx); }
+.page .vx-tick-in { animation-duration: 16s; }
+.cd b small { display: inline; margin: 0; font-size: .5em; letter-spacing: 0; color: rgba(62, 240, 168, .8); }
 .cd.open b { font-size: clamp(30px, 9vw, 44px); }
 /* タイムライン */
 .tl { list-style: none; margin: 22px var(--pad) 0; padding: 0 0 0 22px; border-left: 1px solid var(--vln); display: grid; gap: 22px; }
@@ -719,13 +721,13 @@ body { color: #c9d4ec; }
   function frame(t) {
     if (!vis) return;
     const dt = Math.min(50, t - (last || t)); last = t;
-    rot += dt * .00018;
-    fire = Math.max(0, fire - dt * .0012);
-    if (R() < dt * .006) pulses.push({ i: Math.floor(R() * IN.length), t: 0 });
-    for (const u of pulses) u.t += dt * .0009;
+    rot += dt * .0008;
+    fire = Math.max(0, fire - dt * .003);
+    if (R() < dt * .03) pulses.push({ i: Math.floor(R() * IN.length), t: 0 });
+    for (const u of pulses) u.t += dt * .0028;
     while (pulses.length && pulses[0].t >= 1) pulses.shift();
-    n += Math.floor(R() * 4); cnt.textContent = (18234 + n).toLocaleString('ja-JP');
-    if (t - lastPush > 1700) { lastPush = t; push(one(), true); }
+    n += 7 + Math.floor(R() * 30); cnt.textContent = (18234 + n).toLocaleString('ja-JP');
+    if (t - lastPush > 650) { lastPush = t; push(one(), true); }
     draw(t);
     requestAnimationFrame(frame);
   }
@@ -752,13 +754,14 @@ body { color: #c9d4ec; }
     const t = now(), isOpen = t >= OPEN;
     cds.forEach((box) => {
       box.classList.toggle('open', isOpen);
-      box.querySelector('[data-cd]').textContent = isOpen ? 'ENGINE ONLINE' : hms(OPEN - t);
+      const ms = OPEN - t, cs = String(Math.floor((ms % 1000) / 10)).padStart(2, '0');
+      box.querySelector('[data-cd]').innerHTML = isOpen ? 'ENGINE ONLINE' : `${hms(ms - (ms % 1000))}<small>.${cs}</small>`;
       box.querySelector('[data-cd-k]').textContent = isOpen ? 'STATUS' : 'ENGINE START IN';
       box.querySelector('[data-cd-s]').textContent = isOpen ? '募集を開始しました（締切 24:00）' : '募集開始（20:00）まで';
     });
     if (isOpen !== was) { pre.hidden = isOpen; open.hidden = !isOpen; was = isOpen; }
   }
-  tick(); setInterval(tick, 1000);
+  tick(); if (RM) setInterval(tick, 1000); else { const loop = () => { tick(); requestAnimationFrame(loop); }; requestAnimationFrame(loop); }
 
   // 起動ログ
   const boot = document.querySelector('[data-boot]');
