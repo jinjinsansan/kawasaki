@@ -352,6 +352,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 .sl > * { flex: none; }
 .sl { padding-bottom: 0 !important; }
 .sl::after { content: ""; display: block; flex: none; height: calc(var(--dk, 84px) + 14px); }
+.sl.fitz { overflow-y: hidden; }
 .s-hero { padding-top: calc(44px + env(safe-area-inset-top, 0px)); padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 .s-hero .hero { flex: 1; min-height: 0; padding-bottom: 12px; }
 .s-hero .boot { min-height: 0; padding-top: 10px; font-size: 11px; line-height: 1.7; }
@@ -869,8 +870,32 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   const pos = document.querySelector('[data-pos]'), more = document.querySelector('[data-more]'), hint = document.querySelector('[data-hint]');
   const RM = matchMedia('(prefers-reduced-motion: reduce)').matches, N = S.length, p2 = (v) => String(v).padStart(2, '0');
   let cur = 0;
+  /* 入りきらない画面は、中身を縮めて1画面に収める（縦スクロールをなくす）。縮めても入らないときだけ縦スクロールを残す */
+  const fit = () => {
+    const spacer = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--dk')) || 84) + 14;
+    S.forEach((s) => {
+      const kids = [...s.children];
+      kids.forEach((c) => { c.style.zoom = ''; });
+      s.classList.remove('fitz', 'tall');
+      const pt = parseFloat(getComputedStyle(s).paddingTop) || 0, avail = s.clientHeight - pt - spacer;
+      let need = s.scrollHeight - pt - spacer;
+      if (need <= avail + 1) return;
+      let r = Math.max(.64, avail / need);
+      for (let k = 0; k < 3; k++) {
+        kids.forEach((c) => { c.style.zoom = r; });
+        need = s.scrollHeight - pt - spacer;
+        if (need <= avail + 1 || r <= .64) break;
+        r = Math.max(.64, r * avail / need);
+      }
+      s.classList.add(need <= avail + 1 ? 'fitz' : 'tall');
+      s.scrollTop = 0;
+    });
+    chkMore();
+  };
   const dk = () => { const d = document.querySelector('.dock-in'); if (d) document.documentElement.style.setProperty('--dk', Math.ceil(d.getBoundingClientRect().height) + 'px'); };
-  dk(); addEventListener('resize', dk);
+  dk(); addEventListener('resize', () => { dk(); fit(); });
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(() => { dk(); fit(); });
+  setTimeout(fit, 1200);
   more.addEventListener('click', () => { const s = S[cur]; s.scrollBy({ top: s.clientHeight * .7, behavior: RM ? 'auto' : 'smooth' }); });
   let goSmooth = null;
   const go = (i) => { i = Math.max(0, Math.min(N - 1, i)); if (goSmooth) goSmooth(i); else tr.scrollTo({ left: i * tr.clientWidth }); };
