@@ -346,6 +346,10 @@ html.js [data-rv].in { opacity: 1; transform: none; }
 .seat-grid i.x { background: var(--ink); }
 .seat-c { margin-top: 8px; padding: 6px 10px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 14px; text-align: center; }
 .seat-c b { font-family: var(--n); font-weight: 700; font-size: 22px; color: #ff6b73; letter-spacing: .04em; font-variant-numeric: tabular-nums; margin-left: 4px; }
+.btn.locked { background: #8d867a; color: #fff; border-color: #6f685d; box-shadow: none; pointer-events: none; cursor: not-allowed; }
+.btn.locked:hover { transform: none; }
+.seat.pre .seat-n { flex-wrap: wrap; font-size: 15px; }
+.seat.pre .seat-n b { letter-spacing: .02em; }
 .seat.closed .seat-n { color: var(--red); font-size: 26px; }
 .cta-row .seat, .ad-in .seat { margin-bottom: 6px; }
 .ad-in .seat { margin-bottom: 18px; }
@@ -842,6 +846,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
     { at: T('22:30'), left: 4 },
     { at: T('23:00'), left: 2 },
   ];
+  const OPEN = T('20:00');       // ここまでは予告：申込ボタンを押せない・募集開始までのカウントダウン
   const LAST_CALL = T('23:30');  // ここから「締切まで残り○分」
   const CLOSE = T('24:00');      // 表示を「募集終了」にする（申込ボタンは押せるまま）
   const TOTAL = 20;
@@ -852,9 +857,35 @@ html.js [data-rv].in { opacity: 1; transform: none; }
   const seats = [...document.querySelectorAll('[data-seat]')];
   const dockB = document.querySelector('#dock .dock-in b');
   let last = null;
+  const ctas = [...document.querySelectorAll('a[data-cta]')];
+  ctas.forEach((a) => { a.dataset.href = a.getAttribute('href'); a.dataset.html = a.innerHTML; });
+  const hms = (ms) => { const s = Math.max(0, Math.ceil(ms / 1000)); return [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60].map((v) => String(v).padStart(2, '0')).join(':'); };
+  function lock(on) {
+    ctas.forEach((a) => {
+      if (on === a.classList.contains('locked')) return;
+      a.classList.toggle('locked', on);
+      if (on) { a.removeAttribute('href'); a.setAttribute('aria-disabled', 'true'); a.tabIndex = -1; a.innerHTML = '20:00 募集開始'; }
+      else { a.setAttribute('href', a.dataset.href); a.removeAttribute('aria-disabled'); a.removeAttribute('tabindex'); a.innerHTML = a.dataset.html; }
+    });
+  }
 
   function render() {
     const t = now();
+    if (t < OPEN) {
+      lock(true);
+      const cd = hms(OPEN - t);
+      seats.forEach((el) => {
+        el.classList.add('pre');
+        el.querySelector('[data-seat-c]').hidden = true;
+        el.querySelector('[data-seat-n]').innerHTML = `募集開始まで<b>${cd}</b>`;
+        el.querySelectorAll('.seat-grid i').forEach((i) => i.classList.remove('x'));
+      });
+      if (dockB) dockB.textContent = `募集開始まで ${cd}（限定20名）`;
+      last = 'pre';
+      return;
+    }
+    if (last === 'pre') { seats.forEach((el) => el.classList.remove('pre')); last = null; }
+    lock(false);
     const closed = t >= CLOSE;
     const left = closed ? 0 : SEAT_PLAN.filter((p) => t >= p.at).pop().left;
     const key = closed ? 'closed' : String(left);
