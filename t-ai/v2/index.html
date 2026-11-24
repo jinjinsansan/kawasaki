@@ -37,7 +37,7 @@ p, h1, h2, h3, ol, ul, figure, blockquote { margin: 0; }
 :is(a, button):focus-visible { outline: 2px solid var(--gr); outline-offset: 3px; }
 .nb { white-space: nowrap; }
 .kp { word-break: keep-all; overflow-wrap: anywhere; font-feature-settings: "palt"; }
-.page { container-type: inline-size; position: relative; max-width: 640px; margin: 0 auto; background: var(--bg); overflow: hidden; }
+.page { container-type: inline-size; position: relative; max-width: 640px; margin: 0 auto; background: var(--bg); overflow-x: clip; }
 @media (min-width: 700px) { .page { box-shadow: 0 0 0 1px var(--ln), 0 0 120px rgba(62, 240, 168, .06); } }
 /* 細い方眼（全体） */
 .page::before { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(92, 182, 255, .045) 1px, transparent 1px), linear-gradient(90deg, rgba(92, 182, 255, .045) 1px, transparent 1px); background-size: 28px 28px; }
@@ -274,7 +274,61 @@ html.js [data-rv].in { opacity: 1; transform: none; }
 .kv p { font-size: 16.5px; color: #f2f5fc; }
 .kv { position: relative; }
 .kv::before { content: ""; position: absolute; z-index: -1; inset: 0 0 -10px; background: linear-gradient(180deg, rgba(4, 6, 13, .55), rgba(4, 6, 13, .82) 30%, rgba(4, 6, 13, .82) 80%, rgba(4, 6, 13, .55)); }
+
+/* ── 手紙：明るい紙の面で読ませる（裏では何も動かさない） ── */
+.lt { scroll-margin-top: 120px; --pp: #f4f1ea; --ik: #1d2230; --ik2: #555d70; --mk: #bff0d8; --acc: #0b7a55;
+  position: relative; z-index: 2; padding: 48px 0 52px; background: var(--pp); color: var(--ik); }
+.lt::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, var(--gr), var(--cy)); }
+.lt-in { margin: 0; padding: 0 max(22px, env(safe-area-inset-left, 0px)); background: none; border: 0; box-shadow: none; max-width: 34em; }
+@media (min-width: 560px) { .lt-in { margin: 0 auto; } }
+.lt-k { font-family: var(--mono); font-size: 11.5px; letter-spacing: .18em; color: var(--acc); }
+.lt-t { margin-top: 12px; font-weight: 900; font-size: clamp(21px, 6cqi, 27px); line-height: 1.6; color: var(--ik); text-wrap: pretty; }
+.lt-h { display: grid; gap: 10px; margin: 0 0 26px; padding-bottom: 18px; border-bottom: 1px solid #d8d2c4; font-weight: 900; font-size: clamp(21px, 6cqi, 26px); line-height: 1.6; color: var(--ik); text-wrap: pretty; }
+.lt-h span { justify-self: start; display: flex; align-items: baseline; gap: 10px; min-width: 0; height: auto; padding: 0; border: 0; font-family: var(--mono); font-weight: 700; font-size: 12px; letter-spacing: .2em; color: var(--acc); }
+.lt-h span::before { content: "CHAPTER"; }
+.lt-h span::after { content: "/ 03"; color: #9aa0ad; }
+.lt-in b.lt-num { background: none; padding: 0; }
+.lt-num { font-family: var(--n); font-weight: 700; font-size: 56px; line-height: .9; letter-spacing: 0; color: var(--ik); }
+.lt-cont { margin: 0 0 18px !important; font-family: var(--mono) !important; font-size: 11.5px !important; line-height: 1.5 !important; letter-spacing: .16em; color: #8a909c !important; }
+.lt-in > p, .lt-in > .lt-t + p { margin-top: 1.35em; font-weight: 500; font-size: 17px; line-height: 2.0; color: var(--ik); letter-spacing: .02em; text-wrap: pretty; }
+.lt-in > .lt-h + p, .lt-in > .lt-cont + p { margin-top: 0; }
+.lt-in b { font-weight: 900; color: var(--ik); background: linear-gradient(transparent 58%, var(--mk) 58%, var(--mk) 92%, transparent 92%); padding: 0 .08em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.lt-v { list-style: none; margin: 1.6em 0 .4em; padding: 0; display: grid; gap: 10px; counter-reset: v; }
+.lt-v li { position: relative; padding: 16px 16px 15px 18px; border: 1px solid #ddd6c6; border-left: 4px solid var(--acc); border-radius: 0 10px 10px 0; background: #fff; font-weight: 900; font-size: 17px; line-height: 1.7; color: var(--ik); box-shadow: 0 2px 0 #e6e0d2; counter-increment: v; }
+.lt-v li::before { content: "MEMBER VOICE 0" counter(v); display: block; margin-bottom: 4px; font-family: var(--mono); font-weight: 500; font-size: 10.5px; letter-spacing: .16em; color: var(--acc); }
+.lt-sign { margin-top: 2em !important; text-align: right; font-weight: 900 !important; color: var(--ik) !important; }
+.lt .note, .lt .lt-in > p.note { color: var(--ik2); }
+/* 章の目印（上部バーの下に出る） */
+.bar-ch { grid-column: 1 / -1; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; align-items: center; margin: 8px calc(-1 * var(--pad)) -10px; padding: 7px var(--pad) 8px; border-top: 1px solid var(--ln); background: rgba(4, 6, 13, .92); }
+.bar-ch b { font-family: var(--mono); font-weight: 700; font-size: 11px; letter-spacing: .14em; color: var(--gr); white-space: nowrap; }
+.bar-ch span { min-width: 0; font-family: var(--g); font-weight: 700; font-size: 12.5px; line-height: 1.4; color: #e3e9f7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-ch i { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.bar-ch i u { display: block; height: 3px; background: #233056; overflow: hidden; }
+.bar-ch i u::after { content: ""; display: block; height: 100%; width: var(--w, 0%); background: var(--gr); }
+/* 案A 便箋（明朝体・罫線） */
+.lt { --pp:#fbf9f4; background: #fbf9f4; }
+.lt::before { background: #c9b98f; height: 1px; }
+.lt-in > p, .lt-in > .lt-t + p { font-family: "Shippori Mincho B1", serif; font-weight: 500; font-size: 17.5px; line-height: 2.1; letter-spacing: .04em; color: #23201b; margin-top: 2.1em; }
+
+.lt-t, .lt-h { font-family: "Shippori Mincho B1", serif; font-weight: 800; color: #1b1814; }
+.lt-h { border-bottom: 1px solid #c9b98f; }
+.lt-in b { font-weight: 800; background: none; color: #1b1814; border-bottom: 2px solid #c9b98f; padding-bottom: 1px; }
+.lt-v li { font-family: "Shippori Mincho B1", serif; font-weight: 700; border-radius: 0; border: 0; border-left: 2px solid #c9b98f; background: transparent; box-shadow: none; padding: 4px 0 4px 16px; }
+.lt-v li::before { color: #9a8a5f; }
+.lt-sign { font-family: "Shippori Mincho B1", serif; font-size: 20px !important; }
+.lt-k, .lt-h span { color: #9a8a5f; }
+
+/* 融合：管制画面から「印字されて出てくる手紙」 */
+.lt { background: transparent; padding: 40px 0 44px; }
+.lt::before { content: ""; position: relative; z-index: 3; display: block; left: auto; right: auto; top: auto; height: 12px; margin: 0 6px; background: linear-gradient(#0a0f1c, #121a30); border: 1px solid #2a3a64; border-radius: 4px; box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 0 0 1px #000, 0 0 16px rgba(62,240,168,.22); }
+.lt::after { content: "▼ PRINTOUT · T-AI v2 / LETTER"; position: absolute; left: max(18px, env(safe-area-inset-left, 0px)); top: 16px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em; color: var(--gr); }
+.lt-in { position: relative; z-index: 2; margin: -6px 12px 0; max-width: none; padding: 40px 22px 50px; background: #fbf9f4; box-shadow: 0 1px 0 #e7e1d3, 0 24px 50px rgba(0,0,0,.55);
+  -webkit-mask: radial-gradient(circle 6px at 50% calc(100% + 1px), transparent 97%, #000) 0 0 / 16px 100%; mask: radial-gradient(circle 6px at 50% calc(100% + 1px), transparent 97%, #000) 0 0 / 16px 100%; }
+.lt-in::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 26px; background: linear-gradient(rgba(10,15,28,.14), transparent); pointer-events: none; }
+@media (min-width: 560px) { .lt-in { margin: -6px auto 0; max-width: 560px; } .lt::before { max-width: 580px; margin: 0 auto; } }
+.lt-h span::after { color: #b9ad8c; }
 </style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&amp;display=swap">
 </head>
 <body>
 <main class="page" id="top">
@@ -282,7 +336,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
     <span class="bar-q" aria-hidden="true">T</span>
     <span class="bar-n"><b>T-AI v2</b> // BOOT<small>ENGINE START 20:00 JST · FINAL ENTRY</small></span>
     <span class="bar-c"><i>LIVE</i><b data-clock>--:--:--</b><small>JST</small></span>
-  </header>
+  <div class="bar-ch" data-chap hidden><b data-chap-n>LETTER</b><span data-chap-t></span><i><u></u><u></u><u></u></i></div></header>
   <div class="tick" aria-hidden="true"><div class="tick-in" data-tick="a"></div></div>
 
   <section class="hero" aria-label="T-AI v2 起動">
@@ -316,7 +370,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
   </section>
   <section class="lt">
     <div class="lt-in">
-      <h2 class="lt-h"><span>01</span>数学オリンピック出場者との出会い──セリエBの歪みから始まった「5年間の物語」</h2>
+      <h2 class="lt-h"><span><b class="lt-num">01</b></span>数学オリンピック出場者との出会い──セリエBの歪みから始まった「5年間の物語」</h2>
       <p>少しだけ、この「T-AI」がどのようにして生まれたのか、その起源をお話しさせてください。</p>
       <p>このシステムのルーツは、私の友人で「数学オリンピック」に出場した経歴を持つアランさんという天才エンジニアと一緒に開発したモデルが起源です。</p>
       <p>元々のシステムは、海外ブックメーカーが設定するハンディキャップのクセからオッズを徹底分析し、市場の「正確なスイートポイント（期待値の歪み）」を見つけ出すものでした。当時、イタリアサッカー「セリエB」のオッズの付け方が統計的に甘いという明確なデータがあり、そこを集中的に狙い撃ちして利益を抜き続けたのがすべての始まりです。</p>
@@ -379,7 +433,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
   </section>
   <section class="lt">
     <div class="lt-in">
-      <h2 class="lt-h"><span>02</span>「そんなに儲かるならなぜ売るのか？」──私が募集を行う2つの明確な理由</h2>
+      <h2 class="lt-h"><span><b class="lt-num">02</b></span>「そんなに儲かるならなぜ売るのか？」──私が募集を行う2つの明確な理由</h2>
       <p>正直、たった1年間や2年間の浅い検証数字なら、ここまで強気なことは言いません。<br>私自身の<b>5年間のリアルな運用実績</b>と、<b>300億回に及ぶシミュレーション</b>、そして<b>今の市場にここから5%多く資金が追加投入されてオッズが下がってもプラスになる</b>という完全な実証データがあるからこそ、こうして募集に踏み切っています。</p>
       
     </div>
@@ -425,7 +479,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
   </section>
   <section class="lt">
     <div class="lt-in">
-      <h2 class="lt-h"><span>03</span>馬券裁判級・本場のベンダー式──商材を買う人生は今夜で「最後」になります</h2>
+      <h2 class="lt-h"><span><b class="lt-num">03</b></span>馬券裁判級・本場のベンダー式──商材を買う人生は今夜で「最後」になります</h2>
       <p>さて、今回引き渡す「T-AI v2エンジン」は、本当の意味で<b>馬券裁判級</b>や<b>香港の投資シンジケート（ベンダー式）</b>──いわゆる「真のギャンブル市場の裏側で莫大な富を築いている連中」が使っているのと同じ仕組みの開発に成功してしまいました。</p>
       <p>はっきり断言します。「これで勝てないなら、もう何を使っても意味がわからない」というレベルです。<br>あなたが競馬の予想や商材にお金を払うのは、間違いなく<b>今回の人生でこれが最後</b>になるでしょう。なぜなら、これさえ手にすればあなた自身が「勝てる側」になってしまうからです。</p>
       <p>少しだけ、今夜から始まる「これから先のこと」を考えてみてください。</p>
@@ -684,6 +738,26 @@ html.js [data-rv].in { opacity: 1; transform: none; }
   }), { threshold: .25, rootMargin: '0px 0px -8% 0px' });
   $$('[data-rv]').forEach((e) => io.observe(e)); tli.forEach((e) => io.observe(e));
   addEventListener('resize', fillTl);
+})();
+</script>
+
+<script>
+(() => {
+  const L = [...document.querySelectorAll('.lt')], box = document.querySelector('[data-chap]');
+  if (!L.length || !box) return;
+  let ch = 0, title = '';
+  const meta = L.map((s) => { const hh = s.querySelector('.lt-h'); if (hh) { ch = +hh.querySelector('.lt-num').textContent; title = hh.textContent.replace(/^\s*0\d/, '').split('──')[0].trim(); } else if (ch) { const c = document.createElement('p'); c.className = 'lt-cont'; c.setAttribute('aria-hidden', 'true'); c.textContent = 'CHAPTER ' + String(ch).padStart(2, '0') + ' · つづき'; s.querySelector('.lt-in').prepend(c); } return { ch, title }; });
+  const N = box.querySelector('[data-chap-n]'), T = box.querySelector('[data-chap-t]'), U = [...box.querySelectorAll('u')];
+  const upd = () => {
+    const y = innerHeight * .35; let cur = -1;
+    L.forEach((s, i) => { const r = s.getBoundingClientRect(); if (r.top < y && r.bottom > y) cur = i; });
+    if (cur < 0 || !meta[cur].ch) { box.hidden = true; return; }
+    box.hidden = false; const m = meta[cur];
+    N.textContent = 'CHAPTER ' + String(m.ch).padStart(2, '0') + ' / 03'; T.textContent = m.title;
+    const same = L.filter((_, i) => meta[i].ch === m.ch), a = same[0].getBoundingClientRect().top, b = same[same.length - 1].getBoundingClientRect().bottom;
+    U.forEach((u, k) => u.style.setProperty('--w', k + 1 < m.ch ? '100%' : k + 1 > m.ch ? '0%' : Math.max(0, Math.min(100, (y - a) / (b - a) * 100)) + '%'));
+  };
+  addEventListener('scroll', () => requestAnimationFrame(upd), { passive: true }); addEventListener('resize', upd); upd();
 })();
 </script>
 </body>
