@@ -1,0 +1,896 @@
+<!doctype html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>（スワイプ版）T-AI v2エンジン、今夜20時起動｜最終募集</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="数学オリンピックの頭脳から始まった5年間の結晶「T-AI v2」。最後の募集は今夜20時。">
+<meta name="theme-color" content="#04060d">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://t-ai.clubkawasaki.net/v2s">
+<meta property="og:title" content="T-AI v2エンジン、今夜20時起動｜最終募集">
+<meta property="og:description" content="数学オリンピックの頭脳から始まった5年間の結晶。最後の募集は今夜20時。">
+<meta property="og:image" content="https://t-ai.clubkawasaki.net/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&amp;family=Oswald:wght@500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<script>document.documentElement.classList.add('js');</script>
+<style>
+/* T-AI v2 予告ページ ─ 機械の管制画面 */
+:root {
+  --bg: #04060d; --bg2: #070b18; --pn: rgba(12, 19, 38, .72); --ln: #1a2440; --ln2: #2a3a64;
+  --tx: #cdd7ee; --dm: #8494b8; --wh: #fff;
+  --gr: #3ef0a8; --rd: #ff4d61; --am: #f6c24a; --cy: #5cb6ff; --line: #06c755;
+  --g: "Zen Kaku Gothic New", "Hiragino Sans", sans-serif;
+  --n: "Oswald", "Zen Kaku Gothic New", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --pad: max(18px, env(safe-area-inset-left, 0px));
+  --ease: cubic-bezier(.22, .61, .36, 1);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; background: var(--bg); }
+body { margin: 0; background: var(--bg); color: var(--tx); font-family: var(--g); font-size: 15.5px; line-height: 1.9; -webkit-font-smoothing: antialiased; overflow-x: clip; line-break: strict; -webkit-tap-highlight-color: transparent; }
+a { color: var(--gr); } a:hover { color: #8dffd0; }
+p, h1, h2, h3, ol, ul, figure, blockquote { margin: 0; }
+:is(a, button):focus-visible { outline: 2px solid var(--gr); outline-offset: 3px; }
+.nb { white-space: nowrap; }
+.kp { word-break: keep-all; overflow-wrap: anywhere; font-feature-settings: "palt"; }
+.page { container-type: inline-size; position: relative; max-width: 640px; margin: 0 auto; background: var(--bg); overflow-x: clip; }
+@media (min-width: 700px) { .page { box-shadow: 0 0 0 1px var(--ln), 0 0 120px rgba(62, 240, 168, .06); } }
+/* 細い方眼（全体） */
+.page::before { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(92, 182, 255, .045) 1px, transparent 1px), linear-gradient(90deg, rgba(92, 182, 255, .045) 1px, transparent 1px); background-size: 28px 28px; }
+
+/* 上部バー */
+.bar { position: sticky; top: 0; z-index: 30; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: calc(10px + env(safe-area-inset-top, 0px)) var(--pad) 10px; background: rgba(4, 6, 13, .97);  border-bottom: 1px solid var(--ln); font-family: var(--mono); }
+.bar-q { display: grid; place-content: center; width: 32px; height: 32px; border-radius: 7px; background: linear-gradient(135deg, #2f6bff, #19c2ff); color: #fff; font-weight: 700; font-size: 16px; box-shadow: 0 0 18px rgba(47, 107, 255, .45); }
+.bar-n { min-width: 0; font-size: 13px; letter-spacing: .08em; white-space: nowrap; overflow: hidden; }
+.bar-n b { color: #fff; }
+.bar-n small { display: block; font-size: 9px; letter-spacing: .14em; color: var(--dm); overflow: hidden; text-overflow: ellipsis; line-height: 1.5; }
+.bar-c { display: grid; justify-items: end; font-size: 14px; line-height: 1.25; color: #fff; font-variant-numeric: tabular-nums; }
+.bar-c i { font-style: normal; font-size: 9px; letter-spacing: .14em; color: var(--rd); }
+.bar-c i::before { content: "●"; margin-right: 3px; animation: blink 1.2s steps(2) infinite; }
+.bar-c small { font-size: 8.5px; letter-spacing: .2em; color: var(--dm); }
+@keyframes blink { 50% { opacity: .2; } }
+
+/* 右から左に流れる帯 */
+.tick { position: relative; overflow: hidden; border-bottom: 1px solid var(--ln); background: rgba(255, 255, 255, .018); font-family: var(--mono); font-size: 11.5px; line-height: 30px; white-space: nowrap; }
+.tick.b { font-size: 10.5px; line-height: 24px; background: rgba(62, 240, 168, .03); }
+.tick-in { display: inline-block; animation: tick 22s linear infinite; }
+.tick.b .tick-in { animation-duration: 34s; }
+.tick span { margin-right: 22px; color: var(--dm); }
+.tick b { color: var(--tx); font-weight: 500; }
+.tick .up { color: var(--gr); font-style: normal; } .tick .dn { color: var(--rd); font-style: normal; } .tick .am { color: var(--am); font-style: normal; }
+.tick .lv { color: #fff; background: var(--rd); padding: 2px 6px; margin-right: 12px; }
+@keyframes tick { to { transform: translateX(-50%); } }
+
+/* 0 起動画面 */
+.hero { position: relative; min-height: calc(100svh - 112px); display: flex; flex-direction: column; padding: 0 0 26px; isolation: isolate; }
+.hero canvas { position: absolute; z-index: -1; inset: 0; width: 100%; height: 100%; display: block; }
+.hero::after { content: ""; position: absolute; z-index: -1; inset: 0; background: radial-gradient(90% 55% at 50% 62%, rgba(62, 240, 168, .12), transparent 70%), linear-gradient(180deg, rgba(4, 6, 13, .1), rgba(4, 6, 13, .55) 40%, rgba(4, 6, 13, .2) 100%); pointer-events: none; }
+.boot { padding: 18px var(--pad) 0; font-family: var(--mono); font-size: 12px; line-height: 1.85; color: var(--dm); min-height: 150px; }
+.boot div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.boot .ok { color: var(--gr); } .boot .w { color: #fff; } .boot .am { color: var(--am); }
+.boot .cur::after { content: "▍"; color: var(--gr); animation: blink 1s steps(2) infinite; }
+.kv { padding: 14px var(--pad) 0; }
+.kv small { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: .2em; color: var(--rd); }
+.kv small::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--rd); box-shadow: 0 0 10px var(--rd); animation: blink 1.2s steps(2) infinite; }
+.kv h1 { position: relative; margin-top: 10px; font-weight: 900; font-size: clamp(32px, 10.2cqi, 52px); line-height: 1.24; letter-spacing: .01em; color: #fff; text-shadow: 0 2px 30px rgba(4, 6, 13, .9); }
+.kv h1 em { font-style: normal; color: var(--gr); text-shadow: 0 0 26px rgba(62, 240, 168, .6); }
+.kv h1 .l { display: block; }
+.kv p { margin-top: 12px; font-weight: 700; font-size: 15.5px; line-height: 1.85; color: var(--tx); }
+.hero .cd { margin-top: auto; }
+
+/* カウントダウン */
+.cd { position: relative; margin: 22px var(--pad) 0; padding: 14px 14px 14px; border: 1px solid rgba(62, 240, 168, .5); background: linear-gradient(180deg, rgba(62, 240, 168, .09), rgba(62, 240, 168, .02)); text-align: center; box-shadow: 0 0 40px rgba(62, 240, 168, .1) inset, 0 0 30px rgba(62, 240, 168, .08); overflow: hidden; }
+.cd::before, .cd::after { content: ""; position: absolute; width: 14px; height: 14px; border: 2px solid var(--gr); pointer-events: none; }
+.cd::before { left: -1px; top: -1px; border-right: 0; border-bottom: 0; }
+.cd::after { right: -1px; bottom: -1px; border-left: 0; border-top: 0; }
+.cd-k { display: flex; justify-content: space-between; gap: 8px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .18em; color: var(--dm); white-space: nowrap; }
+.cd-k b { color: var(--gr); font-weight: 500; }
+.cd-v { display: block; margin-top: 6px; font-family: var(--mono); font-weight: 700; font-size: clamp(30px, 11.6cqi, 66px); line-height: 1.02; letter-spacing: -.01em; color: var(--gr); text-shadow: 0 0 28px rgba(62, 240, 168, .6); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cd-v small { font-size: .52em; color: rgba(62, 240, 168, .78); letter-spacing: 0; }
+.cd-u { display: grid; grid-template-columns: repeat(3, 1fr) .55fr; margin-top: 2px; font-family: var(--mono); font-size: 9px; letter-spacing: .2em; color: var(--dm); }
+.cd-s { display: block; margin-top: 8px; font-weight: 700; font-size: 14px; color: var(--tx); }
+.cd-scan { position: absolute; left: 0; right: 0; top: 0; height: 40%; background: linear-gradient(180deg, transparent, rgba(62, 240, 168, .12), transparent); animation: scan 2.6s linear infinite; pointer-events: none; }
+@keyframes scan { from { transform: translateY(-100%); } to { transform: translateY(260%); } }
+.cd.open .cd-v { font-size: clamp(30px, 10cqi, 48px); letter-spacing: .02em; }
+.cd.open .cd-u { display: none; }
+.cd.open .cd-k b { color: var(--gr); }
+.scroll { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; font-family: var(--mono); font-size: 10px; letter-spacing: .3em; color: var(--dm); }
+.scroll i { width: 1px; height: 22px; background: linear-gradient(var(--gr), transparent); animation: drop 1.6s var(--ease) infinite; }
+@keyframes drop { from { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } to { transform: scaleY(0); transform-origin: bottom; } }
+
+/* 章 */
+.sec { position: relative; padding: 64px 0 0; }
+.tag { display: flex; align-items: center; gap: 10px; padding: 0 var(--pad); font-family: var(--mono); font-size: 11.5px; letter-spacing: .18em; color: var(--gr); white-space: nowrap; }
+.tag b { display: inline-grid; place-items: center; min-width: 30px; height: 22px; padding: 0 6px; border: 1px solid var(--gr); color: var(--gr); font-weight: 700; letter-spacing: .06em; }
+.tag i { font-style: normal; color: #fff; }
+.tag::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--ln2), transparent); }
+.h2 { margin-top: 14px; padding: 0 var(--pad); font-weight: 900; font-size: clamp(26px, 8cqi, 38px); line-height: 1.36; color: #fff; text-wrap: balance; }
+.h2 em { font-style: normal; color: var(--gr); text-shadow: 0 0 20px rgba(62, 240, 168, .5); }
+.lead { margin-top: 14px; padding: 0 var(--pad); font-weight: 500; font-size: 15.5px; line-height: 1.95; color: var(--tx); }
+.lead b { color: #fff; font-weight: 900; }
+.note { margin: 10px var(--pad) 0; font-size: 12.5px; line-height: 1.75; color: var(--dm); }
+
+/* 01 ORIGIN：年表 */
+.tl { position: relative; list-style: none; margin: 26px var(--pad) 0; padding: 0 0 0 26px; display: grid; gap: 20px; }
+.tl::before { content: ""; position: absolute; left: 5px; top: 8px; bottom: 8px; width: 1px; background: var(--ln2); }
+.tl::after { content: ""; position: absolute; left: 4px; top: 8px; width: 3px; height: var(--fill, 0%); max-height: calc(100% - 16px); background: linear-gradient(var(--cy), var(--gr)); box-shadow: 0 0 10px rgba(62, 240, 168, .7); transition: height .9s var(--ease); }
+.tl li { position: relative; padding: 12px 14px 13px; border: 1px solid var(--ln); background: var(--pn); transition: border-color .6s, background-color .6s; }
+.tl li::before { content: ""; position: absolute; left: -26px; top: 18px; width: 11px; height: 11px; border-radius: 50%; background: var(--bg); border: 2px solid var(--ln2); transition: all .6s; }
+.tl li.on::before { background: var(--gr); border-color: var(--gr); box-shadow: 0 0 14px rgba(62, 240, 168, .9); }
+.tl li.on { border-color: rgba(92, 182, 255, .35); }
+.tl small { display: flex; justify-content: space-between; gap: 8px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em; color: var(--cy); }
+.tl small span { color: var(--dm); }
+.tl b { display: block; margin-top: 2px; font-weight: 900; font-size: 18px; line-height: 1.5; color: #fff; }
+.tl p { margin-top: 4px; font-size: 15px; line-height: 1.8; color: var(--tx); }
+.tl li.now { border-color: rgba(62, 240, 168, .6); background: linear-gradient(120deg, rgba(62, 240, 168, .12), rgba(12, 19, 38, .7) 60%); box-shadow: 0 0 30px rgba(62, 240, 168, .12); }
+.tl li.now b { color: var(--gr); }
+.tl li.now small { color: var(--gr); }
+
+/* パネル（角の括弧つき） */
+.pnl { position: relative; margin: 16px var(--pad) 0; border: 1px solid var(--ln); background: linear-gradient(180deg, rgba(18, 28, 56, .78), rgba(8, 13, 28, .9)); box-shadow: 0 14px 40px rgba(0, 0, 0, .4); }
+.pnl::before, .pnl::after { content: ""; position: absolute; width: 12px; height: 12px; border: 1.5px solid var(--cy); pointer-events: none; z-index: 2; }
+.pnl::before { left: -1px; top: -1px; border-right: 0; border-bottom: 0; }
+.pnl::after { right: -1px; bottom: -1px; border-left: 0; border-top: 0; }
+.pnl-h { display: flex; justify-content: space-between; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--ln); font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; color: var(--dm); white-space: nowrap; }
+.pnl-h span:first-child { color: #fff; }
+.pnl-h span:first-child::before { content: "◆ "; color: var(--cy); }
+.orb { display: block; width: 100%; height: clamp(300px, 88cqi, 440px); }
+.pnl-f { display: flex; justify-content: space-between; gap: 8px; padding: 7px 12px 9px; border-top: 1px solid var(--ln); font-family: var(--mono); font-size: 11px; color: var(--dm); white-space: nowrap; }
+.pnl-f b { color: var(--am); font-weight: 500; font-variant-numeric: tabular-nums; }
+.pnl-f .g { color: var(--gr); } .pnl-f .r { color: var(--rd); }
+.stack { list-style: none; padding: 6px; display: grid; gap: 6px; height: 330px; overflow: hidden; align-content: start; }
+.stack li { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 7px 9px; border: 1px solid var(--ln); border-left: 3px solid var(--dm); background: rgba(255, 255, 255, .025); font-family: var(--mono); }
+.stack li.in { animation: rowIn .45s var(--ease) both; }
+.stack li.buy { border-color: rgba(62, 240, 168, .5); border-left-color: var(--gr); background: rgba(62, 240, 168, .08); }
+.stack li.buy.in { animation: rowIn .45s var(--ease) both, buyFlash 1s ease-out both; }
+.stack li.skip { border-left-color: var(--rd); }
+.stack li.hold { border-left-color: var(--am); }
+.stack .t { text-align: center; padding: 2px 0; font-size: 10px; font-weight: 700; letter-spacing: .08em; color: #06120c; background: var(--gr); }
+.stack li.skip .t { background: transparent; box-shadow: inset 0 0 0 1px var(--rd); color: var(--rd); }
+.stack li.hold .t { background: transparent; box-shadow: inset 0 0 0 1px var(--am); color: var(--am); }
+.stack .m { min-width: 0; font-size: 12px; line-height: 1.45; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.stack .m small { display: block; font-size: 10.5px; color: var(--dm); overflow: hidden; text-overflow: ellipsis; }
+.stack .sc { font-size: 22px; font-weight: 700; color: var(--tx); font-variant-numeric: tabular-nums; }
+.stack li.buy .sc { color: var(--gr); text-shadow: 0 0 12px rgba(62, 240, 168, .6); }
+.stack li.skip .sc { color: var(--rd); }
+@keyframes rowIn { from { opacity: 0; transform: translateX(28px); } }
+@keyframes buyFlash { from { box-shadow: 0 0 0 1px var(--gr), 0 0 24px rgba(62, 240, 168, .55); } }
+.log { height: 168px; overflow: hidden; padding: 8px 12px; display: flex; flex-direction: column; justify-content: flex-end; font-family: var(--mono); font-size: 11px; line-height: 1.75; color: var(--dm); }
+.log div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.log .b { color: var(--gr); } .log .s { color: var(--rd); } .log .h { color: var(--am); } .log .w { color: #fff; }
+.img-n { margin: 10px var(--pad) 0; font-size: 12.5px; color: var(--dm); text-align: right; }
+.how { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 16px; align-items: center; margin: 18px var(--pad) 0; }
+.how figure { position: relative; border-radius: 16px; overflow: hidden; box-shadow: 0 0 0 1px var(--ln2), 0 0 0 5px #0e1730, 0 0 40px rgba(62, 240, 168, .15), 0 18px 40px rgba(0, 0, 0, .55); }
+.how figure::after { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, .18) 50%, transparent 60%) no-repeat; background-size: 250% 100%; background-position: 160% 0; animation: glint 5s ease-in-out 1s infinite; pointer-events: none; }
+@keyframes glint { 0% { background-position: 160% 0; } 30%, 100% { background-position: -60% 0; } }
+.how img { display: block; width: 100%; height: auto; }
+.how ol { list-style: none; padding: 0; display: grid; gap: 14px; counter-reset: s; position: relative; }
+.how li { position: relative; counter-increment: s; font-weight: 900; font-size: 15px; line-height: 1.55; color: #fff; padding-left: 0; }
+.how li::before { content: "0" counter(s) " ──"; display: block; font-family: var(--mono); font-weight: 500; font-size: 11px; letter-spacing: .14em; color: var(--gr); }
+.how li small { display: block; font-weight: 500; font-size: 12.5px; line-height: 1.6; color: var(--dm); }
+
+/* 03 SYSTEM STATS */
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 22px var(--pad) 0; }
+.st { position: relative; display: grid; align-content: start; gap: 2px; padding: 12px 12px 14px; border: 1px solid var(--ln); background: var(--pn); overflow: hidden; }
+.st::before { content: ""; position: absolute; left: 0; top: 0; height: 2px; width: var(--bar, 0%); background: var(--cy); box-shadow: 0 0 10px var(--cy); transition: width 1.2s var(--ease); }
+.st.on::before { --bar: 100%; }
+.st small { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; color: var(--dm); }
+.st b { font-family: var(--n); font-weight: 700; font-size: clamp(34px, 11cqi, 50px); line-height: 1.1; color: #fff; text-shadow: 0 0 18px rgba(92, 182, 255, .45); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.st b i { font-style: normal; font-family: var(--g); font-weight: 900; font-size: .4em; margin-left: 3px; color: var(--tx); }
+.st span { font-weight: 700; font-size: 13.5px; line-height: 1.5; color: var(--tx); }
+.st.w { grid-column: 1 / -1; }
+.st b span, .st.hero2 b span { font: inherit; color: inherit; line-height: inherit; }
+.st.hero2 { padding: 16px 16px 18px; border-color: rgba(62, 240, 168, .55); background: radial-gradient(120% 120% at 100% 0%, rgba(62, 240, 168, .16), rgba(12, 19, 38, .8) 60%); box-shadow: 0 0 40px rgba(62, 240, 168, .12); }
+.st.hero2::before { background: var(--gr); box-shadow: 0 0 12px var(--gr); }
+.st.hero2 b { font-size: clamp(64px, 21cqi, 104px); line-height: 1; color: var(--gr); text-shadow: 0 0 36px rgba(62, 240, 168, .55); }
+.st.hero2 small { color: var(--gr); }
+.st.hero2 span { font-size: 15px; }
+
+/* 04 COMMUNITY */
+.vox { display: grid; gap: 10px; margin: 22px var(--pad) 0; }
+.vox blockquote { position: relative; padding: 14px 14px 12px 16px; border: 1px solid var(--ln); border-left: 3px solid var(--cy); background: linear-gradient(90deg, rgba(92, 182, 255, .08), rgba(12, 19, 38, .6)); font-weight: 900; font-size: 16.5px; line-height: 1.65; color: #fff; }
+.vox blockquote small { display: flex; justify-content: space-between; margin-bottom: 4px; font-family: var(--mono); font-weight: 500; font-size: 10.5px; letter-spacing: .14em; color: var(--cy); }
+.vox blockquote small span { color: var(--dm); }
+
+/* 05 ROADMAP */
+.rm { position: relative; list-style: none; margin: 22px var(--pad) 0; padding: 0; display: grid; gap: 0; border: 1px solid var(--ln); background: var(--pn); }
+.rm li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 12px; padding: 14px 14px 15px; border-top: 1px solid var(--ln); }
+.rm li:first-child { border-top: 0; background: linear-gradient(120deg, rgba(62, 240, 168, .12), transparent 70%); }
+.rm i { position: relative; margin-top: 6px; width: 12px; height: 12px; border-radius: 50%; background: transparent; box-shadow: inset 0 0 0 2px var(--am); }
+.rm li:first-child i { background: var(--gr); box-shadow: 0 0 14px rgba(62, 240, 168, .9); }
+.rm li:first-child i::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 1px solid var(--gr); animation: ping 1.8s ease-out infinite; }
+@keyframes ping { from { opacity: .9; transform: scale(.6); } to { opacity: 0; transform: scale(1.6); } }
+.rm small { display: block; font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; color: var(--am); }
+.rm li:first-child small { color: var(--gr); }
+.rm b { display: block; font-weight: 900; font-size: 17px; line-height: 1.5; color: #fff; }
+.rm p { margin-top: 2px; font-size: 15px; line-height: 1.8; color: var(--tx); }
+
+/* 06 FINAL ENTRY */
+.final { padding-bottom: 8px; }
+.final::before { content: ""; position: absolute; inset: 30px 0 auto; height: 320px; background: radial-gradient(70% 60% at 50% 50%, rgba(62, 240, 168, .14), transparent 70%); pointer-events: none; }
+.final .h2 { font-size: clamp(30px, 9.6cqi, 46px); }
+.cta { display: grid; gap: 10px; margin: 18px var(--pad) 0; }
+.go { position: relative; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 62px; padding: 0 18px; overflow: hidden; text-decoration: none; font-weight: 900; font-size: 17px; letter-spacing: .06em; color: #06120c; background: var(--gr); box-shadow: 0 0 30px rgba(62, 240, 168, .45); transition: transform .12s, box-shadow .2s; }
+.go:hover { color: #06120c; box-shadow: 0 0 44px rgba(62, 240, 168, .65); }
+.go:active { transform: translateY(2px); }
+.go::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, .5) 50%, transparent 65%) no-repeat; background-size: 250% 100%; background-position: 160% 0; animation: glint 3.6s ease-in-out 1.2s infinite; }
+.go.line { background: var(--line); color: #fff; box-shadow: 0 0 30px rgba(6, 199, 85, .4); }
+.go.line:hover { color: #fff; }
+.cta small { font-size: 12.5px; line-height: 1.75; color: var(--dm); text-align: center; }
+.foot { margin: 48px var(--pad) 0; padding: 18px 0 calc(96px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--ln); font-size: 12.5px; line-height: 1.85; color: var(--dm); display: grid; gap: 10px; }
+.foot nav { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+.foot a { color: var(--tx); }
+
+/* 下の固定バー（起動画面と最後の章が見えている間は隠す） */
+.dock { position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; transform: translateY(110%); transition: transform .4s var(--ease); pointer-events: none; }
+.dock.on { transform: none; pointer-events: auto; }
+.dock-in { max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px var(--pad) calc(10px + env(safe-area-inset-bottom, 0px)); background: rgba(4, 6, 13, .92);  border-top: 1px solid rgba(62, 240, 168, .45); }
+.dock-t { min-width: 0; font-family: var(--mono); line-height: 1.3; white-space: nowrap; }
+.dock-t small { display: block; font-size: 9.5px; letter-spacing: .16em; color: var(--dm); overflow: hidden; text-overflow: ellipsis; }
+.dock-t b { font-size: 20px; font-weight: 700; color: var(--gr); font-variant-numeric: tabular-nums; text-shadow: 0 0 14px rgba(62, 240, 168, .5); }
+.dock .go { min-height: 46px; font-size: 14px; padding: 0 14px; letter-spacing: .02em; white-space: nowrap; }
+
+/* 出てくる動き */
+html.js [data-rv] { opacity: 0; transform: translateY(18px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+html.js [data-rv].in { opacity: 1; transform: none; }
+[hidden] { display: none !important; }
+@media (max-width: 350px) {
+  .how { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 12px; }
+  .how li { font-size: 14px; }
+  .stack .sc { font-size: 18px; }
+  .stack li { grid-template-columns: 46px minmax(0, 1fr) auto; }
+  .dock .go { font-size: 13px; padding: 0 10px; }
+  .dock-t b { font-size: 17px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  html.js [data-rv] { opacity: 1; transform: none; }
+  .tick-in { transform: none; }
+  .cd-scan { display: none; }
+}
+
+/* 手紙（ステップメールの本文）：読むための場所。裏では何も動かさない */
+:root { --tx: #e3e9f7; --dm: #a3b1d1; }
+.lt { position: relative; z-index: 1; padding: 54px 0 0; }
+.lt-in { margin: 0 calc(var(--pad) - 6px); padding: 26px 20px 28px; background: #0b1122; border: 1px solid var(--ln); box-shadow: 0 0 0 1px rgba(0, 0, 0, .4), 0 20px 50px rgba(0, 0, 0, .5); }
+.lt-k { font-family: var(--mono); font-size: 11.5px; letter-spacing: .18em; color: var(--gr); }
+.lt-t { margin-top: 10px; font-weight: 900; font-size: clamp(21px, 6.2cqi, 28px); line-height: 1.55; color: #fff; }
+.lt-h { display: grid; gap: 8px; margin-bottom: 22px; font-weight: 900; font-size: clamp(21px, 6.2cqi, 27px); line-height: 1.55; color: #fff; }
+.lt-h span { justify-self: start; display: inline-grid; place-items: center; min-width: 34px; height: 24px; padding: 0 6px; border: 1px solid var(--gr); font-family: var(--mono); font-weight: 700; font-size: 12px; letter-spacing: .06em; color: var(--gr); }
+.lt-in > p, .lt-in > .lt-t + p { margin-top: 1.25em; font-weight: 500; font-size: 17px; line-height: 2.05; color: #f2f5fc; letter-spacing: .01em; }
+.lt-in > .lt-h + p { margin-top: 0; }
+.lt-in b { font-weight: 900; color: var(--gr); background: linear-gradient(transparent 62%, rgba(62, 240, 168, .18) 62%); }
+.lt-v { list-style: none; margin: 1.1em 0 0; padding: 0; display: grid; gap: 8px; }
+.lt-v li { padding: 10px 12px; border-left: 3px solid var(--cy); background: rgba(92, 182, 255, .08); font-weight: 700; font-size: 16px; line-height: 1.75; color: #fff; }
+.tag b { display: none; }
+.lt-sign { margin-top: 1.6em !important; text-align: right; font-weight: 900 !important; color: #fff !important; }
+.lead, .tl p, .rm p { font-size: 16px; }
+.note, .img-n, .cta small, .foot { font-size: 13.5px; }
+.tl li, .rm { background: #0b1122; }
+.kv p { font-size: 16.5px; color: #f2f5fc; }
+.kv { position: relative; }
+.kv::before { content: ""; position: absolute; z-index: -1; inset: 0 0 -10px; background: linear-gradient(180deg, rgba(4, 6, 13, .55), rgba(4, 6, 13, .82) 30%, rgba(4, 6, 13, .82) 80%, rgba(4, 6, 13, .55)); }
+
+/* ── 手紙：明るい紙の面で読ませる（裏では何も動かさない） ── */
+.lt { scroll-margin-top: 120px; --pp: #f4f1ea; --ik: #1d2230; --ik2: #555d70; --mk: #bff0d8; --acc: #0b7a55;
+  position: relative; z-index: 2; padding: 48px 0 52px; background: var(--pp); color: var(--ik); }
+.lt::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, var(--gr), var(--cy)); }
+.lt-in { margin: 0; padding: 0 max(22px, env(safe-area-inset-left, 0px)); background: none; border: 0; box-shadow: none; max-width: 34em; }
+@media (min-width: 560px) { .lt-in { margin: 0 auto; } }
+.lt-k { font-family: var(--mono); font-size: 11.5px; letter-spacing: .18em; color: var(--acc); }
+.lt-t { margin-top: 12px; font-weight: 900; font-size: clamp(21px, 6cqi, 27px); line-height: 1.6; color: var(--ik); text-wrap: pretty; }
+.lt-h { display: grid; gap: 10px; margin: 0 0 26px; padding-bottom: 18px; border-bottom: 1px solid #d8d2c4; font-weight: 900; font-size: clamp(21px, 6cqi, 26px); line-height: 1.6; color: var(--ik); text-wrap: pretty; }
+.lt-h span { justify-self: start; display: flex; align-items: baseline; gap: 10px; min-width: 0; height: auto; padding: 0; border: 0; font-family: var(--mono); font-weight: 700; font-size: 12px; letter-spacing: .2em; color: var(--acc); }
+.lt-h span::before { content: "CHAPTER"; }
+.lt-h span::after { content: "/ 03"; color: #9aa0ad; }
+.lt-in b.lt-num { background: none; padding: 0; }
+.lt-num { font-family: var(--n); font-weight: 700; font-size: 56px; line-height: .9; letter-spacing: 0; color: var(--ik); }
+.lt-cont { margin: 0 0 18px !important; font-family: var(--mono) !important; font-size: 11.5px !important; line-height: 1.5 !important; letter-spacing: .16em; color: #8a909c !important; }
+.lt-in > p, .lt-in > .lt-t + p { margin-top: 1.35em; font-weight: 500; font-size: 17px; line-height: 2.0; color: var(--ik); letter-spacing: .02em; text-wrap: pretty; }
+.lt-in > .lt-h + p, .lt-in > .lt-cont + p { margin-top: 0; }
+.lt-in b { font-weight: 900; color: var(--ik); background: linear-gradient(transparent 58%, var(--mk) 58%, var(--mk) 92%, transparent 92%); padding: 0 .08em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.lt-v { list-style: none; margin: 1.6em 0 .4em; padding: 0; display: grid; gap: 10px; counter-reset: v; }
+.lt-v li { position: relative; padding: 16px 16px 15px 18px; border: 1px solid #ddd6c6; border-left: 4px solid var(--acc); border-radius: 0 10px 10px 0; background: #fff; font-weight: 900; font-size: 17px; line-height: 1.7; color: var(--ik); box-shadow: 0 2px 0 #e6e0d2; counter-increment: v; }
+.lt-v li::before { content: "MEMBER VOICE 0" counter(v); display: block; margin-bottom: 4px; font-family: var(--mono); font-weight: 500; font-size: 10.5px; letter-spacing: .16em; color: var(--acc); }
+.lt-sign { margin-top: 2em !important; text-align: right; font-weight: 900 !important; color: var(--ik) !important; }
+.lt .note, .lt .lt-in > p.note { color: var(--ik2); }
+/* 章の目印（上部バーの下に出る） */
+.bar-ch { position: absolute; left: 0; right: 0; top: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; align-items: center; margin: 0; padding: 7px var(--pad) 8px; border-bottom: 1px solid var(--ln); pointer-events: none; border-top: 1px solid var(--ln); background: #04060d; }
+.bar-ch b { font-family: var(--mono); font-weight: 700; font-size: 11px; letter-spacing: .14em; color: var(--gr); white-space: nowrap; }
+.bar-ch span { min-width: 0; font-family: var(--g); font-weight: 700; font-size: 12.5px; line-height: 1.4; color: #e3e9f7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-ch i { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.bar-ch i u { display: block; height: 3px; background: #233056; overflow: hidden; }
+.bar-ch i u::after { content: ""; display: block; height: 100%; width: var(--w, 0%); background: var(--gr); }
+/* 案A 便箋（明朝体・罫線） */
+.lt { --pp:#fbf9f4; background: #fbf9f4; }
+.lt::before { background: #c9b98f; height: 1px; }
+.lt-in > p, .lt-in > .lt-t + p { font-family: "Shippori Mincho B1", serif; font-weight: 500; font-size: 17.5px; line-height: 2.1; letter-spacing: .04em; color: #23201b; margin-top: 2.1em; }
+
+.lt-t, .lt-h { font-family: "Shippori Mincho B1", serif; font-weight: 800; color: #1b1814; }
+.lt-h { border-bottom: 1px solid #c9b98f; }
+.lt-in b { font-weight: 800; background: none; color: #1b1814; border-bottom: 2px solid #c9b98f; padding-bottom: 1px; }
+.lt-v li { font-family: "Shippori Mincho B1", serif; font-weight: 700; border-radius: 0; border: 0; border-left: 2px solid #c9b98f; background: transparent; box-shadow: none; padding: 4px 0 4px 16px; }
+.lt-v li::before { color: #9a8a5f; }
+.lt-sign { font-family: "Shippori Mincho B1", serif; font-size: 20px !important; }
+.lt-k, .lt-h span { color: #9a8a5f; }
+
+/* 融合：管制画面から「印字されて出てくる手紙」 */
+.lt { background: transparent; padding: 40px 0 44px; }
+.lt::before { content: ""; position: relative; z-index: 3; display: block; left: auto; right: auto; top: auto; height: 12px; margin: 0 6px; background: linear-gradient(#0a0f1c, #121a30); border: 1px solid #2a3a64; border-radius: 4px; box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 0 0 1px #000, 0 0 16px rgba(62,240,168,.22); }
+.lt::after { content: "▼ PRINTOUT · T-AI v2 / LETTER"; position: absolute; left: max(18px, env(safe-area-inset-left, 0px)); top: 16px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em; color: var(--gr); }
+.lt-in { position: relative; z-index: 2; margin: -6px 12px 0; max-width: none; padding: 40px 22px 50px; background: #fbf9f4; box-shadow: 0 1px 0 #e7e1d3, 0 24px 50px rgba(0,0,0,.55);
+  -webkit-mask: radial-gradient(circle 6px at 50% calc(100% + 1px), transparent 97%, #000) 0 0 / 16px 100%; mask: radial-gradient(circle 6px at 50% calc(100% + 1px), transparent 97%, #000) 0 0 / 16px 100%; }
+.lt-in::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 26px; background: linear-gradient(rgba(10,15,28,.14), transparent); pointer-events: none; }
+@media (min-width: 560px) { .lt-in { margin: -6px auto 0; max-width: 560px; } .lt::before { max-width: 580px; margin: 0 auto; } }
+.lt-h span::after { color: #b9ad8c; }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&amp;display=swap">
+<style>
+/* ── スワイプ版 ── */
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+.page { height: 100vh; height: 100svh; max-width: 520px; overflow: hidden; }
+.sw-top { position: absolute; z-index: 30; inset: 0 0 auto; padding: calc(8px + env(safe-area-inset-top, 0px)) var(--pad) 8px; background: linear-gradient(rgba(4,6,13,.96) 70%, rgba(4,6,13,0)); pointer-events: none; }
+.sw-prog { display: flex; gap: 3px; pointer-events: auto; }
+.sw-prog button { flex: 1; min-width: 0; height: 12px; padding: 4px 0; border: 0; background: none; cursor: pointer; }
+.sw-prog i { display: block; height: 3px; border-radius: 2px; background: rgba(205,215,238,.22); }
+.sw-prog .dn i { background: rgba(62,240,168,.55); }
+.sw-prog .on i { background: var(--gr); box-shadow: 0 0 8px rgba(62,240,168,.8); }
+.sw-r { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 4px; font-family: var(--mono); white-space: nowrap; }
+.sw-r b { font-size: 12.5px; letter-spacing: .06em; color: #fff; }
+.sw-r b span { color: var(--dm); font-weight: 500; margin-left: 6px; }
+.sw-cd { font-size: 12px; color: var(--gr); font-variant-numeric: tabular-nums; text-shadow: 0 0 10px rgba(62,240,168,.5); }
+.sw-cd small { font-size: 9px; letter-spacing: .14em; color: var(--dm); margin-right: 6px; text-shadow: none; }
+.track { position: absolute; inset: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior: contain; }
+.track::-webkit-scrollbar { display: none; }
+.sl { position: relative; flex: 0 0 100%; height: 100%; scroll-snap-align: start; scroll-snap-stop: always; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: calc(52px + env(safe-area-inset-top, 0px)) 0 calc(84px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; }
+.sl > * { flex: none; }
+.s-hero { padding-top: calc(44px + env(safe-area-inset-top, 0px)); padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+.s-hero .hero { flex: 1; min-height: 0; padding-bottom: 12px; }
+.s-hero .boot { min-height: 0; padding-top: 10px; font-size: 11px; line-height: 1.7; }
+.s-hero .scroll { display: none; }
+.s-hero .hero > * { flex: none !important; }
+.s-hero .hero { min-height: auto !important; }
+.s-hero .kv h1 { font-size: clamp(30px, 9.6cqi, 46px); }
+.s-hero .cd { margin-top: auto; }
+.sl .sec { padding: 12px 0 0; }
+.sl .sec .h2 { font-size: clamp(23px, 7cqi, 32px); margin-top: 10px; }
+.sl .orb { height: clamp(190px, 30svh, 260px); }
+.sl .stack { height: 176px; }
+.sl .log { height: 92px; }
+.sl .pnl { margin-top: 10px; }
+.sl .tl { margin-top: 16px; gap: 12px; }
+.sl .tl li { padding: 9px 12px 10px; }
+.sl .tl p { font-size: 15px; line-height: 1.7; }
+.sl .stats { margin-top: 14px; gap: 6px; }
+.sl .st { padding: 9px 10px 10px; }
+.sl .st b { font-size: clamp(30px, 9.4cqi, 42px); }
+.sl .st.hero2 b { font-size: clamp(50px, 16cqi, 76px); }
+.sl .foot { margin-top: 28px; padding-bottom: 8px; }
+/* 手紙：何も動かさない */
+.s-lt { background: var(--bg); }
+.s-lt .lt { flex: 1; display: flex; flex-direction: column; padding: 34px 0 14px; }
+.s-lt .lt::after { top: 12px; white-space: nowrap; font-size: 9.5px; letter-spacing: .12em; }
+.s-lt .lt-in { flex: 1; padding: 26px 20px 34px; }
+.s-lt .lt-in > p, .s-lt .lt-in > .lt-t + p { font-size: 16.5px; line-height: 1.95; margin-top: 1.25em; }
+.s-lt .lt-in > .lt-h + p, .s-lt .lt-in > .lt-cont + p, .s-lt .lt-in > p:first-child { margin-top: 0; }
+.s-lt .lt-h { font-size: clamp(20px, 5.8cqi, 24px); margin-bottom: 20px; padding-bottom: 14px; }
+.s-lt .lt-num { font-size: 48px; }
+.s-lt .lt-v { margin-top: 0; }
+.s-lt .lt-v li { font-size: 16.5px; line-height: 1.7; }
+.s-lt .lt-cont { color: #9a8a5f !important; }
+.s-lt .lt-cont::before { content: ""; display: inline-block; width: 18px; height: 1px; margin-right: 8px; vertical-align: middle; background: #c9b98f; }
+.sw-more { position: absolute; z-index: 25; left: 50%; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); padding: 3px 12px; border-radius: 99px; background: rgba(27,24,20,.86); color: #fbf9f4; font-family: var(--mono); font-size: 10px; letter-spacing: .14em; pointer-events: none; opacity: 0; transition: opacity .25s; }
+.sw-more.on { opacity: 1; }
+.sw-hint { position: absolute; z-index: 26; right: 14px; top: calc(70px + env(safe-area-inset-top, 0px)); padding: 7px 14px; border-radius: 99px; background: var(--gr); color: #06120c; font-weight: 900; font-size: 13px; box-shadow: 0 0 20px rgba(62,240,168,.5); pointer-events: none; animation: swn 1.4s ease-in-out infinite; transition: opacity .3s; }
+.sw-hint.off { opacity: 0; }
+@keyframes swn { 50% { transform: translateX(-8px); } }
+/* 下の固定ボタン（常に表示・ボタンだけ） */
+.dock { transform: none !important; pointer-events: auto !important; max-width: 520px; margin: 0 auto; }
+.dock-in { grid-template-columns: 1fr; }
+.dock-t { display: none; }
+.dock .go { min-height: 52px; font-size: 15.5px; }
+@media (max-height: 680px) {
+  .s-lt .lt-in > p { font-size: 16px; line-height: 1.85; margin-top: 1em; }
+  .s-lt .lt { padding: 26px 0 6px; }
+  .s-lt .lt-in { padding: 18px 18px 22px; }
+  .s-lt .lt-h { margin-bottom: 14px; padding-bottom: 10px; }
+  .s-lt .lt-num { font-size: 40px; }
+  .sl { padding-top: calc(48px + env(safe-area-inset-top, 0px)); padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+  .s-hero .boot { font-size: 10px; line-height: 1.45; padding-top: 6px; }
+  .s-hero .boot div:nth-child(n+3):not(:nth-last-child(-n+2)) { display: none; }
+  .s-hero .kv { padding-top: 8px; }
+  .s-hero .kv h1 { font-size: clamp(26px, 8.4cqi, 36px); margin-top: 6px; }
+  .s-hero .cd-scan { display: none; }
+  .sw-hint { display: none; }
+  .s-hero .cd-v { font-size: clamp(30px, 10cqi, 44px); }
+  .s-hero .kv p { font-size: 14.5px; line-height: 1.7; }
+  .s-hero .cd { margin-top: 12px; padding: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .sw-hint { animation: none; } }
+</style>
+<style>
+/* ── 手紙の読ませ方 v2 ── */
+.sw-prog { gap: 2px; }
+.s-lt .lt { padding-bottom: 10px; }
+.s-lt .lt-in { display: flex; flex-direction: column; transform-origin: 0 50%; }
+.s-lt .lt-body { margin: auto 0; padding: 8px 0; }
+.s-lt .lt-in .lt-body > p { margin-top: 1.3em; font-size: 17.5px; line-height: 2; }
+.s-lt .lt-in .lt-body > p:first-child { margin-top: 0; }
+.s-lt .lt-in .lt-body > .lt-k { font-size: 11.5px; line-height: 1.5; }
+.s-lt .lt-in .lt-body > .lt-k + p { margin-top: .9em; }
+.folio { margin: 18px 0 0 !important; display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-family: var(--mono) !important; font-size: 11px !important; line-height: 1 !important; letter-spacing: .14em; color: #9a8a5f !important; }
+.folio::before { content: ""; width: 26px; height: 1px; background: #c9b98f; }
+.lt-end { margin: 12px 0 0 !important; padding-top: 12px; border-top: 1px dashed #c9b98f; display: grid; gap: 2px; font-family: "Shippori Mincho B1", serif !important; font-size: 13.5px !important; line-height: 1.6 !important; color: #6b5f40 !important; }
+.lt-end span { font-family: var(--g); font-weight: 900; font-size: 14.5px; color: #1b1814; }
+/* 章の扉 */
+.s-door { justify-content: center; background: radial-gradient(90% 60% at 50% 45%, rgba(201,185,143,.12), transparent 70%), var(--bg); }
+.door { padding: 0 26px; }
+.door-k { font-family: var(--mono); font-size: 12px; letter-spacing: .4em; color: #c9b98f; }
+.door-n { display: flex; align-items: baseline; gap: 12px; margin-top: 4px !important; }
+.door-n b { font-family: var(--n); font-weight: 700; font-size: clamp(110px, 38cqi, 170px); line-height: .9; color: transparent; background: linear-gradient(100deg,#b8862e,#f5dc92 30%,#fff6d8 42%,#e2b857 58%,#a8761f); -webkit-background-clip: text; background-clip: text; }
+.door-n span { font-family: var(--mono); font-size: 16px; color: #6d6450; }
+.door-t { margin-top: 22px; padding-top: 22px; border-top: 1px solid rgba(201,185,143,.4); font-family: "Shippori Mincho B1", serif; font-weight: 800; font-size: clamp(22px, 6.6cqi, 28px); line-height: 1.65; color: #fbf9f4; text-wrap: pretty; }
+.door-s { margin-top: 26px !important; font-family: var(--mono); font-size: 11px; letter-spacing: .2em; color: #8494b8; }
+/* 一言 */
+.s-quote { justify-content: center; background: linear-gradient(180deg, #0b0f1a, #05070d); }
+.qt { padding: 0 26px; }
+.qt-m { font-family: "Shippori Mincho B1", serif; font-size: 96px; line-height: .6; color: #c9b98f; opacity: .5; }
+.qt-p { margin-top: 12px !important; font-family: "Shippori Mincho B1", serif; font-weight: 700; font-size: clamp(21px, 6.4cqi, 27px); line-height: 1.85; letter-spacing: .03em; color: #fbf9f4; text-wrap: pretty; }
+.qt-p b { font-weight: 800; color: #f5dc92; background: linear-gradient(transparent 70%, rgba(201,185,143,.28) 70%); }
+.s-quote .folio { margin-top: 30px !important; } .s-quote .folio::before { background: #6d6450; }
+.s-quote .lt-end { border-top-color: #3a3428; color: #b9ad8c !important; } .s-quote .lt-end span { color: #fff; }
+/* メンバーの声 */
+.s-voice { justify-content: center; background: radial-gradient(80% 50% at 50% 50%, rgba(62,240,168,.08), transparent 70%), var(--bg); }
+.vc { position: relative; margin: 0 18px; padding: 26px 22px 24px; background: #fbf9f4; border-radius: 4px 22px 22px 22px; box-shadow: 0 24px 50px rgba(0,0,0,.55); }
+.vc::before { content: ""; position: absolute; left: 0; top: -14px; width: 26px; height: 16px; background: #fbf9f4; clip-path: polygon(0 0, 100% 100%, 0 100%); }
+.vc-k { display: flex; justify-content: space-between; font-family: var(--mono); font-weight: 700; font-size: 11px; letter-spacing: .16em; color: #9a8a5f; }
+.vc-q { margin-top: 12px !important; font-family: "Shippori Mincho B1", serif; font-weight: 800; font-size: clamp(22px, 6.6cqi, 28px); line-height: 1.7; color: #1b1814; text-wrap: pretty; }
+.vc-w { margin-top: 16px !important; text-align: right; font-size: 13px; font-weight: 700; color: #6b5f40; }
+/* 紙をめくる感触（中の文字は動かさない） */
+.s-lt .lt-in, .s-quote .qt, .s-voice .vc, .s-door .door { transform: perspective(1100px) rotateY(calc(var(--p, 0) * -16deg)) rotate(calc(var(--p, 0) * -1.5deg)); }
+@media (max-height: 680px) {
+  .s-lt .lt-in .lt-body > p { font-size: 16.5px; line-height: 1.85; }
+  .door-n b { font-size: 96px; } .door-t { margin-top: 14px; padding-top: 14px; }
+  .qt-p, .vc-q { font-size: clamp(19px, 5.8cqi, 23px); }
+  .qt-m { font-size: 70px; }
+}
+@media (prefers-reduced-motion: reduce) { .s-lt .lt-in, .s-quote .qt, .s-voice .vc, .s-door .door { transform: none !important; } }
+</style><style>
+.s-lt.short .lt-body { margin: auto 0; }
+.s-lt.short .lt-in .lt-body > p:not(.lt-k):not(.lt-sign) { font-family: "Shippori Mincho B1", serif; font-weight: 700; font-size: clamp(22px, 6.6cqi, 26px); line-height: 1.8; letter-spacing: .03em; }
+.s-lt.short .lt-in .lt-body > p.lt-sign { font-size: 24px !important; }
+.s-lt.short .lt-in { padding-top: 34px; padding-bottom: 34px; }
+.qt-sign { margin-top: 26px !important; text-align: right; font-family: "Shippori Mincho B1", serif; font-weight: 800; font-size: 22px; color: #f5dc92; letter-spacing: .1em; }
+@media (max-height: 680px) { .s-lt.short .lt-in .lt-body > p:not(.lt-k):not(.lt-sign) { font-size: clamp(20px, 6cqi, 23px); } }
+</style><style>
+/* ── ① 本文も黒い地に揃える ── */
+.s-lt { justify-content: center; background: linear-gradient(180deg, #0b0f1a, #05070d) !important; }
+.s-lt .lt { background: transparent !important; padding: 0 !important; flex: 1; display: flex; flex-direction: column; }
+.s-lt .lt::before, .s-lt .lt::after, .s-lt .lt-in::before { display: none !important; content: none !important; }
+.s-lt .lt-in { flex: 1; margin: 0 !important; max-width: none !important; padding: 20px 26px 22px !important; background: transparent !important; box-shadow: none !important; -webkit-mask: none !important; mask: none !important; border: 0 !important; }
+.s-lt .lt-in .lt-body > p, .s-lt .lt-in .lt-body > p.lt-sign { color: #e8e4da !important; font-family: "Shippori Mincho B1", serif; font-weight: 500; letter-spacing: .03em; }
+.s-lt .lt-in b { color: #f5dc92 !important; font-weight: 800; border-bottom: 0 !important; background: linear-gradient(transparent 72%, rgba(201,185,143,.28) 72%) !important; padding: 0 .04em; }
+.s-lt .lt-k { color: #c9b98f !important; }
+.s-lt .lt-t, .s-lt .lt-h { color: #fbf9f4 !important; border-color: rgba(201,185,143,.35) !important; }
+.s-lt .lt-num { color: #fbf9f4 !important; }
+.s-lt .lt-h span, .s-lt .lt-h span::after { color: #c9b98f !important; }
+.s-lt .lt-sign { color: #f5dc92 !important; font-weight: 800 !important; letter-spacing: .1em !important; }
+.s-lt .lt-v li { color: #fbf9f4 !important; border-left-color: #c9b98f !important; }
+.s-lt .folio { color: #8a8170 !important; } .s-lt .folio::before { background: #4a4434 !important; }
+.s-lt .lt-end { border-top-color: #3a3428 !important; color: #b9ad8c !important; } .s-lt .lt-end span { color: #fff !important; }
+.s-lt.short .lt-in .lt-body > p:not(.lt-k):not(.lt-sign) { color: #fbf9f4 !important; font-weight: 700; }
+</style><style>
+/* ── 連続する本文の画面に変化 ── */
+.s-lt .lt-body > p.pbig { font-size: 22px !important; line-height: 1.75 !important; font-weight: 700 !important; color: #fbf9f4 !important; }
+/* v2：最初の段落を大きなリードに */
+.s-lt.v2 .lt-body > p:not(.lt-k):first-of-type, .s-lt.v2 .lt-body > .lt-k + p { font-size: 21px !important; line-height: 1.8 !important; font-weight: 700 !important; color: #fbf9f4 !important; padding-bottom: 18px; border-bottom: 1px solid rgba(201,185,143,.35); }
+.s-lt.v2 .lt-in b { background: none !important; text-decoration: underline; text-decoration-color: #c9b98f; text-decoration-thickness: 2px; text-underline-offset: 7px; }
+/* v3：左に金の縦線、強調は太いマーカー */
+.s-lt.v3 .lt-body { border-left: 2px solid #c9b98f; padding-left: 18px !important; }
+.s-lt.v3 .lt-in b { color: #1b1814 !important; background: linear-gradient(transparent 18%, #e2c477 18%, #e2c477 90%, transparent 90%) !important; padding: 0 .18em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+/* v4：最初の1文字を大きく、行を少し広く */
+.s-lt.v4 .lt-body > p:not(.lt-k):first-of-type::first-letter { float: left; font-size: 3.1em; line-height: .95; margin: .08em .1em 0 0; font-weight: 800; color: #f5dc92; }
+.s-lt.v4 .lt-body > p { line-height: 2.15 !important; }
+.s-lt.v4 .lt-in b { background: none !important; color: #f5dc92 !important; text-decoration: underline wavy rgba(201,185,143,.7); text-decoration-thickness: 1px; text-underline-offset: 7px; }
+/* v1：標準（強調は金色＋薄い下線） */
+.s-lt.v1 .lt-body > p:not(.lt-k):not(.pbig) { font-size: 17.5px !important; }
+@media (max-height: 680px) { .s-lt .lt-body > p.pbig, .s-lt.v2 .lt-body > p:not(.lt-k):first-of-type { font-size: 19px !important; } }
+</style></head>
+<body>
+<main class="page" id="top">
+<div class="sw-top"><div class="sw-prog" data-prog=""><button type="button" aria-label="1枚目" data-go="0"><i></i></button><button type="button" aria-label="2枚目" data-go="1"><i></i></button><button type="button" aria-label="3枚目" data-go="2"><i></i></button><button type="button" aria-label="4枚目" data-go="3"><i></i></button><button type="button" aria-label="5枚目" data-go="4"><i></i></button><button type="button" aria-label="6枚目" data-go="5"><i></i></button><button type="button" aria-label="7枚目" data-go="6"><i></i></button><button type="button" aria-label="8枚目" data-go="7"><i></i></button><button type="button" aria-label="9枚目" data-go="8"><i></i></button><button type="button" aria-label="10枚目" data-go="9"><i></i></button><button type="button" aria-label="11枚目" data-go="10"><i></i></button><button type="button" aria-label="12枚目" data-go="11"><i></i></button><button type="button" aria-label="13枚目" data-go="12"><i></i></button><button type="button" aria-label="14枚目" data-go="13"><i></i></button><button type="button" aria-label="15枚目" data-go="14"><i></i></button><button type="button" aria-label="16枚目" data-go="15"><i></i></button><button type="button" aria-label="17枚目" data-go="16"><i></i></button><button type="button" aria-label="18枚目" data-go="17"><i></i></button><button type="button" aria-label="19枚目" data-go="18"><i></i></button><button type="button" aria-label="20枚目" data-go="19"><i></i></button><button type="button" aria-label="21枚目" data-go="20"><i></i></button><button type="button" aria-label="22枚目" data-go="21"><i></i></button><button type="button" aria-label="23枚目" data-go="22"><i></i></button><button type="button" aria-label="24枚目" data-go="23"><i></i></button><button type="button" aria-label="25枚目" data-go="24"><i></i></button><button type="button" aria-label="26枚目" data-go="25"><i></i></button><button type="button" aria-label="27枚目" data-go="26"><i></i></button><button type="button" aria-label="28枚目" data-go="27"><i></i></button><button type="button" aria-label="29枚目" data-go="28"><i></i></button><button type="button" aria-label="30枚目" data-go="29"><i></i></button><button type="button" aria-label="31枚目" data-go="30"><i></i></button><button type="button" aria-label="32枚目" data-go="31"><i></i></button><button type="button" aria-label="33枚目" data-go="32"><i></i></button><button type="button" aria-label="34枚目" data-go="33"><i></i></button><button type="button" aria-label="35枚目" data-go="34"><i></i></button><button type="button" aria-label="36枚目" data-go="35"><i></i></button><button type="button" aria-label="37枚目" data-go="36"><i></i></button><button type="button" aria-label="38枚目" data-go="37"><i></i></button><button type="button" aria-label="39枚目" data-go="38"><i></i></button><button type="button" aria-label="40枚目" data-go="39"><i></i></button><button type="button" aria-label="41枚目" data-go="40"><i></i></button><button type="button" aria-label="42枚目" data-go="41"><i></i></button><button type="button" aria-label="43枚目" data-go="42"><i></i></button></div>
+<div class="sw-r"><b>T-AI v2<span data-pos="">01 / 43</span></b><span class="sw-cd"><small data-mk="">20:00まで</small><span data-mc="">--:--:--</span></span><span data-clock="" hidden=""></span></div></div>
+<div class="track" data-track=""><div data-i="0" class="sl s-hero" aria-label="1枚目"><div class="tick" aria-hidden="true"><div class="tick-in" data-tick="a"></div></div><section class="hero" aria-label="T-AI v2 起動">
+    <canvas data-stream="" aria-hidden="true"></canvas>
+    <div class="boot" data-boot="" aria-hidden="true"></div>
+    <div class="kv">
+      <small>FINAL ENTRY · 20:00</small>
+      <h1 class="kp"><span class="l">T-AI <em>v2エンジン</em>、</span><span class="l">今夜20時、起動。</span></h1>
+      <p>数学オリンピックの頭脳から始まった、5年間の結晶。<br>最後の募集は、今夜20時に始まります。</p>
+    </div>
+    <div class="cd" data-cdbox="">
+      <span class="cd-scan" aria-hidden="true"></span>
+      <span class="cd-k"><span data-cd-k="">ENGINE START IN</span><b>T-MINUS</b></span>
+      <b class="cd-v" data-cd="">--:--:--</b>
+      <span class="cd-u" aria-hidden="true"><span>HRS</span><span>MIN</span><span>SEC</span><span></span></span>
+      <span class="cd-s" data-cd-s="">募集開始（20:00）まで</span>
+    </div>
+    <p class="scroll" aria-hidden="true"><i></i>SCROLL</p>
+  </section><div class="tick b" aria-hidden="true"><div class="tick-in" data-tick="b"></div></div></div>
+<div data-i="1" class="sl s-lt short" aria-label="2枚目"><section class="lt lt-top"><div class="lt-in"><div class="lt-body"><p class="lt-k">LETTER FROM 川崎タカシ</p><p>川崎タカシです。</p></div><p class="folio">はじめに　1 / 4</p></div></section></div>
+<div data-i="2" class="sl s-quote" aria-label="3枚目"><div class="qt"><p class="qt-m" aria-hidden="true">“</p><p class="qt-p">いよいよ「T-AI」最後の募集まで<b>あと2時間</b>となりました。</p><p class="folio">はじめに　2 / 4</p></div></div>
+<div data-i="3" class="sl s-lt v1" aria-label="4枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>本日20時に募集を開始しますが、もうすでに驚くほど多くの方から「絶対に参加したいです」と熱いご連絡をいただいています。<br>間違いなく公開から即完売しますし、今回は何回もダラダラと煽るようなことは一切しません。</p></div><p class="folio">はじめに　3 / 4</p></div></section></div>
+<div data-i="4" class="sl s-quote" aria-label="5枚目"><div class="qt"><p class="qt-m" aria-hidden="true">“</p><p class="qt-p">私には、揺るぎない<b>絶対的な自信</b>があります。<br>どうか、私のことを信じてついてきてください。</p><p class="folio">はじめに　4 / 4</p></div></div>
+<div data-i="5" class="sl s-door" aria-label="6枚目"><div class="door"><p class="door-k">CHAPTER</p><p class="door-n"><b>01</b><span>/ 03</span></p><h2 class="door-t">数学オリンピック出場者との出会い──セリエBの歪みから始まった「5年間の物語」</h2><p class="door-s">スワイプして読む →</p></div></div>
+<div data-i="6" class="sl s-lt v2" aria-label="7枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p class="pbig">少しだけ、この「T-AI」がどのようにして生まれたのか、その起源をお話しさせてください。</p><p>このシステムのルーツは、私の友人で「数学オリンピック」に出場した経歴を持つアランさんという天才エンジニアと一緒に開発したモデルが起源です。</p></div><p class="folio">第1章　1 / 7</p></div></section></div>
+<div data-i="7" class="sl s-lt v3" aria-label="8枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>元々のシステムは、海外ブックメーカーが設定するハンディキャップのクセからオッズを徹底分析し、市場の「正確なスイートポイント（期待値の歪み）」を見つけ出すものでした。当時、イタリアサッカー「セリエB」のオッズの付け方が統計的に甘いという明確なデータがあり、そこを集中的に狙い撃ちして利益を抜き続けたのがすべての始まりです。</p></div><p class="folio">第1章　2 / 7</p></div></section></div>
+<div data-i="8" class="sl s-lt short" aria-label="9枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>「この数学的アプローチを、そのまま日本の競馬に運用できないか？」<br>そう思い立ってから、早いもので5年の歳月が経ちました。</p></div><p class="folio">第1章　3 / 7</p><p class="lt-end">第1章　ここまで<span>次は「起源の年表」 →</span></p></div></section></div>
+<div data-i="9" class="sl s-sec" aria-label="10枚目"><section class="sec">
+    <p class="tag" data-rv=""><b>01</b><i data-scr="">ORIGIN</i></p>
+    <h2 class="h2 kp" data-rv="">すべては、<em class="nb">オッズの歪み</em>から<span class="nb">始まった。</span></h2>
+    <ol class="tl" data-tl="">
+      <li><small>ORIGIN<span>#01</span></small><b>数学オリンピックの頭脳</b><p>川崎の友人で、数学オリンピックに出場した天才エンジニア・アランさんと、最初のモデルを作りました。</p></li>
+      <li><small>EDGE<span>#02</span></small><b>セリエBの「甘い」オッズ</b><p>海外ブックメーカーのハンディキャップのクセを分析し、市場の期待値の歪みを見つける。それがすべての始まりでした。</p></li>
+      <li><small>5 YEARS<span>#03</span></small><b>その数学を、日本の競馬へ</b><p>「このアプローチを、そのまま競馬で使えないか」。そこから5年。</p></li>
+      <li><small>T-AI<span>#04</span></small><b>全レースに、勝つ確率と期待値</b><p>予想ではなく、確率で選ぶ会員サイトとして公開しました。</p></li>
+      <li class="now"><small>TONIGHT<span>#05</span></small><b>T-AI v2エンジン</b><p>発走前のオッズまで読む、第2の勝率。今夜、最後の募集とともに起動します。</p></li>
+    </ol>
+  </section></div>
+<div data-i="10" class="sl s-lt short" aria-label="11枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>雨の日も、風の日も、数字だけは絶対に嘘をつきません。<br>新聞の印（◎○▲）など一切関係なし。</p></div><p class="folio">第1章　4 / 7</p></div></section></div>
+<div data-i="11" class="sl s-quote" aria-label="12枚目"><div class="qt"><p class="qt-m" aria-hidden="true">“</p><p class="qt-p">現代競馬で稼ぐための唯一の答えは<b>人間が何もしないこと（予想しないこと）</b>、これがすべてです。</p><p class="folio">第1章　5 / 7</p></div></div>
+<div data-i="12" class="sl s-lt v4" aria-label="13枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>トレセンの裏ネタも、巷の予想家の「今週は自信あります！」という言葉も、一体何の数学的根拠があって言っているのでしょうか？はっきり言いますが、そんなものはすべて幻想であり、まやかしでしかないのです。</p><p class="pbig">大丈夫です。私にできたんですから、あなたにも100%できます。</p></div><p class="folio">第1章　6 / 7</p></div></section></div>
+<div data-i="13" class="sl s-lt v1" aria-label="14枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>あなたがやることは、ただシステムの通り淡々と馬券を買うだけ。<br>レース映像すら見なくとも、安定した収支を叩き出す。ここからのあなたの競馬は、同じ期待値行動を機械のように淡々と繰り返すだけの作業に変わります。</p><p>強いてデメリットを挙げるとしたら「ギャンブルとしての競馬がつまらなくなること」くらいですが、手元のお金が増え続けるならそれでいいじゃないですか。</p></div><p class="folio">第1章　7 / 7</p><p class="lt-end">第1章　ここまで<span>次は「管制画面」 →</span></p></div></section></div>
+<div data-i="14" class="sl s-sec" aria-label="15枚目"><section class="sec" data-engine=""><p class="tag" data-rv=""><b>02</b><i data-scr="">NO PREDICTION</i></p><h2 class="h2" data-rv="">人間は、<em>予想しない。</em></h2><p class="lead" data-rv="">新聞の印も、裏ネタも使いません。<b>数字だけが、買う馬を決めます。</b></p><div class="pnl" data-rv="">
+      <div class="pnl-h"><span>THE ENGINE</span><span>入力 → v2の勝率</span></div>
+      <canvas class="orb" data-orb="" aria-hidden="true"></canvas>
+      <div class="pnl-f"><span><b data-n="">18,234</b> 頭を計算中</span><span>↓ 判断へ</span></div>
+    </div><div class="pnl" data-rv="">
+      <div class="pnl-h"><span>DECISION STACK</span><span>v2が選ぶ</span></div>
+      <ol class="stack" data-stack=""></ol>
+      <div class="pnl-f"><span class="g">BUY <b data-cb="">0</b></span><span class="r">SKIP <b data-cs="">0</b></span><span>WATCH <b data-ch="">0</b></span></div>
+    </div><div class="pnl" data-rv="">
+      <div class="pnl-h"><span>ENGINE LOG</span><span>tail -f v2.log</span></div>
+      <div class="log" data-log=""></div>
+    </div><p class="img-n">※画面のレース・馬番・数字はイメージです</p></section></div>
+<div data-i="15" class="sl s-sec" aria-label="16枚目"><section class="sec"><p class="lead" style="margin-top:34px" data-rv="">そして、あなたがやることは、これだけ。</p><div class="how" data-rv="">
+      <figure><img src="/assets/app/v2tab.jpg" onerror="this.onerror=null;this.src='../assets/app/v2tab.jpg'" width="780" height="1270" alt="会員サイトのv2の画面。バランスの1頭と、買い目をコピーするボタン" loading="lazy" decoding="async"></figure>
+      <ol>
+        <li>v2タブを開く<small>レースごとに「バランスの1頭」</small></li>
+        <li>買い目をコピー<small>即PATの入力順のまま</small></li>
+        <li>即PATに貼って買う<small>馬券はご自身で購入します</small></li>
+      </ol>
+    </div><p class="note">※会員サイトの実際の画面です（11/23 東京11R）。</p></section></div>
+<div data-i="16" class="sl s-door" aria-label="17枚目"><div class="door"><p class="door-k">CHAPTER</p><p class="door-n"><b>02</b><span>/ 03</span></p><h2 class="door-t">「そんなに儲かるならなぜ売るのか？」──私が募集を行う2つの明確な理由</h2><p class="door-s">スワイプして読む →</p></div></div>
+<div data-i="17" class="sl s-lt v2" aria-label="18枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>正直、たった1年間や2年間の浅い検証数字なら、ここまで強気なことは言いません。<br>私自身の<b>5年間のリアルな運用実績</b>と、<b>300億回に及ぶシミュレーション</b>、そして<b>今の市場にここから5%多く資金が追加投入されてオッズが下がってもプラスになる</b>という完全な実証データがあるからこそ、こうして募集に踏み切っています。</p></div><p class="folio">第2章　1 / 9</p><p class="lt-end">第2章　ここまで<span>次は「数字の計器盤」 →</span></p></div></section></div>
+<div data-i="18" class="sl s-sec" aria-label="19枚目"><section class="sec">
+    <p class="tag" data-rv=""><b>03</b><i data-scr="">SYSTEM STATS</i></p>
+    <h2 class="h2 kp" data-rv="">浅い検証で、<br><em class="nb">ここまでは</em><em class="nb">言わない。</em></h2>
+    <div class="stats">
+      <div class="st w hero2" data-rv="" data-st=""><small>v2 ROI · 回収率</small><b><span data-to="111.2" data-dp="1">111.2</span><i>%</i></b><span>朝10時のオッズ・2025年</span></div>
+      <div class="st" data-rv="" data-st=""><small>BACKTEST</small><b><span data-to="2519" data-dp="0" data-sep="">2,519</span></b><span>レースで検証</span></div>
+      <div class="st" data-rv="" data-st=""><small>HIT RATE</small><b><span data-to="35.1" data-dp="1">35.1</span><i>%</i></b><span>1レース1頭・単勝</span></div>
+      <div class="st" data-rv="" data-st=""><small>DEVELOPMENT</small><b><span data-to="5" data-dp="0">5</span><i>年</i></b><span>開発と実運用</span></div>
+      <div class="st" data-rv="" data-st=""><small>SIMULATION</small><b><span data-to="300" data-dp="0">300</span><i>億回</i></b><span>シミュレーション</span></div>
+      <div class="st w" data-rv="" data-st=""><small>STRESS TEST</small><b>+<span data-to="5" data-dp="0">5</span><i>%</i></b><span>市場の資金が増えてもプラス</span></div>
+    </div>
+    <p class="note">※回収率は払戻÷投資。各レースで「バランスの1頭」を単勝100円で買った場合の、過去データでの検証結果です。将来の払い戻しや利益を約束するものではありません。</p>
+  </section></div>
+<div data-i="19" class="sl s-quote" aria-label="20枚目"><div class="qt"><p class="qt-m" aria-hidden="true">“</p><p class="qt-p">もちろん、私ひとりだけで秘密裏に回し続けて儲けることもできました。<br>それでもあえて皆さんに公開・募集するメリットは、私にとって大きく<b>2つ</b>あります。</p><p class="folio">第2章　2 / 9</p></div></div>
+<div data-i="20" class="sl s-quote" aria-label="21枚目"><div class="qt"><p class="qt-m" aria-hidden="true">“</p><p class="qt-p">1つ目は、<b>最強の集合知コミュニティを作ること</b>です。<br>AIは集合知の時代です。AIを使うのも人間ですが、それを進化させるのもまた人間です。私ひとりのアイデアだけでは補えない視点を打開するために、どうしても同じ武器を持つ本気のコミュニティを作りたいと思っていました。</p><p class="folio">第2章　3 / 9</p></div></div>
+<div data-i="21" class="sl s-lt v3" aria-label="22枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>事実、今回完成した怪物エンジン「v2」も、先週参加してくれた購入者様のリアルな声を体現したものです。「もっとシンプルに、資金配分すら考えずわかりやすく儲けたい」という声があったからこそ、全レース均等買いでプラスになるこの究極の方式を見つけ出すことができました。まさにコミュニティを作った最大のメリットですね。</p><p class="pbig">先週参加してくれたメンバーはすでにこのシステムツールを心の底から気に入ってくれていて、</p></div><p class="folio">第2章　4 / 9</p></div></section></div>
+<div data-i="22" class="sl s-voice" aria-label="23枚目"><div class="vc"><p class="vc-k">MEMBER VOICE<span>01 / 05</span></p><p class="vc-q">「正確な指数と確率が見られるから、もう馬柱すら見る必要がない」</p><p class="vc-w">── T-AI メンバー</p></div></div>
+<div data-i="23" class="sl s-voice" aria-label="24枚目"><div class="vc"><p class="vc-k">MEMBER VOICE<span>02 / 05</span></p><p class="vc-q">「この仕組みなら永遠に勝てると確信した」</p><p class="vc-w">── T-AI メンバー</p></div></div>
+<div data-i="24" class="sl s-voice" aria-label="25枚目"><div class="vc"><p class="vc-k">MEMBER VOICE<span>03 / 05</span></p><p class="vc-q">「ワイドの期待値があるところだけ買っていたら普通にプラスになった」</p><p class="vc-w">── T-AI メンバー</p></div></div>
+<div data-i="25" class="sl s-voice" aria-label="26枚目"><div class="vc"><p class="vc-k">MEMBER VOICE<span>04 / 05</span></p><p class="vc-q">「力まず買っていたら万馬券が軽く獲れた」</p><p class="vc-w">── T-AI メンバー</p></div></div>
+<div data-i="26" class="sl s-voice" aria-label="27枚目"><div class="vc"><p class="vc-k">MEMBER VOICE<span>05 / 05</span></p><p class="vc-q">「3連複の上位を期待値ソートして買うだけでプラスになっている」</p><p class="vc-w">── T-AI メンバー</p></div></div>
+<div data-i="27" class="sl s-lt v4" aria-label="28枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p class="pbig">など、毎日とんでもない数の絶賛の声をいただいています。開発者として非常に嬉しいです。</p><p>それぞれ自分のライフスタイルに合った使い方がありますし、既存のエンジンでもそもそも儲かる設計のものです。何より確率は試行回数を重ねれば必ずその通りに収束しますから、システムベットを組めば今の段階でもまず負けませんが、今回はそこに<b>均等買い（ベタ買い）でもプラスになる</b>というエグいv2エンジンまで作れてしまいました。</p></div><p class="folio">第2章　5 / 9</p></div></section></div>
+<div data-i="28" class="sl s-quote" aria-label="29枚目"><div class="qt"><p class="qt-m" aria-hidden="true">“</p><p class="qt-p">そして私が募集する2つ目のメリットは、<b>販売した資金を使い、さらに新しい次世代ロジックの実弾検証に使いたい</b>という明確な目的があるからです。</p><p class="folio">第2章　6 / 9</p></div></div>
+<div data-i="29" class="sl s-lt v1" aria-label="30枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>実は今、競馬のほかに<b>ボートレース（競艇）</b>でも同じような期待値システムがすでに開発できています。<br>ただ、ボートはJRAに比べて1レースあたりの総投票数が少ないため、「実際に大金を投じたときにどの程度オッズが落ち込むのか」や「他のAI利用者のリアルな動向」が、机上の計算だけではどうしても掴みきれません。</p></div><p class="folio">第2章　7 / 9</p></div></section></div>
+<div data-i="30" class="sl s-lt v2" aria-label="31枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>まだ一般向けに実用化はできない段階なのですが、そのリアルな市場負荷を測るための「実弾実験の種銭」が欲しいのです。私にとって最大の財産はこのシステムそのものですので、その一部を切り売りして新たな研究開発・運用資金を得るのが今回の偽らざる目的です。</p></div><p class="folio">第2章　8 / 9</p></div></section></div>
+<div data-i="31" class="sl s-lt v3" aria-label="32枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>なお、このボートレース版については今後3ヶ月間しっかり実弾でのフォワードテストを行い、確実にプラスになることが実証でき次第、<b>今回のT-AIユーザー様に無償公開</b>します！<br>（※一応、過去データの検証上では「月間80万円の利益」ラインであれば、オッズを壊さず無理せずに<b>39ヶ月連続でプラス</b>を獲れているデータをすでに持っています。これだけでも参加費の何十倍もの価値になるはずです）</p></div><p class="folio">第2章　9 / 9</p><p class="lt-end">第2章　ここまで<span>次は「ロードマップ」 →</span></p></div></section></div>
+<div data-i="32" class="sl s-sec" aria-label="33枚目"><section class="sec">
+    <p class="tag" data-rv=""><b>05</b><i data-scr="">ROADMAP</i></p>
+    <h2 class="h2" data-rv="">ここから、<br><em class="nb">さらに進化する。</em></h2>
+    <ol class="rm" data-rv="">
+      <li><i></i><span><small>TONIGHT · 20:00</small><b>v2エンジン 起動</b><p>会員サイトの「v2」タブで、レースごとの1頭と買い目のコピー。</p></span></li>
+      <li><i></i><span><small>COMING · 数か月後（予定）</small><b>自動投票</b><p>v2の買い目を、自動で投票できるようにする予定です。</p></span></li>
+      <li><i></i><span><small>TESTING · 3か月の実弾検証</small><b>ボートレース版</b><p>実弾でのフォワードテストでプラスを確かめられたら、今回のT-AIユーザーさまに無償で公開する予定です。</p></span></li>
+    </ol>
+  </section></div>
+<div data-i="33" class="sl s-door" aria-label="34枚目"><div class="door"><p class="door-k">CHAPTER</p><p class="door-n"><b>03</b><span>/ 03</span></p><h2 class="door-t">馬券裁判級・本場のベンダー式──商材を買う人生は今夜で「最後」になります</h2><p class="door-s">スワイプして読む →</p></div></div>
+<div data-i="34" class="sl s-quote" aria-label="35枚目"><div class="qt"><p class="qt-m" aria-hidden="true">“</p><p class="qt-p">さて、今回引き渡す「T-AI v2エンジン」は、本当の意味で<b>馬券裁判級</b>や<b>香港の投資シンジケート（ベンダー式）</b>──いわゆる「真のギャンブル市場の裏側で莫大な富を築いている連中」が使っているのと同じ仕組みの開発に成功してしまいました。</p><p class="folio">第3章　1 / 8</p></div></div>
+<div data-i="35" class="sl s-quote" aria-label="36枚目"><div class="qt"><p class="qt-m" aria-hidden="true">“</p><p class="qt-p">はっきり断言します。「これで勝てないなら、もう何を使っても意味がわからない」というレベルです。<br>あなたが競馬の予想や商材にお金を払うのは、間違いなく<b>今回の人生でこれが最後</b>になるでしょう。なぜなら、これさえ手にすればあなた自身が「勝てる側」になってしまうからです。</p><p class="folio">第3章　2 / 8</p></div></div>
+<div data-i="36" class="sl s-lt short" aria-label="37枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>少しだけ、今夜から始まる「これから先のこと」を考えてみてください。</p></div><p class="folio">第3章　3 / 8</p></div></section></div>
+<div data-i="37" class="sl s-lt v4" aria-label="38枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>来週から、あなたはもう新聞の印に迷うことも、SNSの無責任な煽りに振り回されて大切なお金を溶かすこともありません。<br>システムが弾き出す冷徹な数字に従って淡々と処理するだけで、週末が終わるたびに口座の残高が右肩上がりに積み上がっていく。さらに数ヶ月後には「自動投票」が実装され、さらには「ボートレース版の無償提供」まで乗っかってくるのです。</p></div><p class="folio">第3章　4 / 8</p></div></section></div>
+<div data-i="38" class="sl s-lt v1" aria-label="39枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>毎月の支払いに追われるストレスが消え、値段を見ずに家族に美味しいものを食べさせてあげられる余裕。<br>急な出費にもビクともせず、通帳の数字が増えていくのをただ穏やかな気持ちで眺める毎日。<br>周りが不景気や物価高で悲鳴を上げている中、スマホ1台で「いつでも自分でお金を生み出せる絶対的なインフラ」をポケットに持っている圧倒的な優越感と安心感。</p></div><p class="folio">第3章　5 / 8</p></div></section></div>
+<div data-i="39" class="sl s-lt v2" aria-label="40枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>それは夢でもファンタジーでもなく、確率と科学の側に回った人間だけが当たり前に手にする「現実」です。</p><p>もう一度だけ言います。オッズ保護のため、今回を最後に新規募集は二度と行いません。即完売して扉が閉まれば、もう二度とこちら側へ来るチケットは手に入りません。</p></div><p class="folio">第3章　6 / 8</p></div></section></div>
+<div data-i="40" class="sl s-lt short" aria-label="41枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>すべての準備は整いました。私の5年間の執念と、あなたのこれからの豊かな人生を懸けた最高傑作を受け取ってください。</p></div><p class="folio">第3章　7 / 8</p></div></section></div>
+<div data-i="41" class="sl s-quote" aria-label="42枚目"><div class="qt"><p class="qt-m" aria-hidden="true">“</p><p class="qt-p">それでは今夜<b>20時</b>ちょうど、公式LINEでお待ちしています！</p><p class="qt-sign">川崎タカシ</p><p class="folio">第3章　8 / 8</p><p class="lt-end">第3章　ここまで<span>次は「最後のカウントダウン」 →</span></p></div></div>
+
+<div data-i="42" class="sl s-sec s-final" aria-label="43枚目"><section class="sec final" id="open" data-final="">
+    <p class="tag" data-rv=""><b>06</b><i data-scr="">FINAL ENTRY</i></p>
+    <h2 class="h2" data-rv="">最後の募集は、<br><em>今夜20時。</em></h2>
+    <p class="lead" data-rv="">オッズを守るため、新規の募集は今回が最後です。</p>
+    <div class="cd" data-cdbox="">
+      <span class="cd-scan" aria-hidden="true"></span>
+      <span class="cd-k"><span data-cd-k="">ENGINE START IN</span><b>T-MINUS</b></span>
+      <b class="cd-v" data-cd="">--:--:--</b>
+      <span class="cd-u" aria-hidden="true"><span>HRS</span><span>MIN</span><span>SEC</span><span></span></span>
+      <span class="cd-s" data-cd-s="">募集開始（20:00）まで</span>
+    </div>
+    <div class="cta" data-pre="">
+      <a class="go line" href="https://urlgeni.us/line/FnOSuA" target="_blank" rel="noopener">公式LINEで20時を待つ<span>▶</span></a>
+      <small>20時になると、このページから募集ページへ進めます。<br>開けない場合は、Xのアプリから外のブラウザで開いてください。</small>
+    </div>
+    <div class="cta" data-open="" hidden="">
+      <a class="go" href="/">募集ページへ進む<span>▶</span></a>
+      <small>限定20名・締切 11/24（火）24:00</small>
+    </div>
+  </section><footer class="foot">
+    <p>※過去のデータでの検証結果を含みます。将来の払い戻しや利益を約束するものではありません。馬券は会員さまご自身で、JRAの即PATから購入します。</p>
+    <nav><a href="/tokushoho">特定商取引法に基づく表記</a><a href="/privacy">プライバシーポリシー</a></nav>
+    <p>© 2026 川崎クラブ</p>
+  </footer></div></div>
+<span class="sw-more" data-more="">▼ 下に続きます</span>
+<span class="sw-hint" data-hint="">スワイプ →</span>
+</main>
+<div class="dock" data-dock="">
+  <div class="dock-in">
+    <span class="dock-t"><small data-dk-k="">ENGINE START IN</small><b data-dk="">--:--:--</b></span>
+    <a class="go line" data-dk-btn="" href="https://urlgeni.us/line/FnOSuA" target="_blank" rel="noopener">公式LINEで20時を待つ ▶</a>
+  </div>
+</div>
+<script>
+(() => {
+  'use strict';
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const R = Math.random, pick = (a) => a[Math.floor(R() * a.length)];
+  const VEN = ['東京', '京都', '中山', '阪神', '中京', '福島', '新潟', '小倉'];
+  const NUM = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱';
+  const LINE = 'https://urlgeni.us/line/FnOSuA';
+
+  /* ── 時刻（?at=2026-11-24T20:05 でその時刻の表示になる） ── */
+  const OPEN = Date.parse('2026-11-24T20:00:00+09:00');
+  const q = new URLSearchParams(location.search).get('at');
+  const off = q && !isNaN(Date.parse(q + '+09:00')) ? Date.parse(q + '+09:00') - Date.now() : 0;
+  const now = () => Date.now() + off;
+  const jst = (t) => new Date(t + 9 * 3600e3).toISOString().slice(11, 19);
+  const p2 = (v) => String(v).padStart(2, '0');
+  const parts = (ms) => { const s = Math.floor(Math.max(0, ms) / 1000); return [p2(Math.floor(s / 3600)), p2(Math.floor(s / 60) % 60), p2(s % 60), p2(Math.floor((Math.max(0, ms) % 1000) / 10))]; };
+
+  /* ── 見えている間だけ動かす ── */
+  const seen = new WeakMap();
+  const watch = (el, cb, th = 0) => { if (!('IntersectionObserver' in window)) { seen.set(el, true); cb && cb(true); return; } new IntersectionObserver((es) => es.forEach((e) => { seen.set(el, e.isIntersecting); cb && cb(e.isIntersecting); }), { threshold: th }).observe(el); };
+  const vis = (el) => seen.get(el) && !document.hidden;
+
+  /* 時計 */
+  const clk = $('[data-clock]');
+  const tickClock = () => { clk.textContent = jst(now()); };
+  tickClock(); setInterval(tickClock, 1000);
+
+  /* カウントダウン・20時の切り替え */
+  const cds = $$('[data-cdbox]'), pre = $('[data-pre]'), opn = $('[data-open]');
+  const dk = $('[data-dk]'), dkK = $('[data-dk-k]'), dkB = $('[data-dk-btn]'), dock = $('[data-dock]');
+  cds.forEach((b) => watch(b));
+  let was = null;
+  function paint(force) {
+    const t = now(), isOpen = t >= OPEN, [h, m, s, c] = parts(OPEN - t);
+    cds.forEach((box) => {
+      if (!force && !vis(box) && isOpen === was) return;
+      box.classList.toggle('open', isOpen);
+      $('[data-cd]', box).innerHTML = isOpen ? 'ENGINE ONLINE' : `${h}:${m}:${s}<small>.${c}</small>`;
+      $('[data-cd-k]', box).textContent = isOpen ? 'STATUS' : 'ENGINE START IN';
+      $('[data-cd-s]', box).textContent = isOpen ? '募集を開始しました（締切 24:00）' : '募集開始（20:00）まで';
+    });
+    if (force || dock.classList.contains('on') || isOpen !== was) { dk.textContent = isOpen ? 'ENGINE ONLINE' : `${h}:${m}:${s}.${c}`; dkK.textContent = isOpen ? '募集を開始しました（締切 24:00）' : 'ENGINE START IN'; }
+    if (isOpen !== was) {
+      pre.hidden = isOpen; opn.hidden = !isOpen;
+      dkB.href = isOpen ? '/' : LINE; dkB.textContent = isOpen ? '募集ページへ進む ▶' : '公式LINEで20時を待つ ▶';
+      if (isOpen) { dkB.classList.remove('line'); dkB.removeAttribute('target'); dkB.removeAttribute('rel'); }
+      else { dkB.classList.add('line'); dkB.target = '_blank'; dkB.rel = 'noopener'; }
+      was = isOpen;
+    }
+  }
+  paint(true);
+  if (RM) setInterval(() => paint(true), 1000); else { const loop = () => { paint(false); requestAnimationFrame(loop); }; requestAnimationFrame(loop); setInterval(() => paint(false), 1000); }
+
+  /* 下の固定バー：起動画面と最後の章が見えていない間だけ出す */
+  const hero = $('.hero'), fin = $('[data-final]');
+  let hv = true, fv = false;
+  const dockSet = () => { dock.classList.toggle('on', !hv && !fv); paint(true); };
+  watch(hero, (v) => { hv = v; dockSet(); }, .08);
+  watch(fin, (v) => { fv = v; dockSet(); }, .05);
+
+  /* 流れる帯 */
+  const tA = () => { let h = '<span class="lv">LIVE</span>'; for (let i = 0; i < 14; i++) { const o = (1.6 + R() * 28).toFixed(1), d = (R() * 14 - 7).toFixed(1); h += `<span>${pick(VEN)}${1 + Math.floor(R() * 12)}R ${NUM[Math.floor(R() * 16)]} <b>単勝 ${o}</b> <i class="${d >= 0 ? 'up' : 'dn'}">${d >= 0 ? '▲' : '▼'}${Math.abs(d)}%</i></span>`; if (i % 4 === 3) h += `<span><b>MARKET GAP</b> 人気${1 + Math.floor(R() * 8)}番 <i class="up">補正 ${(R() * 3 + .5).toFixed(1)}pt</i></span>`; } return h; };
+  const tB = () => { let h = ''; for (let i = 0; i < 16; i++) { const k = R(); h += `<span>${k < .4 ? '<i class="up">BUY</i>' : k < .7 ? '<i class="dn">SKIP</i>' : '<i class="am">INPUT</i>'} <b>p.${(100 + Math.floor(R() * 300))}</b> × ${(2 + R() * 18).toFixed(1)} = ${(.7 + R() * .5).toFixed(2)}</span>`; } return h; };
+  $$('[data-tick]').forEach((el) => { const h = el.dataset.tick === 'a' ? tA() : tB(); el.innerHTML = h + h; });
+  $$('.tick-in').forEach((el) => watch(el.parentNode, (v) => { el.style.animationPlayState = v ? 'running' : 'paused'; }));
+
+  /* 起動ログ */
+  const boot = $('[data-boot]');
+  const L = [['> boot t-ai.v2 --final-entry', 'w'], ['loading odds stream ............ ', 'ok', 'OK'], ['market gap model (by popularity) ', 'ok', 'OK'], ['win probability engine v2 ...... ', 'ok', 'READY'], ['decision: balance pick ......... ', 'ok', 'READY'], ['engine start ................... ', 'am', '20:00 JST']];
+  if (RM) boot.innerHTML = L.map((l) => `<div>${l[0]}<span class="${l[1]}">${l[2] || ''}</span></div>`).join('') + '<div>&gt; </div>';
+  else {
+    let i = 0;
+    const next = () => {
+      if (i >= L.length) { const d = document.createElement('div'); d.className = 'cur'; d.textContent = '> '; boot.append(d); return; }
+      const l = L[i++], d = document.createElement('div'); boot.append(d);
+      let k = 0; const ty = () => { k = Math.min(l[0].length, k + 2); d.textContent = l[0].slice(0, k); if (k < l[0].length) setTimeout(ty, 12); else { if (l[2]) { const sp = document.createElement('span'); sp.className = l[1]; sp.textContent = l[2]; d.append(sp); } setTimeout(next, 120); } };
+      ty();
+    };
+    setTimeout(next, 200);
+  }
+
+  /* 起動画面の背景：右から左に流れるデータ */
+  (() => {
+    const cv = $('[data-stream]'), cx = cv.getContext('2d');
+    let W = 0, H = 0, run = false, last = 0;
+    const COL = ['rgba(92,182,255,', 'rgba(205,215,238,', 'rgba(62,240,168,', 'rgba(246,194,74,', 'rgba(255,77,97,'];
+    const S = [], T = [];
+    const mk = (x) => { const c = R(); return { x: x ?? R() * W, y: R() * H, len: 20 + R() * 120, v: .08 + R() * .5, c: COL[c < .45 ? 0 : c < .7 ? 1 : c < .85 ? 2 : c < .94 ? 3 : 4], a: .15 + R() * .55, w: R() < .12 ? 1.6 : .8 }; };
+    const mt = (x) => ({ x: x ?? R() * W, y: 10 + R() * (H - 20), v: .04 + R() * .12, s: pick(['p.214', 'EV 1.12', '×12.4', 'BUY', 'SKIP', 'odds 8.7', 'gap +1.8', 'EV 0.94', 'p.087', 'INPUT']), a: .14 + R() * .22 });
+    function size() { const d = Math.min(2, devicePixelRatio || 1); W = cv.clientWidth; H = cv.clientHeight; cv.width = W * d; cv.height = H * d; cx.setTransform(d, 0, 0, d, 0, 0); S.length = 0; T.length = 0; const n = Math.round(W * H / 2600); for (let i = 0; i < n; i++) S.push(mk()); for (let i = 0; i < 18; i++) T.push(mt()); }
+    function draw(dt) {
+      cx.clearRect(0, 0, W, H);
+      for (const p of S) {
+        p.x -= p.v * dt; if (p.x + p.len < 0) Object.assign(p, mk(W + R() * 40));
+        cx.strokeStyle = p.c + (p.a * .6) + ')'; cx.lineWidth = p.w; cx.beginPath(); cx.moveTo(p.x, p.y); cx.lineTo(p.x + p.len, p.y); cx.stroke();
+        cx.fillStyle = p.c + Math.min(1, p.a + .3) + ')'; cx.fillRect(p.x - 1, p.y - p.w / 2 - .3, 2, p.w + .6);
+      }
+      cx.font = '500 10px "JetBrains Mono", monospace';
+      for (const t of T) { t.x -= t.v * dt; if (t.x < -80) Object.assign(t, mt(W + R() * 60)); cx.fillStyle = (t.s === 'BUY' ? 'rgba(62,240,168,' : t.s === 'SKIP' ? 'rgba(255,77,97,' : 'rgba(132,148,184,') + t.a + ')'; cx.fillText(t.s, t.x, t.y); }
+    }
+    const frame = (t) => { if (!run) return; const dt = Math.min(48, t - (last || t)); last = t; if (!document.hidden) draw(dt); requestAnimationFrame(frame); };
+    size(); draw(0);
+    addEventListener('resize', () => { size(); draw(0); });
+    if (RM) return;
+    watch(cv.parentNode, (v) => { if (v && !run) { run = true; last = 0; requestAnimationFrame(frame); } else if (!v) run = false; });
+  })();
+
+  /* 02 エンジン：光る球・判断の列・ログ（数字はイメージ） */
+  (() => {
+    const sec = $('[data-engine]'), stack = $('[data-stack]'), log = $('[data-log]'), cnt = $('[data-n]');
+    const cB = $('[data-cb]'), cS = $('[data-cs]'), cH = $('[data-ch]'); const C = { buy: 0, skip: 0, hold: 0 };
+    let fire = 0;
+    function one() {
+      const race = `${pick(VEN)}${1 + Math.floor(R() * 12)}R`, no = NUM[Math.floor(R() * 16)];
+      const u = R(), kind = u < .38 ? 'buy' : u < .58 ? 'hold' : 'skip';
+      const p = .05 + R() * .28, ev = kind === 'buy' ? 1.08 + R() * .2 : kind === 'hold' ? .98 + R() * .09 : .7 + R() * .26, o = Math.max(1.4, ev / p);
+      const sc = Math.max(4, Math.min(97, Math.round(58 + (ev - 1) * 150 + R() * 6)));
+      return { race, no, p, o, ev, kind, sc };
+    }
+    function push(x, anim) {
+      const li = document.createElement('li');
+      li.className = x.kind + (anim ? ' in' : '');
+      li.innerHTML = `<span class="t">${x.kind === 'buy' ? 'BUY' : x.kind === 'hold' ? 'WATCH' : 'SKIP'}</span><span class="m">${x.race} ${x.no} ${x.kind === 'buy' ? 'バランスの1頭' : x.kind === 'hold' ? '様子見' : '見送り'}<small>勝率 ${(x.p * 100).toFixed(1)}% × ${x.o.toFixed(1)}倍 = ${x.ev.toFixed(2)}</small></span><span class="sc">${x.sc}</span>`;
+      stack.prepend(li); while (stack.children.length > 7) stack.lastChild.remove();
+      const l = document.createElement('div');
+      l.innerHTML = `<span class="w">${jst(now()).slice(3)}</span> ${x.race} ${x.no} p${x.p.toFixed(3).slice(1)}×${x.o.toFixed(1)}=${x.ev.toFixed(2)} <span class="${x.kind === 'buy' ? 'b' : x.kind === 'skip' ? 's' : 'h'}">${x.kind.toUpperCase()}</span>`;
+      log.append(l); while (log.children.length > 10) log.firstChild.remove();
+      C[x.kind]++; cB.textContent = C.buy; cS.textContent = C.skip; cH.textContent = C.hold;
+      if (x.kind === 'buy') fire = 1;
+    }
+    for (let i = 0; i < 7; i++) push(one(), false);
+
+    const cv = $('[data-orb]'), cx = cv.getContext('2d');
+    const IN = [['単勝オッズ', '#f6c24a'], ['人気', '#ff8a4c'], ['市場のズレ', '#5cb6ff'], ['過去の学習データ', '#b98cff']];
+    const P = []; for (let i = 0; i < 720; i++) { const u = R() * 2 - 1, a = R() * Math.PI * 2; P.push({ x: Math.sqrt(1 - u * u) * Math.cos(a), y: u, z: Math.sqrt(1 - u * u) * Math.sin(a), r: .6 + R() * .4 }); }
+    const F = []; let W = 0, H = 0, rot = 0, n = 0, last = 0, lastPush = 0, run = false, geo = null;
+    function size() { const d = Math.min(2, devicePixelRatio || 1); W = cv.clientWidth; H = cv.clientHeight; cv.width = W * d; cv.height = H * d; cx.setTransform(d, 0, 0, d, 0, 0); const ox = W * .64, oy = H * .45, rad = Math.min(W * .31, H * .37); geo = { ox, oy, rad, ins: IN.map((d2, i) => { const x0 = 92, y0 = H * (.14 + i * .19) + 14, x1 = ox - rad * .2, y1 = oy + (i - 1.5) * rad * .16; return { x: 10, y: H * (.14 + i * .19), c: d2[1], t: d2[0], x0, y0, x1, y1 }; }) }; }
+    const bz = (a, b, c, d, t) => { const u = 1 - t; return u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d; };
+    const pt = (s, t) => [bz(s.x0, s.x0 + (s.x1 - s.x0) * .5, s.x1 - (s.x1 - s.x0) * .5, s.x1, t), bz(s.y0, s.y0, s.y1, s.y1, t)];
+    function draw() {
+      const { ox, oy, rad, ins } = geo;
+      cx.clearRect(0, 0, W, H);
+      ins.forEach((s) => {
+        cx.strokeStyle = s.c + '55'; cx.lineWidth = 1; cx.beginPath(); cx.moveTo(s.x0, s.y0); cx.bezierCurveTo(s.x0 + (s.x1 - s.x0) * .5, s.y0, s.x1 - (s.x1 - s.x0) * .5, s.y1, s.x1, s.y1); cx.stroke();
+        cx.fillStyle = s.c; cx.font = '700 11.5px "Zen Kaku Gothic New", sans-serif'; cx.fillText(s.t, s.x, s.y + 8);
+        cx.strokeStyle = s.c + '99'; cx.beginPath(); cx.moveTo(s.x, s.y + 14); cx.lineTo(s.x0, s.y0); cx.stroke();
+      });
+      // 吸い込まれるデータ
+      for (const f of F) { const s = ins[f.i], [x, y] = pt(s, f.t); cx.fillStyle = s.c; cx.globalAlpha = .4 + .6 * Math.sin(f.t * Math.PI); cx.beginPath(); cx.arc(x, y, f.big ? 2.2 : 1.2, 0, 6.283); cx.fill(); }
+      cx.globalAlpha = 1;
+      // 軌道の輪
+      cx.strokeStyle = 'rgba(92,182,255,.16)'; cx.lineWidth = 1;
+      for (let k = 0; k < 3; k++) { cx.beginPath(); cx.ellipse(ox, oy, rad * (1.08 + k * .1), rad * (.28 + k * .05), -.35 + k * .3 + rot * (k % 2 ? -.6 : .4), 0, 6.283); cx.stroke(); }
+      // 球
+      const cr = Math.cos(rot), sr = Math.sin(rot), ct = Math.cos(.35), st = Math.sin(.35);
+      for (const p of P) {
+        let x = p.x * cr + p.z * sr, z = -p.x * sr + p.z * cr; const y = p.y * ct - z * st; z = p.y * st + z * ct;
+        const k = .55 + z * .45, px = ox + x * rad * p.r, py = oy + y * rad * p.r, hot = x < -.35;
+        cx.strokeStyle = hot ? `rgba(246,194,74,${.06 + k * .18})` : `rgba(160,190,255,${.04 + k * .14})`;
+        cx.lineWidth = .6; cx.beginPath(); cx.moveTo(ox + x * rad * .1, oy + y * rad * .1); cx.lineTo(px, py); cx.stroke();
+        cx.fillStyle = hot ? `rgba(246,194,74,${.35 + k * .6})` : `rgba(220,232,255,${.22 + k * .72})`;
+        cx.beginPath(); cx.arc(px, py, hot ? 1.5 * k + .4 : 1.05 * k + .3, 0, 6.283); cx.fill();
+      }
+      const gr = rad * (.45 + fire * .25), gl = cx.createRadialGradient(ox, oy, 0, ox, oy, gr);
+      gl.addColorStop(0, fire > .05 ? `rgba(62,240,168,${.3 + fire * .45})` : 'rgba(120,200,255,.35)'); gl.addColorStop(1, 'rgba(120,200,255,0)');
+      cx.fillStyle = gl; cx.beginPath(); cx.arc(ox, oy, gr, 0, 6.283); cx.fill();
+      // 出力
+      const ex = ox, ey = H - 4;
+      cx.strokeStyle = `rgba(62,240,168,${.3 + fire * .7})`; cx.lineWidth = 1.4 + fire * 2.2; cx.setLineDash([5, 5]); cx.lineDashOffset = -rot * 400;
+      cx.beginPath(); cx.moveTo(ox, oy + rad * .2); cx.bezierCurveTo(ox + rad * .6, oy + rad * .9, ox - 10, ey - 30, ex, ey); cx.stroke(); cx.setLineDash([]);
+      if (fire > .05) { cx.fillStyle = `rgba(62,240,168,${fire})`; cx.font = '700 12px "JetBrains Mono", monospace'; cx.fillText('BUY ▼', ox + rad * .55, oy + rad * 1.05); }
+    }
+    const frame = (t) => {
+      if (!run) return;
+      const dt = Math.min(48, t - (last || t)); last = t;
+      if (!document.hidden) {
+        rot += dt * .0009; fire = Math.max(0, fire - dt * .0025);
+        for (let k = 0; k < 2; k++) if (R() < dt * .06) F.push({ i: Math.floor(R() * IN.length), t: 0, v: .0016 + R() * .0018, big: R() < .15 });
+        for (const f of F) f.t += f.v * dt;
+        while (F.length && F[0].t >= 1) F.shift();
+        for (let i = F.length - 1; i >= 0; i--) if (F[i].t >= 1) F.splice(i, 1);
+        n += 9 + Math.floor(R() * 40); cnt.textContent = (18234 + n).toLocaleString('ja-JP');
+        if (t - lastPush > 520) { lastPush = t; push(one(), true); }
+        draw();
+      }
+      requestAnimationFrame(frame);
+    };
+    size(); draw();
+    addEventListener('resize', () => { size(); draw(); });
+    if (RM) return;
+    watch(sec, (v) => { if (v && !run) { run = true; last = 0; requestAnimationFrame(frame); } else if (!v) run = false; });
+  })();
+
+  /* 出てくる動き・英字のスクランブル・数字の数え上げ・年表 */
+  const scr = (el) => { const fin = el.textContent, ch = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%/'; let f = 0; const id = setInterval(() => { f++; el.textContent = fin.split('').map((c, i) => (c === ' ' || i < f / 1.6 ? c : ch[Math.floor(R() * ch.length)])).join(''); if (f / 1.6 >= fin.length) { clearInterval(id); el.textContent = fin; } }, 30); };
+  const countUp = (el) => { const to = +el.dataset.to, dp = +el.dataset.dp, sep = el.hasAttribute('data-sep'), t0 = performance.now(), D = 1300; const f = (t) => { const k = Math.min(1, (t - t0) / D), v = to * (1 - Math.pow(1 - k, 4)); el.textContent = sep ? Math.round(v).toLocaleString('ja-JP') : v.toFixed(dp); if (k < 1) requestAnimationFrame(f); }; el.textContent = '0'; requestAnimationFrame(f); };
+  const tl = $('[data-tl]'), tli = $$('li', tl);
+  const fillTl = () => { const on = tli.filter((x) => x.classList.contains('on')); if (!on.length) return; const lastOn = on[on.length - 1]; tl.style.setProperty('--fill', (lastOn.offsetTop + 22) + 'px'); };
+  if (RM || !('IntersectionObserver' in window)) { $$('[data-rv]').forEach((e) => e.classList.add('in')); tli.forEach((e) => e.classList.add('on')); $$('[data-st]').forEach((e) => e.classList.add('on')); fillTl(); return; }
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    if (!e.isIntersecting) return; const el = e.target; io.unobserve(el);
+    if (el.tagName === 'LI' && el.parentNode === tl) { el.classList.add('on'); fillTl(); return; }
+    el.classList.add('in');
+    const s = $('[data-scr]', el); if (s) scr(s);
+    if (el.hasAttribute('data-st')) { el.classList.add('on'); $$('[data-to]', el).forEach(countUp); }
+  }), { threshold: .25, rootMargin: '0px 0px -8% 0px' });
+  $$('[data-rv]').forEach((e) => io.observe(e)); tli.forEach((e) => io.observe(e));
+  addEventListener('resize', fillTl);
+})();
+</script>
+<script>
+(() => {
+  const tr = document.querySelector('[data-track]'), S = [...tr.children], B = [...document.querySelectorAll('[data-prog] button')];
+  const pos = document.querySelector('[data-pos]'), more = document.querySelector('[data-more]'), hint = document.querySelector('[data-hint]');
+  const RM = matchMedia('(prefers-reduced-motion: reduce)').matches, N = S.length, p2 = (v) => String(v).padStart(2, '0');
+  let cur = 0;
+  const go = (i) => { i = Math.max(0, Math.min(N - 1, i)); tr.scrollTo({ left: i * tr.clientWidth, behavior: RM ? 'auto' : 'smooth' }); };
+  const chkMore = () => { const s = S[cur]; more.classList.toggle('on', s.scrollHeight - s.clientHeight - s.scrollTop > 24); };
+  const mark = () => {
+    const i = Math.round(tr.scrollLeft / (tr.clientWidth || 1)); if (i === cur && pos.dataset.ok) return; cur = i; pos.dataset.ok = 1;
+    B.forEach((b, k) => { b.classList.toggle('on', k === cur); b.classList.toggle('dn', k < cur); });
+    pos.textContent = p2(cur + 1) + ' / ' + p2(N);
+    if (cur > 0) hint.classList.add('off');
+    chkMore();
+  };
+  let raf = 0; tr.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; mark(); }); }, { passive: true });
+  S.forEach((s) => s.addEventListener('scroll', () => { if (s === S[cur]) chkMore(); }, { passive: true }));
+  document.addEventListener('click', (e) => {
+    const g = e.target.closest('[data-go]'); if (g) { go(+g.dataset.go); return; }
+    if (!e.target.closest('.sl') || e.target.closest('a, button, summary, input, img, canvas, details')) return;
+    if (String(getSelection()).length) return;
+    const r = tr.getBoundingClientRect(), x = (e.clientX - r.left) / r.width;
+    if (x < .22) go(cur - 1); else if (x > .78) go(cur + 1);
+  });
+  addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') go(cur + 1); if (e.key === 'ArrowLeft') go(cur - 1); });
+  addEventListener('resize', () => { tr.scrollTo({ left: cur * tr.clientWidth }); chkMore(); });
+  mark();
+  /* 上の小さなカウントダウン（?at= に対応） */
+  const OPEN = Date.parse('2026-11-24T20:00:00+09:00'), q = new URLSearchParams(location.search).get('at');
+  const off = q && !isNaN(Date.parse(q + '+09:00')) ? Date.parse(q + '+09:00') - Date.now() : 0;
+  const mc = document.querySelector('[data-mc]'), mk = document.querySelector('[data-mk]');
+  const tick = () => { const ms = OPEN - (Date.now() + off);
+    if (ms <= 0) { mk.textContent = '募集中'; mc.textContent = 'ENGINE ONLINE'; return; }
+    const s = Math.floor(ms / 1000); mc.textContent = p2(Math.floor(s / 3600)) + ':' + p2(Math.floor(s / 60) % 60) + ':' + p2(s % 60) + '.' + p2(Math.floor(ms % 1000 / 10)); };
+  tick(); if (RM) setInterval(tick, 1000); else { const l = () => { if (!document.hidden) tick(); requestAnimationFrame(l); }; requestAnimationFrame(l); }
+})();
+</script>
+
+<script>(()=>{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const t=document.querySelector('[data-track]'),S=[...t.children];let r=0;const f=()=>{r=0;const x=t.scrollLeft/(t.clientWidth||1);S.forEach((s,i)=>{const dd=i-x;if(Math.abs(dd)<1.2)s.style.setProperty('--p',Math.max(-1,Math.min(1,dd)).toFixed(3));});};t.addEventListener('scroll',()=>{if(!r)r=requestAnimationFrame(f)},{passive:true});f();})();</script></body></html>
