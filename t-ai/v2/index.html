@@ -506,11 +506,11 @@ html.js [data-rv].in { opacity: 1; transform: none; }
       <span class="cd-s" data-cd-s>募集開始（20:00）まで</span>
     </div>
     <div class="cta" data-pre>
-      <a class="go line" href="https://urlgeni.us/line/FnOSuA" target="_blank" rel="noopener">公式LINEで20時を待つ<span>▶</span></a>
+      <a class="go line" href="https://urlgeni.us/line/FnOSuA" target="_blank" rel="noopener">公式LINEで20時を待つ<span>▶︎</span></a>
       <small>20時になると、このページから募集ページへ進めます。<br>開けない場合は、Xのアプリから外のブラウザで開いてください。</small>
     </div>
     <div class="cta" data-open hidden>
-      <a class="go" href="/">募集ページへ進む<span>▶</span></a>
+      <a class="go" href="/">募集ページへ進む<span>▶︎</span></a>
       <small>限定20名・締切 11/24（火）24:00</small>
     </div>
   </section>
@@ -525,7 +525,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
 <div class="dock" data-dock>
   <div class="dock-in">
     <span class="dock-t"><small data-dk-k>ENGINE START IN</small><b data-dk>--:--:--</b></span>
-    <a class="go line" data-dk-btn href="https://urlgeni.us/line/FnOSuA" target="_blank" rel="noopener">公式LINEで20時を待つ ▶</a>
+    <a class="go line" data-dk-btn href="https://urlgeni.us/line/FnOSuA" target="_blank" rel="noopener">公式LINEで20時を待つ ▶︎</a>
   </div>
 </div>
 
@@ -575,7 +575,7 @@ html.js [data-rv].in { opacity: 1; transform: none; }
     if (force || dock.classList.contains('on') || isOpen !== was) { dk.textContent = isOpen ? 'ENGINE ONLINE' : `${h}:${m}:${s}.${c}`; dkK.textContent = isOpen ? '募集を開始しました（締切 24:00）' : 'ENGINE START IN'; }
     if (isOpen !== was) {
       pre.hidden = isOpen; opn.hidden = !isOpen;
-      dkB.href = isOpen ? '/' : LINE; dkB.textContent = isOpen ? '募集ページへ進む ▶' : '公式LINEで20時を待つ ▶';
+      dkB.href = isOpen ? '/' : LINE; dkB.textContent = isOpen ? '募集ページへ進む ▶︎' : '公式LINEで20時を待つ ▶︎';
       if (isOpen) { dkB.classList.remove('line'); dkB.removeAttribute('target'); dkB.removeAttribute('rel'); }
       else { dkB.classList.add('line'); dkB.target = '_blank'; dkB.rel = 'noopener'; }
       was = isOpen;
