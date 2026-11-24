@@ -252,6 +252,28 @@ html.js [data-rv].in { opacity: 1; transform: none; }
   .tick-in { transform: none; }
   .cd-scan { display: none; }
 }
+
+/* 手紙（ステップメールの本文）：読むための場所。裏では何も動かさない */
+:root { --tx: #e3e9f7; --dm: #a3b1d1; }
+.lt { position: relative; z-index: 1; padding: 54px 0 0; }
+.lt-in { margin: 0 calc(var(--pad) - 6px); padding: 26px 20px 28px; background: #0b1122; border: 1px solid var(--ln); box-shadow: 0 0 0 1px rgba(0, 0, 0, .4), 0 20px 50px rgba(0, 0, 0, .5); }
+.lt-k { font-family: var(--mono); font-size: 11.5px; letter-spacing: .18em; color: var(--gr); }
+.lt-t { margin-top: 10px; font-weight: 900; font-size: clamp(21px, 6.2cqi, 28px); line-height: 1.55; color: #fff; }
+.lt-h { display: grid; gap: 8px; margin-bottom: 22px; font-weight: 900; font-size: clamp(21px, 6.2cqi, 27px); line-height: 1.55; color: #fff; }
+.lt-h span { justify-self: start; display: inline-grid; place-items: center; min-width: 34px; height: 24px; padding: 0 6px; border: 1px solid var(--gr); font-family: var(--mono); font-weight: 700; font-size: 12px; letter-spacing: .06em; color: var(--gr); }
+.lt-in > p, .lt-in > .lt-t + p { margin-top: 1.25em; font-weight: 500; font-size: 17px; line-height: 2.05; color: #f2f5fc; letter-spacing: .01em; }
+.lt-in > .lt-h + p { margin-top: 0; }
+.lt-in b { font-weight: 900; color: var(--gr); background: linear-gradient(transparent 62%, rgba(62, 240, 168, .18) 62%); }
+.lt-v { list-style: none; margin: 1.1em 0 0; padding: 0; display: grid; gap: 8px; }
+.lt-v li { padding: 10px 12px; border-left: 3px solid var(--cy); background: rgba(92, 182, 255, .08); font-weight: 700; font-size: 16px; line-height: 1.75; color: #fff; }
+.tag b { display: none; }
+.lt-sign { margin-top: 1.6em !important; text-align: right; font-weight: 900 !important; color: #fff !important; }
+.lead, .tl p, .rm p { font-size: 16px; }
+.note, .img-n, .cta small, .foot { font-size: 13.5px; }
+.tl li, .rm { background: #0b1122; }
+.kv p { font-size: 16.5px; color: #f2f5fc; }
+.kv { position: relative; }
+.kv::before { content: ""; position: absolute; z-index: -1; inset: 0 0 -10px; background: linear-gradient(180deg, rgba(4, 6, 13, .55), rgba(4, 6, 13, .82) 30%, rgba(4, 6, 13, .82) 80%, rgba(4, 6, 13, .55)); }
 </style>
 </head>
 <body>
@@ -282,7 +304,26 @@ html.js [data-rv].in { opacity: 1; transform: none; }
   </section>
 
   <div class="tick b" aria-hidden="true"><div class="tick-in" data-tick="b"></div></div>
-
+  <section class="lt lt-top">
+    <div class="lt-in">
+      <p class="lt-k">LETTER FROM 川崎タカシ</p>
+      <h1 class="lt-t">【最終募集まで残り2時間】数学五輪の頭脳から始まった5年間の結晶「T-AI v2」。今夜20時、あなたのギャンブル人生が完結します</h1>
+      <p>川崎タカシです。</p>
+      <p>いよいよ「T-AI」最後の募集まで<b>あと2時間</b>となりました。</p>
+      <p>本日20時に募集を開始しますが、もうすでに驚くほど多くの方から「絶対に参加したいです」と熱いご連絡をいただいています。<br>間違いなく公開から即完売しますし、今回は何回もダラダラと煽るようなことは一切しません。</p>
+      <p>私には、揺るぎない<b>絶対的な自信</b>があります。<br>どうか、私のことを信じてついてきてください。</p>
+    </div>
+  </section>
+  <section class="lt">
+    <div class="lt-in">
+      <h2 class="lt-h"><span>01</span>数学オリンピック出場者との出会い──セリエBの歪みから始まった「5年間の物語」</h2>
+      <p>少しだけ、この「T-AI」がどのようにして生まれたのか、その起源をお話しさせてください。</p>
+      <p>このシステムのルーツは、私の友人で「数学オリンピック」に出場した経歴を持つアランさんという天才エンジニアと一緒に開発したモデルが起源です。</p>
+      <p>元々のシステムは、海外ブックメーカーが設定するハンディキャップのクセからオッズを徹底分析し、市場の「正確なスイートポイント（期待値の歪み）」を見つけ出すものでした。当時、イタリアサッカー「セリエB」のオッズの付け方が統計的に甘いという明確なデータがあり、そこを集中的に狙い撃ちして利益を抜き続けたのがすべての始まりです。</p>
+      <p>「この数学的アプローチを、そのまま日本の競馬に運用できないか？」<br>そう思い立ってから、早いもので5年の歳月が経ちました。</p>
+      
+    </div>
+  </section>
   <section class="sec">
     <p class="tag" data-rv><b>01</b><i data-scr>ORIGIN</i></p>
     <h2 class="h2 kp" data-rv>すべては、<em class="nb">オッズの歪み</em>から<span class="nb">始まった。</span></h2>
@@ -294,7 +335,18 @@ html.js [data-rv].in { opacity: 1; transform: none; }
       <li class="now"><small>TONIGHT<span>#05</span></small><b>T-AI v2エンジン</b><p>発走前のオッズまで読む、第2の勝率。今夜、最後の募集とともに起動します。</p></li>
     </ol>
   </section>
-
+  <section class="lt">
+    <div class="lt-in">
+      
+      <p>雨の日も、風の日も、数字だけは絶対に嘘をつきません。<br>新聞の印（◎○▲）など一切関係なし。</p>
+      <p>現代競馬で稼ぐための唯一の答えは<b>人間が何もしないこと（予想しないこと）</b>、これがすべてです。</p>
+      <p>トレセンの裏ネタも、巷の予想家の「今週は自信あります！」という言葉も、一体何の数学的根拠があって言っているのでしょうか？はっきり言いますが、そんなものはすべて幻想であり、まやかしでしかないのです。</p>
+      <p>大丈夫です。私にできたんですから、あなたにも100%できます。</p>
+      <p>あなたがやることは、ただシステムの通り淡々と馬券を買うだけ。<br>レース映像すら見なくとも、安定した収支を叩き出す。ここからのあなたの競馬は、同じ期待値行動を機械のように淡々と繰り返すだけの作業に変わります。</p>
+      <p>強いてデメリットを挙げるとしたら「ギャンブルとしての競馬がつまらなくなること」くらいですが、手元のお金が増え続けるならそれでいいじゃないですか。</p>
+      
+    </div>
+  </section>
   <section class="sec" data-engine>
     <p class="tag" data-rv><b>02</b><i data-scr>NO PREDICTION</i></p>
     <h2 class="h2" data-rv>人間は、<em>予想しない。</em></h2>
@@ -325,7 +377,13 @@ html.js [data-rv].in { opacity: 1; transform: none; }
     </div>
     <p class="note">※会員サイトの実際の画面です（11/23 東京11R）。</p>
   </section>
-
+  <section class="lt">
+    <div class="lt-in">
+      <h2 class="lt-h"><span>02</span>「そんなに儲かるならなぜ売るのか？」──私が募集を行う2つの明確な理由</h2>
+      <p>正直、たった1年間や2年間の浅い検証数字なら、ここまで強気なことは言いません。<br>私自身の<b>5年間のリアルな運用実績</b>と、<b>300億回に及ぶシミュレーション</b>、そして<b>今の市場にここから5%多く資金が追加投入されてオッズが下がってもプラスになる</b>という完全な実証データがあるからこそ、こうして募集に踏み切っています。</p>
+      
+    </div>
+  </section>
   <section class="sec">
     <p class="tag" data-rv><b>03</b><i data-scr>SYSTEM STATS</i></p>
     <h2 class="h2 kp" data-rv>浅い検証で、<br><em class="nb">ここまでは</em><em class="nb">言わない。</em></h2>
@@ -339,19 +397,23 @@ html.js [data-rv].in { opacity: 1; transform: none; }
     </div>
     <p class="note">※回収率は払戻÷投資。各レースで「バランスの1頭」を単勝100円で買った場合の、過去データでの検証結果です。将来の払い戻しや利益を約束するものではありません。</p>
   </section>
-
-  <section class="sec">
-    <p class="tag" data-rv><b>04</b><i data-scr>COMMUNITY</i></p>
-    <h2 class="h2 kp" data-rv>v2は、<em class="nb">先週のメンバーの声</em>から<span class="nb">生まれた。</span></h2>
-    <p class="lead" data-rv>「もっとシンプルに、資金配分すら考えずに」。その声から、1レース1頭・同じ金額で買う v2 の方式が生まれました。</p>
-    <div class="vox">
-      <blockquote data-rv><small>MEMBER VOICE<span>#01</span></small>「勘で買うのをやめたら、負け方が変わりました」</blockquote>
-      <blockquote data-rv><small>MEMBER VOICE<span>#02</span></small>「競馬が初めて“検証できるもの”になりました」</blockquote>
-      <blockquote data-rv><small>MEMBER VOICE<span>#03</span></small>「川崎さんの頭の中が、そのまま画面になった感じ」</blockquote>
+  <section class="lt">
+    <div class="lt-in">
+      
+      <p>もちろん、私ひとりだけで秘密裏に回し続けて儲けることもできました。<br>それでもあえて皆さんに公開・募集するメリットは、私にとって大きく<b>2つ</b>あります。</p>
+      <p>1つ目は、<b>最強の集合知コミュニティを作ること</b>です。<br>AIは集合知の時代です。AIを使うのも人間ですが、それを進化させるのもまた人間です。私ひとりのアイデアだけでは補えない視点を打開するために、どうしても同じ武器を持つ本気のコミュニティを作りたいと思っていました。</p>
+      <p>事実、今回完成した怪物エンジン「v2」も、先週参加してくれた購入者様のリアルな声を体現したものです。「もっとシンプルに、資金配分すら考えずわかりやすく儲けたい」という声があったからこそ、全レース均等買いでプラスになるこの究極の方式を見つけ出すことができました。まさにコミュニティを作った最大のメリットですね。</p>
+      <p>先週参加してくれたメンバーはすでにこのシステムツールを心の底から気に入ってくれていて、</p>
+      <ul class="lt-v"><li>「正確な指数と確率が見られるから、もう馬柱すら見る必要がない」</li><li>「この仕組みなら永遠に勝てると確信した」</li><li>「ワイドの期待値があるところだけ買っていたら普通にプラスになった」</li><li>「力まず買っていたら万馬券が軽く獲れた」</li><li>「3連複の上位を期待値ソートして買うだけでプラスになっている」</li></ul>
+      <p>など、毎日とんでもない数の絶賛の声をいただいています。開発者として非常に嬉しいです。</p>
+      <p>それぞれ自分のライフスタイルに合った使い方がありますし、既存のエンジンでもそもそも儲かる設計のものです。何より確率は試行回数を重ねれば必ずその通りに収束しますから、システムベットを組めば今の段階でもまず負けませんが、今回はそこに<b>均等買い（ベタ買い）でもプラスになる</b>というエグいv2エンジンまで作れてしまいました。</p>
+      <p>そして私が募集する2つ目のメリットは、<b>販売した資金を使い、さらに新しい次世代ロジックの実弾検証に使いたい</b>という明確な目的があるからです。</p>
+      <p>実は今、競馬のほかに<b>ボートレース（競艇）</b>でも同じような期待値システムがすでに開発できています。<br>ただ、ボートはJRAに比べて1レースあたりの総投票数が少ないため、「実際に大金を投じたときにどの程度オッズが落ち込むのか」や「他のAI利用者のリアルな動向」が、机上の計算だけではどうしても掴みきれません。</p>
+      <p>まだ一般向けに実用化はできない段階なのですが、そのリアルな市場負荷を測るための「実弾実験の種銭」が欲しいのです。私にとって最大の財産はこのシステムそのものですので、その一部を切り売りして新たな研究開発・運用資金を得るのが今回の偽らざる目的です。</p>
+      <p>なお、このボートレース版については今後3ヶ月間しっかり実弾でのフォワードテストを行い、確実にプラスになることが実証でき次第、<b>今回のT-AIユーザー様に無償公開</b>します！<br>（※一応、過去データの検証上では「月間80万円の利益」ラインであれば、オッズを壊さず無理せずに<b>39ヶ月連続でプラス</b>を獲れているデータをすでに持っています。これだけでも参加費の何十倍もの価値になるはずです）</p>
+      
     </div>
-    <p class="note">※会員コミュニティでいただいた声を、一部要約して掲載しています。</p>
   </section>
-
   <section class="sec">
     <p class="tag" data-rv><b>05</b><i data-scr>ROADMAP</i></p>
     <h2 class="h2" data-rv>ここから、<br><em class="nb">さらに進化する。</em></h2>
@@ -361,7 +423,21 @@ html.js [data-rv].in { opacity: 1; transform: none; }
       <li><i></i><span><small>TESTING · 3か月の実弾検証</small><b>ボートレース版</b><p>実弾でのフォワードテストでプラスを確かめられたら、今回のT-AIユーザーさまに無償で公開する予定です。</p></span></li>
     </ol>
   </section>
-
+  <section class="lt">
+    <div class="lt-in">
+      <h2 class="lt-h"><span>03</span>馬券裁判級・本場のベンダー式──商材を買う人生は今夜で「最後」になります</h2>
+      <p>さて、今回引き渡す「T-AI v2エンジン」は、本当の意味で<b>馬券裁判級</b>や<b>香港の投資シンジケート（ベンダー式）</b>──いわゆる「真のギャンブル市場の裏側で莫大な富を築いている連中」が使っているのと同じ仕組みの開発に成功してしまいました。</p>
+      <p>はっきり断言します。「これで勝てないなら、もう何を使っても意味がわからない」というレベルです。<br>あなたが競馬の予想や商材にお金を払うのは、間違いなく<b>今回の人生でこれが最後</b>になるでしょう。なぜなら、これさえ手にすればあなた自身が「勝てる側」になってしまうからです。</p>
+      <p>少しだけ、今夜から始まる「これから先のこと」を考えてみてください。</p>
+      <p>来週から、あなたはもう新聞の印に迷うことも、SNSの無責任な煽りに振り回されて大切なお金を溶かすこともありません。<br>システムが弾き出す冷徹な数字に従って淡々と処理するだけで、週末が終わるたびに口座の残高が右肩上がりに積み上がっていく。さらに数ヶ月後には「自動投票」が実装され、さらには「ボートレース版の無償提供」まで乗っかってくるのです。</p>
+      <p>毎月の支払いに追われるストレスが消え、値段を見ずに家族に美味しいものを食べさせてあげられる余裕。<br>急な出費にもビクともせず、通帳の数字が増えていくのをただ穏やかな気持ちで眺める毎日。<br>周りが不景気や物価高で悲鳴を上げている中、スマホ1台で「いつでも自分でお金を生み出せる絶対的なインフラ」をポケットに持っている圧倒的な優越感と安心感。</p>
+      <p>それは夢でもファンタジーでもなく、確率と科学の側に回った人間だけが当たり前に手にする「現実」です。</p>
+      <p>もう一度だけ言います。オッズ保護のため、今回を最後に新規募集は二度と行いません。即完売して扉が閉まれば、もう二度とこちら側へ来るチケットは手に入りません。</p>
+      <p>すべての準備は整いました。私の5年間の執念と、あなたのこれからの豊かな人生を懸けた最高傑作を受け取ってください。</p>
+      <p>それでは今夜<b>20時</b>ちょうど、公式LINEでお待ちしています！</p>
+      <p class="lt-sign">川崎タカシ</p>
+    </div>
+  </section>
   <section class="sec final" id="open" data-final>
     <p class="tag" data-rv><b>06</b><i data-scr>FINAL ENTRY</i></p>
     <h2 class="h2" data-rv>最後の募集は、<br><em>今夜20時。</em></h2>
