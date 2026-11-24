@@ -345,8 +345,10 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 .sw-cd small { font-size: 9px; letter-spacing: .14em; color: var(--dm); margin-right: 6px; text-shadow: none; }
 .track { position: absolute; inset: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior: contain; }
 .track::-webkit-scrollbar { display: none; }
-.sl { position: relative; flex: 0 0 100%; height: 100%; scroll-snap-align: start; scroll-snap-stop: always; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: calc(52px + env(safe-area-inset-top, 0px)) 0 calc(84px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; }
+.sl { position: relative; flex: 0 0 100%; height: 100%; scroll-snap-align: start; scroll-snap-stop: always; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y; padding: calc(52px + env(safe-area-inset-top, 0px)) 0 calc(84px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; }
 .sl > * { flex: none; }
+.sl { padding-bottom: 0 !important; }
+.sl::after { content: ""; display: block; flex: none; height: calc(var(--dk, 84px) + 14px); }
 .s-hero { padding-top: calc(44px + env(safe-area-inset-top, 0px)); padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 .s-hero .hero { flex: 1; min-height: 0; padding-bottom: 12px; }
 .s-hero .boot { min-height: 0; padding-top: 10px; font-size: 11px; line-height: 1.7; }
@@ -357,12 +359,15 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 .s-hero .cd { margin-top: auto; }
 .sl .sec { padding: 12px 0 0; }
 .sl .sec .h2 { font-size: clamp(23px, 7cqi, 32px); margin-top: 10px; }
-.sl .orb { height: clamp(190px, 30svh, 260px); }
-.sl .stack { height: 176px; }
+.sl .orb { height: clamp(150px, 22svh, 200px); }
+.sl .stack { height: 128px; }
 .sl .log { height: 92px; }
+.sl .pnl:has(.log) { display: none; }
 .sl .pnl { margin-top: 10px; }
 .sl .tl { margin-top: 16px; gap: 12px; }
 .sl .tl li { padding: 9px 12px 10px; }
+.tl2 li::before { background: var(--gr) !important; border-color: var(--gr) !important; box-shadow: 0 0 14px rgba(62, 240, 168, .9) !important; }
+.tl2::after { height: calc(100% - 16px) !important; }
 .sl .tl p { font-size: 15px; line-height: 1.7; }
 .sl .stats { margin-top: 14px; gap: 6px; }
 .sl .st { padding: 9px 10px 10px; }
@@ -382,8 +387,8 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 .s-lt .lt-v li { font-size: 16.5px; line-height: 1.7; }
 .s-lt .lt-cont { color: #9a8a5f !important; }
 .s-lt .lt-cont::before { content: ""; display: inline-block; width: 18px; height: 1px; margin-right: 8px; vertical-align: middle; background: #c9b98f; }
-.sw-more { position: absolute; z-index: 25; left: 50%; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); padding: 3px 12px; border-radius: 99px; background: rgba(27,24,20,.86); color: #fbf9f4; font-family: var(--mono); font-size: 10px; letter-spacing: .14em; pointer-events: none; opacity: 0; transition: opacity .25s; }
-.sw-more.on { opacity: 1; }
+.sw-more { position: absolute; z-index: 25; left: 50%; bottom: calc(var(--dk, 84px) + 6px); border: 0; cursor: pointer; transform: translateX(-50%); padding: 3px 12px; border-radius: 99px; background: rgba(27,24,20,.86); color: #fbf9f4; font-family: var(--mono); font-size: 10px; letter-spacing: .14em; pointer-events: none; opacity: 0; transition: opacity .25s; }
+.sw-more.on { opacity: 1; pointer-events: auto; }
 .sw-hint { position: absolute; z-index: 26; right: 14px; top: calc(70px + env(safe-area-inset-top, 0px)); padding: 7px 14px; border-radius: 99px; background: var(--gr); color: #06120c; font-weight: 900; font-size: 13px; box-shadow: 0 0 20px rgba(62,240,168,.5); pointer-events: none; animation: swn 1.4s ease-in-out infinite; transition: opacity .3s; }
 .sw-hint.off { opacity: 0; }
 @keyframes swn { 50% { transform: translateX(-8px); } }
@@ -501,8 +506,8 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 </style></head>
 <body>
 <main class="page" id="top">
-<div class="sw-top"><div class="sw-prog" data-prog=""><button type="button" aria-label="1枚目" data-go="0"><i></i></button><button type="button" aria-label="2枚目" data-go="1"><i></i></button><button type="button" aria-label="3枚目" data-go="2"><i></i></button><button type="button" aria-label="4枚目" data-go="3"><i></i></button><button type="button" aria-label="5枚目" data-go="4"><i></i></button><button type="button" aria-label="6枚目" data-go="5"><i></i></button><button type="button" aria-label="7枚目" data-go="6"><i></i></button><button type="button" aria-label="8枚目" data-go="7"><i></i></button><button type="button" aria-label="9枚目" data-go="8"><i></i></button><button type="button" aria-label="10枚目" data-go="9"><i></i></button><button type="button" aria-label="11枚目" data-go="10"><i></i></button><button type="button" aria-label="12枚目" data-go="11"><i></i></button><button type="button" aria-label="13枚目" data-go="12"><i></i></button><button type="button" aria-label="14枚目" data-go="13"><i></i></button><button type="button" aria-label="15枚目" data-go="14"><i></i></button><button type="button" aria-label="16枚目" data-go="15"><i></i></button><button type="button" aria-label="17枚目" data-go="16"><i></i></button><button type="button" aria-label="18枚目" data-go="17"><i></i></button><button type="button" aria-label="19枚目" data-go="18"><i></i></button><button type="button" aria-label="20枚目" data-go="19"><i></i></button><button type="button" aria-label="21枚目" data-go="20"><i></i></button><button type="button" aria-label="22枚目" data-go="21"><i></i></button><button type="button" aria-label="23枚目" data-go="22"><i></i></button><button type="button" aria-label="24枚目" data-go="23"><i></i></button><button type="button" aria-label="25枚目" data-go="24"><i></i></button><button type="button" aria-label="26枚目" data-go="25"><i></i></button><button type="button" aria-label="27枚目" data-go="26"><i></i></button><button type="button" aria-label="28枚目" data-go="27"><i></i></button><button type="button" aria-label="29枚目" data-go="28"><i></i></button><button type="button" aria-label="30枚目" data-go="29"><i></i></button><button type="button" aria-label="31枚目" data-go="30"><i></i></button><button type="button" aria-label="32枚目" data-go="31"><i></i></button><button type="button" aria-label="33枚目" data-go="32"><i></i></button><button type="button" aria-label="34枚目" data-go="33"><i></i></button><button type="button" aria-label="35枚目" data-go="34"><i></i></button><button type="button" aria-label="36枚目" data-go="35"><i></i></button><button type="button" aria-label="37枚目" data-go="36"><i></i></button><button type="button" aria-label="38枚目" data-go="37"><i></i></button><button type="button" aria-label="39枚目" data-go="38"><i></i></button><button type="button" aria-label="40枚目" data-go="39"><i></i></button><button type="button" aria-label="41枚目" data-go="40"><i></i></button><button type="button" aria-label="42枚目" data-go="41"><i></i></button><button type="button" aria-label="43枚目" data-go="42"><i></i></button></div>
-<div class="sw-r"><b>T-AI v2<span data-pos="">01 / 43</span></b><span class="sw-cd"><small data-mk="">20:00まで</small><span data-mc="">--:--:--</span></span><span data-clock="" hidden=""></span></div></div>
+<div class="sw-top"><div class="sw-prog" data-prog=""><button type="button" aria-label="1枚目" data-go="0"><i></i></button><button type="button" aria-label="2枚目" data-go="1"><i></i></button><button type="button" aria-label="3枚目" data-go="2"><i></i></button><button type="button" aria-label="4枚目" data-go="3"><i></i></button><button type="button" aria-label="5枚目" data-go="4"><i></i></button><button type="button" aria-label="6枚目" data-go="5"><i></i></button><button type="button" aria-label="7枚目" data-go="6"><i></i></button><button type="button" aria-label="8枚目" data-go="7"><i></i></button><button type="button" aria-label="9枚目" data-go="8"><i></i></button><button type="button" aria-label="10枚目" data-go="9"><i></i></button><button type="button" aria-label="11枚目" data-go="10"><i></i></button><button type="button" aria-label="12枚目" data-go="11"><i></i></button><button type="button" aria-label="13枚目" data-go="12"><i></i></button><button type="button" aria-label="14枚目" data-go="13"><i></i></button><button type="button" aria-label="15枚目" data-go="14"><i></i></button><button type="button" aria-label="16枚目" data-go="15"><i></i></button><button type="button" aria-label="17枚目" data-go="16"><i></i></button><button type="button" aria-label="18枚目" data-go="17"><i></i></button><button type="button" aria-label="19枚目" data-go="18"><i></i></button><button type="button" aria-label="20枚目" data-go="19"><i></i></button><button type="button" aria-label="21枚目" data-go="20"><i></i></button><button type="button" aria-label="22枚目" data-go="21"><i></i></button><button type="button" aria-label="23枚目" data-go="22"><i></i></button><button type="button" aria-label="24枚目" data-go="23"><i></i></button><button type="button" aria-label="25枚目" data-go="24"><i></i></button><button type="button" aria-label="26枚目" data-go="25"><i></i></button><button type="button" aria-label="27枚目" data-go="26"><i></i></button><button type="button" aria-label="28枚目" data-go="27"><i></i></button><button type="button" aria-label="29枚目" data-go="28"><i></i></button><button type="button" aria-label="30枚目" data-go="29"><i></i></button><button type="button" aria-label="31枚目" data-go="30"><i></i></button><button type="button" aria-label="32枚目" data-go="31"><i></i></button><button type="button" aria-label="33枚目" data-go="32"><i></i></button><button type="button" aria-label="34枚目" data-go="33"><i></i></button><button type="button" aria-label="35枚目" data-go="34"><i></i></button><button type="button" aria-label="36枚目" data-go="35"><i></i></button><button type="button" aria-label="37枚目" data-go="36"><i></i></button><button type="button" aria-label="38枚目" data-go="37"><i></i></button><button type="button" aria-label="39枚目" data-go="38"><i></i></button><button type="button" aria-label="40枚目" data-go="39"><i></i></button><button type="button" aria-label="41枚目" data-go="40"><i></i></button><button type="button" aria-label="42枚目" data-go="41"><i></i></button><button type="button" aria-label="43枚目" data-go="42"><i></i></button><button type="button" aria-label="44枚目" data-go="43"><i></i></button></div>
+<div class="sw-r"><b>T-AI v2<span data-pos="">01 / 44</span></b><span class="sw-cd"><small data-mk="">20:00まで</small><span data-mc="">--:--:--</span></span><span data-clock="" hidden=""></span></div></div>
 <div class="track" data-track=""><div data-i="0" class="sl s-hero" aria-label="1枚目"><div class="tick" aria-hidden="true"><div class="tick-in" data-tick="a"></div></div><section class="hero" aria-label="T-AI v2 起動">
     <canvas data-stream="" aria-hidden="true"></canvas>
     <div class="boot" data-boot="" aria-hidden="true"></div>
@@ -535,11 +540,11 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
       <li><small>ORIGIN<span>#01</span></small><b>数学オリンピックの頭脳</b><p>川崎の友人で、数学オリンピックに出場した天才エンジニア・アランさんと、最初のモデルを作りました。</p></li>
       <li><small>EDGE<span>#02</span></small><b>セリエBの「甘い」オッズ</b><p>海外ブックメーカーのハンディキャップのクセを分析し、市場の期待値の歪みを見つける。それがすべての始まりでした。</p></li>
       <li><small>5 YEARS<span>#03</span></small><b>その数学を、日本の競馬へ</b><p>「このアプローチを、そのまま競馬で使えないか」。そこから5年。</p></li>
-      <li><small>T-AI<span>#04</span></small><b>全レースに、勝つ確率と期待値</b><p>予想ではなく、確率で選ぶ会員サイトとして公開しました。</p></li>
-      <li class="now"><small>TONIGHT<span>#05</span></small><b>T-AI v2エンジン</b><p>発走前のオッズまで読む、第2の勝率。今夜、最後の募集とともに起動します。</p></li>
+      
+      
     </ol>
   </section></div>
-<div data-i="10" class="sl s-lt short" aria-label="11枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>雨の日も、風の日も、数字だけは絶対に嘘をつきません。<br>新聞の印（◎○▲）など一切関係なし。</p></div><p class="folio">第1章　4 / 7</p></div></section></div>
+<div data-i="9b" class="sl s-sec" aria-label="年表のつづき"><section class="sec"><p class="tag" data-rv=""><b>01</b><i data-scr="">ORIGIN</i></p><h2 class="h2">そして、<em class="nb">今夜。</em></h2><ol class="tl tl2"><li data-on><small>T-AI<span>#04</span></small><b>全レースに、勝つ確率と期待値</b><p>予想ではなく、確率で選ぶ会員サイトとして公開しました。</p></li><li data-on class="now"><small>TONIGHT<span>#05</span></small><b>T-AI v2エンジン</b><p>発走前のオッズまで読む、第2の勝率。今夜、最後の募集とともに起動します。</p></li></ol></section></div><div data-i="10" class="sl s-lt short" aria-label="11枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>雨の日も、風の日も、数字だけは絶対に嘘をつきません。<br>新聞の印（◎○▲）など一切関係なし。</p></div><p class="folio">第1章　4 / 7</p></div></section></div>
 <div data-i="11" class="sl s-quote" aria-label="12枚目"><div class="qt"><p class="qt-m" aria-hidden="true">“</p><p class="qt-p">現代競馬で稼ぐための唯一の答えは<b>人間が何もしないこと（予想しないこと）</b>、これがすべてです。</p><p class="folio">第1章　5 / 7</p></div></div>
 <div data-i="12" class="sl s-lt v4" aria-label="13枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>トレセンの裏ネタも、巷の予想家の「今週は自信あります！」という言葉も、一体何の数学的根拠があって言っているのでしょうか？はっきり言いますが、そんなものはすべて幻想であり、まやかしでしかないのです。</p><p class="pbig">大丈夫です。私にできたんですから、あなたにも100%できます。</p></div><p class="folio">第1章　6 / 7</p></div></section></div>
 <div data-i="13" class="sl s-lt v1" aria-label="14枚目"><section class="lt"><div class="lt-in"><div class="lt-body"><p>あなたがやることは、ただシステムの通り淡々と馬券を買うだけ。<br>レース映像すら見なくとも、安定した収支を叩き出す。ここからのあなたの競馬は、同じ期待値行動を機械のように淡々と繰り返すだけの作業に変わります。</p><p>強いてデメリットを挙げるとしたら「ギャンブルとしての競馬がつまらなくなること」くらいですが、手元のお金が増え続けるならそれでいいじゃないですか。</p></div><p class="folio">第1章　7 / 7</p><p class="lt-end">第1章　ここまで<span>次は「管制画面」 →</span></p></div></section></div>
@@ -634,7 +639,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
     <nav><a href="/tokushoho">特定商取引法に基づく表記</a><a href="/privacy">プライバシーポリシー</a></nav>
     <p>© 2026 川崎クラブ</p>
   </footer></div></div>
-<span class="sw-more" data-more="">▼ 下に続きます</span>
+<button type="button" class="sw-more" data-more="">▼ 下に続きます</button>
 <span class="sw-hint" data-hint="">スワイプ →</span>
 </main>
 <div class="dock" data-dock="">
@@ -861,6 +866,9 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   const pos = document.querySelector('[data-pos]'), more = document.querySelector('[data-more]'), hint = document.querySelector('[data-hint]');
   const RM = matchMedia('(prefers-reduced-motion: reduce)').matches, N = S.length, p2 = (v) => String(v).padStart(2, '0');
   let cur = 0;
+  const dk = () => { const d = document.querySelector('.dock-in'); if (d) document.documentElement.style.setProperty('--dk', Math.ceil(d.getBoundingClientRect().height) + 'px'); };
+  dk(); addEventListener('resize', dk);
+  more.addEventListener('click', () => { const s = S[cur]; s.scrollBy({ top: s.clientHeight * .7, behavior: RM ? 'auto' : 'smooth' }); });
   const go = (i) => { i = Math.max(0, Math.min(N - 1, i)); tr.scrollTo({ left: i * tr.clientWidth, behavior: RM ? 'auto' : 'smooth' }); };
   const chkMore = () => { const s = S[cur]; more.classList.toggle('on', s.scrollHeight - s.clientHeight - s.scrollTop > 24); };
   const mark = () => {
