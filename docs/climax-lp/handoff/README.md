@@ -5,7 +5,7 @@
 ## ファイル
 - `climax/index.html`：LPの本体。1ファイル、ビルドなしで、そのまま本番に置けます。外部から読み込むのは Google Fonts だけです。`noindex` が入っているので、公開の合図で外してください。
 - `climax/ogp.html`：共有用画像の元（1200×630）
-- `climax/ogp.png`：書き出した共有用画像。`index.html` では `https://climax.clubkawasaki.net/ogp.png` として読み込んでいます。
+- `climax/ogp-v2.jpg`：書き出した共有用画像（受け取った ogp.png 約0.9MB を、組み込み時に JPEG 約0.15MB へ軽量化）。`index.html` では `https://climax.clubkawasaki.net/ogp-v2.jpg` として読み込んでいます。
 - `captures/climax-390-full.png`：幅390pxで上から下まで撮った画面
 
 ## 差し替える場所
