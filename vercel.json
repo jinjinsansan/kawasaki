@@ -54,6 +54,11 @@
       "source": "/t-ai-app/:path*",
       "destination": "/",
       "permanent": false
+    },
+    {
+      "source": "/climax/:path*",
+      "destination": "/",
+      "permanent": false
     }
   ]
 }

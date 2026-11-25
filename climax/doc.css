@@ -1,0 +1,25 @@
+/* 特商法・プライバシーポリシー（LP本体と同じ黒・金・赤。index.html の :root と色をそろえている） */
+:root{--bk:#0a0606;--tx:#f6efe2;--dm:#d6c7ad;--gd:#e2b857;--gd2:#f5dc92;--st:#ffd76a;--rd3:#ff2a3a;--rule:#3a1f1b;color-scheme:dark;}
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;background:var(--bk);}
+body{margin:0;background:var(--bk);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",sans-serif;}
+a{color:var(--st);} a:hover{color:#fff;}
+.doc-head{max-width:44em;margin:0 auto;padding:22px max(20px,env(safe-area-inset-right)) 12px max(20px,env(safe-area-inset-left));border-bottom:2px solid var(--gd);}
+.doc-head a{font-family:"Zen Kaku Gothic New","Hiragino Sans",sans-serif;font-weight:900;font-size:20px;letter-spacing:.02em;color:var(--gd2);text-decoration:none;}
+.doc{max-width:44em;margin:0 auto;padding:28px max(20px,env(safe-area-inset-right)) 56px max(20px,env(safe-area-inset-left));font-size:15px;line-height:1.95;letter-spacing:.02em;color:var(--dm);}
+.doc h1{margin:0 0 24px;font-family:"Zen Kaku Gothic New","Hiragino Sans",sans-serif;font-size:22px;font-weight:900;letter-spacing:.04em;color:#fff;}
+.doc h2{margin:36px 0 10px;font-family:"Zen Kaku Gothic New","Hiragino Sans",sans-serif;font-size:17px;font-weight:700;color:#fff;}
+.doc p{margin:0 0 12px;}
+.doc ul,.doc ol{margin:0 0 12px;padding-left:1.4em;}
+.doc table{width:100%;border-collapse:collapse;border-top:2px solid var(--gd);border-bottom:1px solid var(--rule);}
+.doc th,.doc td{padding:14px 0;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top;}
+.doc th{width:11em;padding-right:16px;font-family:"Zen Kaku Gothic New","Hiragino Sans",sans-serif;font-size:13px;font-weight:700;color:var(--gd2);}
+.doc td{overflow-wrap:anywhere;color:var(--tx);}
+@media (max-width:600px){
+  .doc th,.doc td{display:block;width:auto;padding:0;border:0;}
+  .doc th{padding-top:14px;}
+  .doc td{padding:2px 0 14px;border-bottom:1px solid var(--rule);}
+}
+.doc-back{display:inline-flex;align-items:center;min-height:44px;margin-top:28px;font-size:14px;}
+.doc-foot{padding:18px 24px 28px;border-top:1px solid var(--rule);text-align:center;}
+.doc-foot p{margin:0;font-size:11px;letter-spacing:.1em;color:var(--dm);}

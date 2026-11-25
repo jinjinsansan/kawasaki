@@ -63,6 +63,15 @@ GitHub リポジトリを Vercel に Import → Framework Preset「Other」、Bu
 - ログインは見本（何を入れても入れる）。noindex
 - T-AI のシステム本体（川崎さんから受け取ったZIP）は非公開。このリポジトリ（公開）には入れない
 
+## 2026年 クライマックスプラン LP（`climax/`）
+
+T-AI年間プランのダウンセル（15,000円税抜・12月末まで、ジャパンカップから）。ギラギラ系の縦スクロールLP。公開先（予定）https://climax.clubkawasaki.net （Vercelプロジェクトは未作成。作るときは Root Directory を `climax`）。依頼文と原稿全文 `docs/climax-lp/design-prompt.md`、ハンドオフ `docs/climax-lp/handoff/README.md`。
+
+- 申込URL：`climax/index.html` の `const APPLY_URL = '#';` の1か所（ボタン4つにまとめて入る）
+- 公開時：`climax/index.html` の `<meta name="robots" content="noindex">` を外す
+- 特商法 `climax/tokushoho.html`：支払方法・提供方法・返品は前回の15,000円プラン（`lp2/tokushoho.html`）と同じ文。提供期間は 2026/11/29〜12/31、募集期間は「一定の人数に達し次第終了」
+- ルートのプロジェクトでは `/climax/*` をトップへ転送している
+
 ## 究極2ウィーク LP（`lp2/`）
 
 スワイプ型LP（https://1week.clubkawasaki.net ・別Vercelプロジェクト。旧 https://2week.clubkawasaki.net は `lp2/vercel.json` の redirects で 1week へ転送）。Vercel では同じリポジトリを別プロジェクトとして Import し、**Root Directory を `lp2`** に設定する。ルートのプロジェクトでは `vercel.json` の redirects で `/lp2/*` をトップへ転送している（`.vercelignore` に `lp2` を書くと lp2 プロジェクト側でも除外されて404になるので不可）。
