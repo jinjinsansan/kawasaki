@@ -65,7 +65,7 @@ GitHub リポジトリを Vercel に Import → Framework Preset「Other」、Bu
 
 ## 2026年 クライマックスプラン LP（`climax/`）
 
-T-AI年間プランのダウンセル（15,000円税抜・12月末まで、ジャパンカップから）。ギラギラ系の縦スクロールLP。公開先（予定）https://climax.clubkawasaki.net （Vercelプロジェクトは未作成。作るときは Root Directory を `climax`）。依頼文と原稿全文 `docs/climax-lp/design-prompt.md`、ハンドオフ `docs/climax-lp/handoff/README.md`。
+T-AI年間プランのダウンセル（15,000円税抜・12月末まで、ジャパンカップから）。ギラギラ系の縦スクロールLP。https://climax.clubkawasaki.net （Vercelプロジェクト `kawasaki-climax`、Root Directory を `climax`。DNSはCloudflareに CNAME `climax` → `61d0d2e44b898080.vercel-dns-016.com`（DNS only）。確認用 https://kawasaki-climax.vercel.app/ ）。依頼文と原稿全文 `docs/climax-lp/design-prompt.md`、ハンドオフ `docs/climax-lp/handoff/README.md`。
 
 - 申込URL：`climax/index.html` の `const APPLY_URL = '#';` の1か所（ボタン4つにまとめて入る）
 - 公開時：`climax/index.html` の `<meta name="robots" content="noindex">` を外す
