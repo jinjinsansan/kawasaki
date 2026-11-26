@@ -67,7 +67,7 @@ GitHub リポジトリを Vercel に Import → Framework Preset「Other」、Bu
 
 T-AI年間プランのダウンセル（15,000円税抜・12月末まで、ジャパンカップから）。ギラギラ系の縦スクロールLP。https://climax.clubkawasaki.net （Vercelプロジェクト `kawasaki-climax`、Root Directory を `climax`。DNSはCloudflareに CNAME `climax` → `61d0d2e44b898080.vercel-dns-016.com`（DNS only）。確認用 https://kawasaki-climax.vercel.app/ ）。依頼文と原稿全文 `docs/climax-lp/design-prompt.md`、ハンドオフ `docs/climax-lp/handoff/README.md`。
 
-- 申込URL：`climax/index.html` の `const APPLY_URL = '#';` の1か所（ボタン4つにまとめて入る）
+- 申込URL：`climax/index.html` の `const APPLY_URL` の1か所（ボタン4つにまとめて入る）。今は https://takashiskeiba.com/fm/32904/xsei5eqH （別タブで開く）
 - 公開時：`climax/index.html` の `<meta name="robots" content="noindex">` を外す
 - 特商法 `climax/tokushoho.html`：支払方法・提供方法・返品は前回の15,000円プラン（`lp2/tokushoho.html`）と同じ文。提供期間は 2026/11/29〜12/31、募集期間は「一定の人数に達し次第終了」
 - 縦スワイプ版：`climax/s/index.html`（https://climax.clubkawasaki.net/s 、28画面。依頼文 `docs/climax-lp/design-prompt-swipe.md`、ハンドオフ `docs/climax-lp/handoff/README-swipe.md`）。申込URLは同じく `const APPLY_URL` の1か所で、**縦スクロール版と両方差し替える**。`/s#7` のように画面の番号で開ける
